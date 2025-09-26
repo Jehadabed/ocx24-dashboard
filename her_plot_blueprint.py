@@ -908,7 +908,7 @@ def her_plot_main():
                         ),
                         hoverinfo: 'text',
                         name: 'UofT (chemical reduction)',
-                        showlegend: traces.length === 0,
+                        showlegend: Object.keys(uoftByColor).indexOf(color) === 0,
                         customdata: colorData.map(row => row['sample id']),
                         source: colorData.map(row => row['source']),
                         'xrf composition': colorData.map(row => row['xrf composition'] || row['target composition'])
@@ -954,7 +954,7 @@ def her_plot_main():
                         ),
                         hoverinfo: 'text',
                         name: 'VSP (spark ablation)',
-                        showlegend: Object.keys(uoftByColor).length === 0 && Object.keys(vspByColor).indexOf(color) === 0,
+                        showlegend: Object.keys(vspByColor).indexOf(color) === 0,
                         customdata: colorData.map(row => row['sample id']),
                         source: colorData.map(row => row['source']),
                         'xrf composition': colorData.map(row => row['xrf composition'] || row['target composition'])
