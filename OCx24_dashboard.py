@@ -875,6 +875,161 @@ def create_filter_dashboard():
         except Exception as e:
             return jsonify({'running': False, 'error': str(e)}), 500
     
+    # New embedded plotting routes
+    @app.route('/plot/her')
+    def embedded_her_plot():
+        """Embedded HER plot using current dashboard data"""
+        try:
+            import plotly.graph_objects as go
+            import plotly.offline as pyo
+            import json
+            
+            # Load current HER data
+            current_data_file = "Data/current_data_her.json"
+            if os.path.exists(current_data_file):
+                with open(current_data_file, 'r') as f:
+                    saved_data = json.load(f)
+                
+                if isinstance(saved_data, dict) and 'data' in saved_data:
+                    df_plot = pd.DataFrame(saved_data['data'])
+                else:
+                    df_plot = pd.DataFrame(saved_data)
+            else:
+                # Fallback to filtered main data for HER
+                df_plot = main_df[main_df['reaction'] == 'HER'].copy() if 'reaction' in main_df.columns else main_df.copy()
+            
+            if df_plot.empty:
+                return "<h2>No HER data available for plotting</h2><p>Please filter for HER data in the main dashboard first.</p>"
+            
+            # Create a simple scatter plot
+            fig = go.Figure()
+            
+            # Plot voltage vs current density if available
+            if 'voltage_mean' in df_plot.columns or 'voltage' in df_plot.columns:
+                voltage_col = 'voltage_mean' if 'voltage_mean' in df_plot.columns else 'voltage'
+                fig.add_trace(go.Scatter(
+                    x=df_plot[voltage_col],
+                    y=df_plot['current density'],
+                    mode='markers',
+                    text=[f"Sample: {row.get('sample id', 'Unknown')}<br>Source: {row.get('source', 'Unknown')}" for _, row in df_plot.iterrows()],
+                    marker=dict(size=8, opacity=0.7)
+                ))
+                
+                fig.update_layout(
+                    title='HER Performance: Voltage vs Current Density',
+                    xaxis_title='Voltage (V)',
+                    yaxis_title='Current Density (mA/cm²)',
+                    height=600,
+                    template='plotly_white'
+                )
+            else:
+                return "<h2>Insufficient data for HER plotting</h2><p>Voltage data not found.</p>"
+            
+            # Convert to HTML
+            plot_html = pyo.plot(fig, output_type='div', include_plotlyjs=True)
+            
+            return f'''
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>HER Performance Plot</title>
+                <meta charset="utf-8">
+                <style>
+                    body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                    .back-link {{ margin-bottom: 20px; }}
+                    .back-link a {{ text-decoration: none; background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; }}
+                </style>
+            </head>
+            <body>
+                <div class="back-link">
+                    <a href="/">← Back to Dashboard</a>
+                </div>
+                <h1>HER Performance Analysis</h1>
+                {plot_html}
+            </body>
+            </html>
+            '''
+            
+        except Exception as e:
+            return f"<h2>Error loading HER plot: {str(e)}</h2><p>Please ensure HER data is available in the dashboard.</p>"
+    
+    @app.route('/plot/co2')
+    def embedded_co2_plot():
+        """Embedded CO2 plot using current dashboard data"""
+        try:
+            import plotly.graph_objects as go
+            import plotly.offline as pyo
+            import json
+            
+            # Load current CO2 data
+            current_data_file = "Data/current_data_co2.json"
+            if os.path.exists(current_data_file):
+                with open(current_data_file, 'r') as f:
+                    saved_data = json.load(f)
+                
+                if isinstance(saved_data, dict) and 'data' in saved_data:
+                    df_plot = pd.DataFrame(saved_data['data'])
+                else:
+                    df_plot = pd.DataFrame(saved_data)
+            else:
+                # Fallback to filtered main data for CO2R
+                df_plot = main_df[main_df['reaction'] == 'CO2R'].copy() if 'reaction' in main_df.columns else main_df.copy()
+            
+            if df_plot.empty:
+                return "<h2>No CO2R data available for plotting</h2><p>Please filter for CO2R data in the main dashboard first.</p>"
+            
+            # Create a simple scatter plot
+            fig = go.Figure()
+            
+            # Plot voltage vs current density if available
+            if 'voltage_mean' in df_plot.columns or 'voltage' in df_plot.columns:
+                voltage_col = 'voltage_mean' if 'voltage_mean' in df_plot.columns else 'voltage'
+                fig.add_trace(go.Scatter(
+                    x=df_plot[voltage_col],
+                    y=df_plot['current density'],
+                    mode='markers',
+                    text=[f"Sample: {row.get('sample id', 'Unknown')}<br>Source: {row.get('source', 'Unknown')}" for _, row in df_plot.iterrows()],
+                    marker=dict(size=8, opacity=0.7, color='red')
+                ))
+                
+                fig.update_layout(
+                    title='CO2RR Performance: Voltage vs Current Density',
+                    xaxis_title='Voltage (V)',
+                    yaxis_title='Current Density (mA/cm²)',
+                    height=600,
+                    template='plotly_white'
+                )
+            else:
+                return "<h2>Insufficient data for CO2R plotting</h2><p>Voltage data not found.</p>"
+            
+            # Convert to HTML
+            plot_html = pyo.plot(fig, output_type='div', include_plotlyjs=True)
+            
+            return f'''
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>CO2RR Performance Plot</title>
+                <meta charset="utf-8">
+                <style>
+                    body {{ font-family: Arial, sans-serif; margin: 20px; }}
+                    .back-link {{ margin-bottom: 20px; }}
+                    .back-link a {{ text-decoration: none; background: #007bff; color: white; padding: 10px 20px; border-radius: 5px; }}
+                </style>
+            </head>
+            <body>
+                <div class="back-link">
+                    <a href="/">← Back to Dashboard</a>
+                </div>
+                <h1>CO2RR Performance Analysis</h1>
+                {plot_html}
+            </body>
+            </html>
+            '''
+            
+        except Exception as e:
+            return f"<h2>Error loading CO2R plot: {str(e)}</h2><p>Please ensure CO2R data is available in the dashboard.</p>"
+    
     # Get port from environment variable (for cloud deployment) or use default
     import os
     port = int(os.environ.get('PORT', 8085))
