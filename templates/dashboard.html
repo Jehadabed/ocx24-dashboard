@@ -2735,176 +2735,84 @@
             });
         }
         
-        // Interactive Plot Functions
-        let herServerRunning = false;
-        let co2ServerRunning = false;
-        
-        async function checkHERServerStatus() {
-            try {
-                const response = await fetch('/her_server_status');
-                const data = await response.json();
-                herServerRunning = data.running;
-                updateHERButtonState();
-            } catch (error) {
-                console.error('Error checking HER server status:', error);
-                herServerRunning = false;
-                updateHERButtonState();
+        // Interactive Plot Functions - Updated to use integrated blueprints
+        function openHERPlot() {
+            console.log('Opening HER Performance Plot...');
+            
+            // Get current data (filtered/averaged)
+            let plotData = null;
+            if (displayedData && displayedData.length > 0) {
+                plotData = displayedData;
+            } else if (currentData && currentData.length > 0) {
+                plotData = currentData;
+            } else if (allData && allData.length > 0) {
+                plotData = allData;
             }
+            
+            // Save current data for the HER plot blueprint
+            if (plotData) {
+                fetch('/save_current_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: plotData,
+                        plot_type: 'her'
+                    })
+                });
+                console.log('Saving current data for HER plot:', plotData.length, 'rows');
+            }
+            
+            // Open the integrated HER plot
+            window.open('/her/', '_blank');
         }
         
-        function updateHERButtonState() {
-            const herBtn = document.getElementById('herPlotBtn');
-            if (herServerRunning) {
-                herBtn.textContent = 'Close HER Plot';
-                herBtn.classList.add('close-btn');
-            } else {
-                herBtn.textContent = 'Build HER Plot';
-                herBtn.classList.remove('close-btn');
+        function openCO2Plot() {
+            console.log('Opening CO2RR Performance Plot...');
+            
+            // Get current data (filtered/averaged)
+            let plotData = null;
+            if (displayedData && displayedData.length > 0) {
+                plotData = displayedData;
+            } else if (currentData && currentData.length > 0) {
+                plotData = currentData;
+            } else if (allData && allData.length > 0) {
+                plotData = allData;
             }
+            
+            // Save current data for the CO2RR plot blueprint
+            if (plotData) {
+                fetch('/save_current_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: plotData,
+                        plot_type: 'co2'
+                    })
+                });
+                console.log('Saving current data for CO2RR plot:', plotData.length, 'rows');
+            }
+            
+            // Open the integrated CO2RR plot
+            window.open('/co2/', '_blank');
         }
         
-        async function toggleHERPlot() {
-            if (herServerRunning) {
-                // Close the HER plot server
-                console.log('Closing HER Performance Plot...');
-                try {
-                    const response = await fetch('/close_her_plot');
-                    const data = await response.json();
-                    if (data.success) {
-                        herServerRunning = false;
-                        updateHERButtonState();
-                        console.log('HER plot server closed successfully');
-                    } else {
-                        console.error('Failed to close HER plot server:', data.message);
-                        alert('Failed to close HER plot server: ' + data.message);
-                    }
-                } catch (error) {
-                    console.error('Error closing HER plot server:', error);
-                    alert('Error closing HER plot server: ' + error.message);
-                }
-            } else {
-                // Open the HER plot with current data
-                console.log('Building HER Performance Plot...');
-                
-                // Get current data (filtered/averaged)
-                let plotData = null;
-                if (displayedData && displayedData.length > 0) {
-                    plotData = displayedData;
-                } else if (currentData && currentData.length > 0) {
-                    plotData = currentData;
-                } else if (allData && allData.length > 0) {
-                    plotData = allData;
-                }
-                
-                // Save current data and open HER plot
-                if (plotData) {
-                    // Save current data to a file that the plot server can read
-                    fetch('/save_current_data', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            data: plotData,
-                            plot_type: 'her'
-                        })
-                    });
-                    console.log('Saving current data for HER plot:', plotData.length, 'rows');
-                }
-                let plotUrl = '/her_plot';
-                
-                window.open(plotUrl, '_blank');
-                // Check status after a delay to update button state
-                setTimeout(checkHERServerStatus, 5000);
-            }
+        // Legacy function names for compatibility
+        function toggleHERPlot() {
+            openHERPlot();
         }
         
-        async function checkCO2ServerStatus() {
-            try {
-                const response = await fetch('/co2_server_status');
-                const data = await response.json();
-                co2ServerRunning = data.running;
-                updateCO2ButtonState();
-            } catch (error) {
-                console.error('Error checking CO2RR server status:', error);
-                co2ServerRunning = false;
-                updateCO2ButtonState();
-            }
-        }
-        
-        function updateCO2ButtonState() {
-            const co2Btn = document.getElementById('co2PlotBtn');
-            if (co2ServerRunning) {
-                co2Btn.textContent = 'Close CO2RR Plot';
-                co2Btn.classList.add('close-btn');
-            } else {
-                co2Btn.textContent = 'Build CO2RR Plot';
-                co2Btn.classList.remove('close-btn');
-            }
-        }
-        
-        async function toggleCO2Plot() {
-            if (co2ServerRunning) {
-                // Close the CO2RR plot server
-                console.log('Closing CO2RR Performance Plot...');
-                try {
-                    const response = await fetch('/close_co2_plot');
-                    const data = await response.json();
-                    if (data.success) {
-                        co2ServerRunning = false;
-                        updateCO2ButtonState();
-                        console.log('CO2RR plot server closed successfully');
-                    } else {
-                        console.error('Failed to close CO2RR plot server:', data.message);
-                        alert('Failed to close CO2RR plot server: ' + data.message);
-                    }
-                } catch (error) {
-                    console.error('Error closing CO2RR plot server:', error);
-                    alert('Error closing CO2RR plot server: ' + error.message);
-                }
-            } else {
-                // Open the CO2RR plot with current data
-                console.log('Building CO2RR Performance Plot...');
-                
-                // Get current data (filtered/averaged)
-                let plotData = null;
-                if (displayedData && displayedData.length > 0) {
-                    plotData = displayedData;
-                } else if (currentData && currentData.length > 0) {
-                    plotData = currentData;
-                } else if (allData && allData.length > 0) {
-                    plotData = allData;
-                }
-                
-                // Save current data and open CO2RR plot
-                if (plotData) {
-                    // Save current data to a file that the plot server can read
-                    fetch('/save_current_data', {
-                        method: 'POST',
-                        headers: {
-                            'Content-Type': 'application/json',
-                        },
-                        body: JSON.stringify({
-                            data: plotData,
-                            plot_type: 'co2'
-                        })
-                    });
-                    console.log('Saving current data for CO2RR plot:', plotData.length, 'rows');
-                }
-                let plotUrl = '/co2_plot';
-                
-                window.open(plotUrl, '_blank');
-                // Check status after a delay to update button state
-                setTimeout(checkCO2ServerStatus, 5000);
-            }
+        function toggleCO2Plot() {
+            openCO2Plot();
         }
         
         // Initialize the dashboard
         loadInitialData();
         
-        // Check server statuses on page load
-        checkHERServerStatus();
-        checkCO2ServerStatus();
+        // No server status checks needed for integrated plots
         
         // Test column toggle after a short delay
         setTimeout(testColumnToggle, 2000);
