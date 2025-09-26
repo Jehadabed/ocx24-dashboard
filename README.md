@@ -1,6 +1,8 @@
 # OCx24 Dashboard
 
-An interactive web dashboard for exploring and analyzing electrochemical data from OCx24 experiments, featuring HER (Hydrogen Evolution Reaction) and CO2RR (CO2 Reduction Reaction) performance data.
+An interactive web dashboard for exploring and analyzing  data from OCx24 experiments, featuring HER (Hydrogen Evolution Reaction) and CO2RR (CO2 Reduction Reaction) performance data, as well as XRD (X-ray Diffraction) data.
+
+This project is part of the OCx24 research: https://ai.meta.com/blog/open-catalyst-simulations-experiments/.
 
 ## Features
 
@@ -47,6 +49,4 @@ See `requirements.txt` for a complete list of Python dependencies including:
 - `Data/` - Data files directory
 - `environment.yml` - Conda environment specification
 
-## License
 
-This project is part of the OCx24 research: https://ai.meta.com/blog/open-catalyst-simulations-experiments/.
