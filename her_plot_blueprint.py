@@ -748,6 +748,7 @@ def her_plot_main():
             let currentData = null;
             let originalData = null;
             let currentUnitType = 'atomic';
+            let currentYColumn = '{y_axis_column}'; // Dynamic voltage column
             
             // Initialize with data
             const initialData = {json.dumps(df_with_pca.to_dict('records'))};
@@ -756,6 +757,20 @@ def her_plot_main():
             
             console.log('Loaded HER data:', currentData.length, 'rows');
             console.log('Available columns:', Object.keys(currentData[0] || {{}}));
+            console.log('Y-axis column detected:', currentYColumn);
+            
+            // Detect actual voltage column from data
+            if (currentData && currentData.length > 0) {{
+                const firstRow = currentData[0];
+                if (firstRow.hasOwnProperty('voltage_mean')) {{
+                    currentYColumn = 'voltage_mean';
+                }} else if (firstRow.hasOwnProperty('voltage')) {{
+                    currentYColumn = 'voltage';
+                }} else {{
+                    console.warn('No voltage column found, using fallback:', currentYColumn);
+                }}
+                console.log('Final Y-axis column:', currentYColumn);
+            }}
             
             // Set default x-axis
             const xAxisSelect = document.getElementById('xAxis');
@@ -805,7 +820,7 @@ def her_plot_main():
                     console.log('Using local data due to fetch error:', error);
                 }}
                 
-                createPlot(xCol, '{y_axis_column}', currentData, originalData);
+                createPlot(xCol, currentYColumn, currentData, originalData);
             }}
             
             function createPlot(xCol, yCol, data, originalDataForCalc = null) {{
@@ -915,12 +930,12 @@ def her_plot_main():
                     }};
                     
                     // Add error bars if enabled and available
-                    if (document.getElementById('errorBars').checked && yCol === 'voltage_mean') {{
+                    if (document.getElementById('errorBars').checked && yCol === 'voltage_mean' && colorData[0] && colorData[0]['voltage_std'] !== undefined) {{
                         trace.error_y = {{
                             type: 'data',
                             array: colorData.map(row => row['voltage_std'] || 0),
                             color: color,
-                            thickness: 1,
+                            thickness: 1.5,
                             width: 2
                         }};
                     }}
@@ -960,12 +975,12 @@ def her_plot_main():
                         'xrf composition': colorData.map(row => row['xrf composition'] || row['target composition'])
                     }};
                     
-                    if (document.getElementById('errorBars').checked && yCol === 'voltage_mean') {{
+                    if (document.getElementById('errorBars').checked && yCol === 'voltage_mean' && colorData.length > 0 && colorData[0]['voltage_std'] !== undefined) {{
                         trace.error_y = {{
                             type: 'data',
                             array: colorData.map(row => row['voltage_std'] || 0),
                             color: color,
-                            thickness: 1,
+                            thickness: 1.5,
                             width: 2
                         }};
                     }}
