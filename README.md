@@ -49,4 +49,4 @@ See `requirements.txt` for a complete list of Python dependencies including:
 
 ## License
 
-This project is part of the OCx24 research initiative.
+This project is part of the OCx24 research: https://ai.meta.com/blog/open-catalyst-simulations-experiments/.
