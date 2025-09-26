@@ -9,6 +9,10 @@ import re
 import requests
 import psutil
 
+# Import our blueprints
+from her_plot_blueprint import her_plot_bp
+from co2_plot_blueprint import co2_plot_bp
+
 # Load the DataFrame
 try:
     main_df = pd.read_csv("Data/DashboardData.csv")
@@ -91,6 +95,10 @@ def create_filter_dashboard():
     """
     # Create Flask app
     app = Flask(__name__)
+    
+    # Register blueprints
+    app.register_blueprint(her_plot_bp)
+    app.register_blueprint(co2_plot_bp)
     
     @app.route('/save_current_data', methods=['POST'])
     def save_current_data():
@@ -769,111 +777,33 @@ def create_filter_dashboard():
     
     @app.route('/co2_plot')
     def co2_plot():
-        """Route to serve the CO2RR interactive plot"""
-        try:
-            # Start the CO2RR plot server in a separate thread if not already running
-            import subprocess
-            import sys
-            import os
-            
-            co2_port = 8084
-            
-            # Check if CO2RR plot server is already running
-            if is_server_running(co2_port):
-                
-                return '''
-                <!DOCTYPE html>
-                <html>
-                <head>
-                    <title>CO2RR Performance Plot</title>
-                    <meta http-equiv="refresh" content="0; url=http://localhost:8084">
-                </head>
-                <body>
-                    <p>Opening CO2RR Performance Plot...</p>
-                    <p>If the plot doesn't open automatically, <a href="http://localhost:8084">click here</a></p>
-                </body>
-                </html>
-                '''
-            
-            # Start the CO2RR plot server
-            def start_co2_server():
-                try:
-                    proc = subprocess.Popen([sys.executable, 'interactive_plot_CO2.py'], 
-                                          cwd=os.getcwd(), 
-                                          stdout=subprocess.DEVNULL, 
-                                          stderr=subprocess.DEVNULL)
-                    running_servers['co2'] = proc
-                    time.sleep(5)  # Give it more time to start
-                    
-
-                except Exception as e:
-                    print(f"Error starting CO2RR server: {e}")
-            
-            # Start server in background
-            co2_thread = threading.Thread(target=start_co2_server)
-            co2_thread.daemon = True
-            co2_thread.start()
-            
-            # Return redirect page with delay
-            return '''
-            <!DOCTYPE html>
-            <html>
-            <head>
-                <title>CO2RR Performance Plot</title>
-                <meta http-equiv="refresh" content="6; url=http://localhost:8084">
-            </head>
-            <body>
-                <p>Starting CO2RR Performance Plot server...</p>
-                <p>Please wait a moment for the plot to load.</p>
-                <p>If the plot doesn't open automatically, <a href="http://localhost:8084">click here</a></p>
-            </body>
-            </html>
-            '''
-            
-        except Exception as e:
-            return f"Error loading CO2RR plot: {str(e)}", 500
+        """Route to redirect to the CO2RR blueprint plot"""
+        return '''
+        <!DOCTYPE html>
+        <html>
+        <head>
+            <title>CO2RR Performance Plot</title>
+            <meta http-equiv="refresh" content="0; url=/co2">
+        </head>
+        <body>
+            <p>Opening CO2RR Performance Plot...</p>
+            <p>If the plot doesn't open automatically, <a href="/co2">click here</a></p>
+        </body>
+        </html>
+        '''
     
     @app.route('/close_co2_plot')
     def close_co2_plot():
-        """Route to close the CO2RR interactive plot server"""
-        try:
-            co2_port = 8084
-            success = False
-            
-            # Try to kill the tracked process first
-            if running_servers['co2'] and running_servers['co2'].poll() is None:
-                try:
-                    running_servers['co2'].terminate()
-                    running_servers['co2'].wait(timeout=5)
-                    running_servers['co2'] = None
-                    success = True
-                    print("CO2RR server terminated via tracked process")
-                except Exception as e:
-                    print(f"Error terminating tracked CO2RR server: {e}")
-            
-            # If that didn't work, kill by port
-            if not success:
-                success = kill_server_on_port(co2_port)
-                if success:
-                    print("CO2RR server terminated via port kill")
-            
-            if success:
-                return jsonify({'success': True, 'message': 'CO2RR plot server closed successfully'})
-            else:
-                return jsonify({'success': False, 'message': 'No CO2RR server was running'})
-                
-        except Exception as e:
-            return jsonify({'success': False, 'error': str(e)}), 500
+        """Route to close the CO2RR interactive plot server (for compatibility with older UI)"""
+        # This is now just a stub for compatibility with the dashboard UI
+        # since we're using a blueprint instead of a separate server
+        return jsonify({'success': True, 'message': 'CO2RR plot is integrated - no need to close'})        
     
     @app.route('/co2_server_status')
     def co2_server_status():
-        """Check if CO2RR server is running"""
-        try:
-            co2_port = 8084
-            is_running = is_server_running(co2_port)
-            return jsonify({'running': is_running})
-        except Exception as e:
-            return jsonify({'running': False, 'error': str(e)}), 500
+        """Check if CO2RR server is available (for compatibility with older UI)"""
+        # Always return true since we're using a blueprint instead of a separate server
+        return jsonify({'running': True})
     
     # New embedded plotting routes
     @app.route('/plot/her')
