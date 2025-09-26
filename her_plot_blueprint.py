@@ -805,7 +805,7 @@ def her_plot_main():
                     console.log('Using local data due to fetch error:', error);
                 }}
                 
-                createPlot(xCol, 'voltage_mean', currentData, originalData);
+                createPlot(xCol, '{y_axis_column}', currentData, originalData);
             }}
             
             function createPlot(xCol, yCol, data, originalDataForCalc = null) {{
