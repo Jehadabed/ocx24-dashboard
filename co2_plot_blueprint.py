@@ -331,14 +331,14 @@ def co2_plot_main():
                 min-width: 160px;
             }}
             
-            .export-btn:hover {
+            .export-btn:hover {{
                 background: #34a853;
                 color: #ffffff;
                 box-shadow: 0 2px 8px rgba(52, 168, 83, 0.15);
                 transform: translateY(-1px);
-            }
+            }}
             
-            .checkbox-container {
+            .checkbox-container {{
                 display: flex;
                 align-items: center;
                 gap: 12px;
@@ -347,20 +347,20 @@ def co2_plot_main():
                 border-radius: 8px;
                 border: 1px solid #e8eaed;
                 box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-            }
+            }}
             
-            input[type="checkbox"] {
+            input[type="checkbox"] {{
                 width: 18px;
                 height: 18px;
                 accent-color: #4285f4;
                 cursor: pointer;
-            }
+            }}
             
-            .checkbox-container label {
+            .checkbox-container label {{
                 margin: 0;
                 color: #5f6368;
                 font-weight: 400;
-            }
+            }}
         </style>
     </head>
     <body>
@@ -466,139 +466,139 @@ def co2_plot_main():
                 const traces = [];
                 
                 // Helper: build a clean XY array filtering invalid numbers
-                function buildXY(rows, source) {
+                function buildXY(rows, source) {{
                     const x = [];
                     const y = [];
                     const text = [];
                     const errorArray = [];
                     
-                    rows.forEach(row => {
+                    rows.forEach(row => {{
                         const xv = Number(row[xCol]);
                         const yv = Number(row[yCol]);
-                        if (Number.isFinite(xv) && Number.isFinite(yv)) {
+                        if (Number.isFinite(xv) && Number.isFinite(yv)) {{
                             x.push(xv);
                             y.push(yv);
                             
                             // For error bars, check if corresponding _std column exists
                             let errorValue = 0;
-                            if (yCol.includes('_mean')) {
+                            if (yCol.includes('_mean')) {{
                                 const stdCol = yCol.replace('_mean', '_std');
-                                if (row[stdCol] !== undefined) {
+                                if (row[stdCol] !== undefined) {{
                                     errorValue = Number(row[stdCol]) || 0;
-                                }
-                            }
+                                }}
+                            }}
                             errorArray.push(errorValue);
                             
                             text.push(
-                                `Sample: ${row['sample id'] || 'N/A'}<br>` +
-                                `Source: ${row['source']}<br>` +
-                                `Batch: ${row['batch number'] || 'N/A'}<br>` +
-                                `Formula: ${row['xrf composition'] || row['target composition'] || 'N/A'}<br>` +
-                                `Current Density: ${row['current density']} mA/cm²<br>` +
-                                `X: ${xv.toFixed(3)}<br>` +
-                                `Y: ${yv.toFixed(3)}${yCol.startsWith('fe_') ? ' %' : ''}${errorValue > 0 ? ' ± ' + errorValue.toFixed(3) + (yCol.startsWith('fe_') ? ' %' : '') : ''}`
+                                `Sample: ${{row['sample id'] || 'N/A'}}<br>` +
+                                `Source: ${{row['source']}}<br>` +
+                                `Batch: ${{row['batch number'] || 'N/A'}}<br>` +
+                                `Formula: ${{row['xrf composition'] || row['target composition'] || 'N/A'}}<br>` +
+                                `Current Density: ${{row['current density']}} mA/cm²<br>` +
+                                `X: ${{xv.toFixed(3)}}<br>` +
+                                `Y: ${{yv.toFixed(3)}}${{yCol.startsWith('fe_') ? ' %' : ''}}${{errorValue > 0 ? ' ± ' + errorValue.toFixed(3) + (yCol.startsWith('fe_') ? ' %' : '') : ''}}`
                             );
-                        }
-                    });
-                    return { x, y, text, errors: errorArray };
-                }
+                        }}
+                    }});
+                    return {{ x, y, text, errors: errorArray }};
+                }}
                 
                 // UofT trace (circles)
-                if (uoftData.length > 0) {
+                if (uoftData.length > 0) {{
                     const d = buildXY(uoftData);
-                    const trace = {
+                    const trace = {{
                         x: d.x,
                         y: d.y,
                         mode: 'markers',
                         type: 'scatter',
-                        marker: {
+                        marker: {{
                             size: 12,
                             color: '#4285f4',
                             opacity: 0.9,
                             symbol: 'circle',
-                            line: { width: 1.5, color: 'rgba(0,0,0,0.25)' }
-                        },
+                            line: {{ width: 1.5, color: 'rgba(0,0,0,0.25)' }}
+                        }},
                         name: 'UofT (chemical reduction)',
                         text: d.text,
-                        hovertemplate: '%{text}<extra></extra>'
-                    };
+                        hovertemplate: '%{{text}}<extra></extra>'
+                    }};
                     
                     // Add error bars if enabled and available
-                    if (document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {
-                        trace.error_y = {
+                    if (document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {{
+                        trace.error_y = {{
                             type: 'data',
                             array: d.errors,
                             color: '#4285f4',
                             thickness: 1.5,
                             width: 3
-                        };
-                    }
+                        }};
+                    }}
                     
                     traces.push(trace);
-                }
+                }}
                 
                 // VSP trace (diamonds)
-                if (vspData.length > 0) {
+                if (vspData.length > 0) {{
                     const d = buildXY(vspData);
-                    const trace = {
+                    const trace = {{
                         x: d.x,
                         y: d.y,
                         mode: 'markers',
                         type: 'scatter',
-                        marker: {
+                        marker: {{
                             size: 12,
                             color: '#ea4335',
                             opacity: 0.9,
                             symbol: 'diamond',
-                            line: { width: 1.5, color: 'rgba(0,0,0,0.25)' }
-                        },
+                            line: {{ width: 1.5, color: 'rgba(0,0,0,0.25)' }}
+                        }},
                         name: 'VSP (spark ablation)',
                         text: d.text,
-                        hovertemplate: '%{text}<extra></extra>'
-                    };
+                        hovertemplate: '%{{text}}<extra></extra>'
+                    }};
                     
                     // Add error bars if enabled and available
-                    if (document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {
-                        trace.error_y = {
+                    if (document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {{
+                        trace.error_y = {{
                             type: 'data',
                             array: d.errors,
                             color: '#ea4335',
                             thickness: 1.5,
                             width: 3
-                        };
-                    }
+                        }};
+                    }}
                     
                     traces.push(trace);
-                }
+                }}
                 
-                const layout = {
-                    title: {
-                        text: `${formatColumnName(xCol)} vs ${formatColumnName(yCol)}`,
-                        font: {size: 18},
+                const layout = {{
+                    title: {{
+                        text: `${{formatColumnName(xCol)}} vs ${{formatColumnName(yCol)}}`,
+                        font: {{size: 18}},
                         x: 0.5
-                    },
-                    xaxis: {
+                    }},
+                    xaxis: {{
                         title: formatColumnName(xCol),
                         showgrid: true,
                         gridcolor: '#e8e8e8'
-                    },
-                    yaxis: {
+                    }},
+                    yaxis: {{
                         title: formatColumnName(yCol),
                         showgrid: true,
                         gridcolor: '#e8e8e8'
-                    },
+                    }},
                     hovermode: 'closest',
                     template: 'plotly_white',
                     height: 700,
                     width: 1000,
-                    margin: {l: 80, r: 200, t: 80, b: 60},
+                    margin: {{l: 80, r: 200, t: 80, b: 60}},
                     showlegend: true,
-                    legend: {
+                    legend: {{
                         x: 1.02,
                         y: 1,
                         bgcolor: 'rgba(255,255,255,0.9)'
-                    }
-                };
+                    }}
+                }};
                 
                 Plotly.newPlot('plot', traces, layout, {{responsive: true}});
                 console.log('CO2R plot created successfully');
