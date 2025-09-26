@@ -922,8 +922,8 @@ def her_plot_main():
                             `Y: ${{row[yCol].toFixed(3)}} V`
                         ),
                         hoverinfo: 'text',
-                        name: 'UofT (chemical reduction)',
-                        showlegend: Object.keys(uoftByColor).indexOf(color) === 0,
+                        name: 'UofT (chemical reduction)' + (color === '#6b7280' ? ' - Above threshold' : color === '#3b82f6' ? ' - Medium performance' : ' - Below threshold'),
+                        showlegend: true,
                         customdata: colorData.map(row => row['sample id']),
                         source: colorData.map(row => row['source']),
                         'xrf composition': colorData.map(row => row['xrf composition'] || row['target composition'])
@@ -968,8 +968,8 @@ def her_plot_main():
                             `Y: ${{row[yCol].toFixed(3)}} V`
                         ),
                         hoverinfo: 'text',
-                        name: 'VSP (spark ablation)',
-                        showlegend: Object.keys(vspByColor).indexOf(color) === 0,
+                        name: 'VSP (spark ablation)' + (color === '#6b7280' ? ' - Above threshold' : color === '#3b82f6' ? ' - Medium performance' : ' - Below threshold'),
+                        showlegend: true,
                         customdata: colorData.map(row => row['sample id']),
                         source: colorData.map(row => row['source']),
                         'xrf composition': colorData.map(row => row['xrf composition'] || row['target composition'])
@@ -1006,8 +1006,9 @@ def her_plot_main():
                     }},
                     hovermode: 'closest',
                     template: 'plotly_white',
-                    height: 600,
-                    margin: {{l: 60, r: 30, t: 80, b: 60}},
+                    height: 700,
+                    width: 1000,
+                    margin: {{l: 80, r: 200, t: 80, b: 60}},
                     showlegend: true,
                     legend: {{
                         x: 1.02,
