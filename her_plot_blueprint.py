@@ -891,11 +891,11 @@ def her_plot_main():
                         mode: 'markers',
                         type: 'scatter',
                         marker: {{
-                            size: 10,
+                            size: 12,
                             color: color,
-                            line: {{width: 1, color: 'rgba(0,0,0,0.3)'}},
+                            line: {{width: 1.5, color: 'rgba(0,0,0,0.3)'}},
                             symbol: 'circle',
-                            opacity: 0.8
+                            opacity: 0.9
                         }},
                         text: colorData.map(row => 
                             `Sample: ${{row['sample id'] || 'N/A'}}<br>` +
@@ -937,11 +937,11 @@ def her_plot_main():
                         mode: 'markers',
                         type: 'scatter',
                         marker: {{
-                            size: 10,
+                            size: 12,
                             color: color,
-                            line: {{width: 1, color: 'rgba(0,0,0,0.3)'}},
+                            line: {{width: 1.5, color: 'rgba(0,0,0,0.3)'}},
                             symbol: 'diamond',
-                            opacity: 0.8
+                            opacity: 0.9
                         }},
                         text: colorData.map(row => 
                             `Sample: ${{row['sample id'] || 'N/A'}}<br>` +
@@ -954,7 +954,7 @@ def her_plot_main():
                         ),
                         hoverinfo: 'text',
                         name: 'VSP (spark ablation)',
-                        showlegend: Object.keys(uoftByColor).length === 0,
+                        showlegend: Object.keys(uoftByColor).length === 0 && Object.keys(vspByColor).indexOf(color) === 0,
                         customdata: colorData.map(row => row['sample id']),
                         source: colorData.map(row => row['source']),
                         'xrf composition': colorData.map(row => row['xrf composition'] || row['target composition'])
@@ -1008,11 +1008,14 @@ def her_plot_main():
                     const xMin = Math.min(...xValues);
                     const xMax = Math.max(...xValues);
                     
+                    const xRange = xMax - xMin;
                     shapes.push({{
                         type: 'line',
-                        x0: xMin, x1: xMax,
-                        y0: pdMeanUoft, y1: pdMeanUoft,
-                        line: {{color: '#ef4444', dash: 'dash', width: 2}}
+                        x0: xMin - xRange * 0.1,
+                        x1: xMax + xRange * 0.1,
+                        y0: pdMeanUoft,
+                        y1: pdMeanUoft,
+                        line: {{color: '#ef4444', dash: 'dash', width: 3}}
                     }});
                 }}
                 
@@ -1021,15 +1024,65 @@ def her_plot_main():
                     const xMin = Math.min(...xValues);
                     const xMax = Math.max(...xValues);
                     
+                    const xRange = xMax - xMin;
                     shapes.push({{
                         type: 'line',
-                        x0: xMin, x1: xMax,
-                        y0: pdMeanVsp, y1: pdMeanVsp,
-                        line: {{color: '#3b82f6', dash: 'dash', width: 2}}
+                        x0: xMin - xRange * 0.1,
+                        x1: xMax + xRange * 0.1,
+                        y0: pdMeanVsp,
+                        y1: pdMeanVsp,
+                        line: {{color: '#3b82f6', dash: 'dot', width: 3}}
                     }});
                 }}
                 
-                layout.shapes = shapes;
+                // Add annotations for reference lines
+                const annotations = [];
+                
+                if (pdMeanUoft !== null) {{
+                    const xValues = data.map(row => row[xCol]);
+                    const xMax = Math.max(...xValues);
+                    const xRange = Math.max(...xValues) - Math.min(...xValues);
+                    
+                    annotations.push({{
+                        x: xMax + xRange * 0.1,
+                        y: pdMeanUoft,
+                        text: `Pd (UofT)`,
+                        showarrow: false,
+                        xanchor: 'left',
+                        yanchor: 'middle',
+                        bgcolor: 'rgba(255,255,255,0.9)',
+                        bordercolor: '#ef4444',
+                        borderwidth: 2,
+                        font: {{color: '#ef4444', size: 14}}
+                    }});
+                }}
+                
+                if (pdMeanVsp !== null) {{
+                    const xValues = data.map(row => row[xCol]);
+                    const xMax = Math.max(...xValues);
+                    const xRange = Math.max(...xValues) - Math.min(...xValues);
+                    
+                    annotations.push({{
+                        x: xMax + xRange * 0.1,
+                        y: pdMeanVsp,
+                        text: `Pd (VSP)`,
+                        showarrow: false,
+                        xanchor: 'left',
+                        yanchor: 'middle',
+                        bgcolor: 'rgba(255,255,255,0.9)',
+                        bordercolor: '#3b82f6',
+                        borderwidth: 2,
+                        font: {{color: '#3b82f6', size: 14}}
+                    }});
+                }}
+                
+                if (shapes.length > 0) {{
+                    layout.shapes = shapes;
+                }}
+                
+                if (annotations.length > 0) {{
+                    layout.annotations = annotations;
+                }}
                 
                 Plotly.newPlot('plot', traces, layout, {{responsive: true}});
                 
