@@ -2760,12 +2760,19 @@
                         data: plotData,
                         plot_type: 'her'
                     })
+                }).then(() => {
+                    // Navigate to HER plot after data is saved
+                    window.location.href = '/her/';
+                }).catch(error => {
+                    console.error('Error saving data for HER plot:', error);
+                    // Navigate anyway even if save fails
+                    window.location.href = '/her/';
                 });
                 console.log('Saving current data for HER plot:', plotData.length, 'rows');
+            } else {
+                // Navigate directly if no data to save
+                window.location.href = '/her/';
             }
-            
-            // Open the integrated HER plot
-            window.open('/her/', '_blank');
         }
         
         function openCO2Plot() {
@@ -2792,12 +2799,19 @@
                         data: plotData,
                         plot_type: 'co2'
                     })
+                }).then(() => {
+                    // Navigate to CO2RR plot after data is saved
+                    window.location.href = '/co2/';
+                }).catch(error => {
+                    console.error('Error saving data for CO2RR plot:', error);
+                    // Navigate anyway even if save fails
+                    window.location.href = '/co2/';
                 });
                 console.log('Saving current data for CO2RR plot:', plotData.length, 'rows');
+            } else {
+                // Navigate directly if no data to save
+                window.location.href = '/co2/';
             }
-            
-            // Open the integrated CO2RR plot
-            window.open('/co2/', '_blank');
         }
         
         // Legacy function names for compatibility
