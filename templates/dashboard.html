@@ -1,0 +1,2915 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>OCx24 Dataset</title>
+    <style>
+        body {
+            font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            margin: 0;
+            padding: 0;
+            background: #fafafa;
+            min-height: 100vh;
+            color: #202124;
+            overflow-x: hidden;
+            line-height: 1.6;
+        }
+        
+        .container {
+            max-width: 100%;
+            margin: 0 auto;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            margin: 12px;
+            border: 1px solid #e8eaed;
+        }
+        
+        h1 {
+            color: #202124;
+            text-align: center;
+            font-size: 2.4em;
+            font-weight: 400;
+            letter-spacing: -0.5px;
+            margin: 0;
+            padding: 32px 24px 16px 24px;
+            background: #ffffff;
+            border-bottom: 1px solid #e8eaed;
+        }
+        
+        h3 {
+            color: #5f6368;
+            text-align: center;
+            margin: 0;
+            padding: 0 24px 20px 24px;
+            background: #ffffff;
+            font-size: 1.1em;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+        }
+        
+        .controls {
+            display: flex;
+            flex-direction: column;
+            gap: 16px;
+            align-items: flex-start;
+            margin-top: 16px;
+        }
+        
+        .filters-section {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            align-items: flex-start;
+            flex: 1;
+        }
+        
+        .dropdown-filters {
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+            align-items: flex-start;
+            flex: 1;
+        }
+        
+        .buttons-section {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+            margin-top: 16px;
+        }
+        
+        .control-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: flex-start;
+            width: 100%;
+        }
+        
+        .element-count-control {
+            flex-direction: row !important;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .element-count-control label {
+            white-space: nowrap;
+            flex-shrink: 0;
+        }
+        
+        .element-count-filters {
+            display: flex;
+            flex-direction: row;
+            gap: 8px;
+            margin-top: 4px;
+            width: 100%;
+            flex-wrap: wrap;
+        }
+        
+        .checkbox-label {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            user-select: none;
+            white-space: nowrap;
+            flex-direction: row;
+        }
+        
+        .checkbox-label input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+            width: 12px !important;
+            height: 12px !important;
+            flex-shrink: 0;
+            min-width: 12px;
+            max-width: 12px;
+        }
+        
+        .stacked-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            align-items: stretch;
+            width: 100%;
+        }
+        
+        .stacked-buttons button {
+            width: 100%;
+            min-width: 160px;
+        }
+        
+        label {
+            font-weight: 500;
+            color: #5f6368;
+            font-size: 0.875em;
+            text-transform: none;
+            letter-spacing: 0.2px;
+        }
+        
+        select, input {
+            padding: 12px 16px;
+            height: 120px;
+            border: 1px solid #dadce0;
+            border-radius: 8px;
+            background: #ffffff;
+            font-size: 14px;
+            font-weight: 400;
+            color: #202124;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            min-width: 350px;
+            max-width: 350px;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        select:hover, input:hover {
+            border-color: #4285f4;
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.15);
+        }
+        
+        select:focus, input:focus {
+            outline: none;
+            border-color: #4285f4;
+            box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+        }
+        
+        .range-inputs {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+        .range-inputs input {
+            min-width: 80px;
+        }
+        
+        .checkbox-container {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            background: #ffffff;
+            padding: 16px 20px;
+            border-radius: 8px;
+            border: 1px solid #e8eaed;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        input[type="checkbox"] {
+            width: 18px;
+            height: 18px;
+            accent-color: #4285f4;
+            cursor: pointer;
+        }
+        
+        .checkbox-container label {
+            margin: 0;
+            color: #5f6368;
+            font-weight: 400;
+        }
+        
+        .filter-btn {
+            background: #ffffff;
+            color: #4285f4;
+            border: 1px solid #4285f4;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            text-transform: none;
+            letter-spacing: 0.2px;
+            min-width: 250px;
+            max-width: 250px;
+        }
+        
+        .filter-btn:hover {
+            background: #4285f4;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .filter-btn:active {
+            transform: translateY(0);
+        }
+        
+        .filter-btn:disabled {
+            background: #dadce0;
+            color: #5f6368;
+            border-color: #dadce0;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .filter-btn:disabled:hover {
+            background: #dadce0;
+            color: #5f6368;
+            border-color: #dadce0;
+            transform: none;
+            box-shadow: none;
+        }
+        
+        .reset-btn {
+            background: #ffffff;
+            color: #ea4335;
+            border: 1px solid #ea4335;
+            padding: 12px 24px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            text-transform: none;
+            letter-spacing: 0.2px;
+            min-width: 250px;
+            max-width: 250px;
+        }
+        
+        .reset-btn:hover {
+            background: #ea4335;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(234, 67, 53, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .export-btn {
+            background: #ffffff;
+            color: #34a853;
+            border: 1px solid #34a853;
+            padding: 12px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            text-transform: none;
+            letter-spacing: 0.2px;
+            min-width: 250px;
+            max-width: 250px;
+        }
+        
+        .export-btn:hover {
+            background: #34a853;
+            color: #ffffff;
+            box-shadow: 0 2px 8px rgba(52, 168, 83, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .export-btn:active {
+            transform: translateY(0);
+        }
+        
+        .action-buttons-section {
+            display: flex;
+            flex-direction: row;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        
+        .grouping-section {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            align-items: flex-end;
+            margin-top: 16px;
+        }
+        
+        .plot-buttons-section {
+            display: flex;
+            flex-direction: row;
+            gap: 16px;
+            justify-content: center;
+            margin-top: 16px;
+        }
+        
+        .section-divider {
+            height: 2px;
+            background: linear-gradient(90deg, transparent, #dadce0, #e8eaed, #dadce0, transparent);
+            margin: 24px 0;
+            border-radius: 1px;
+        }
+        
+        .interactive-plot-btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: #ffffff;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(102, 126, 234, 0.3);
+            text-transform: none;
+            letter-spacing: 0.3px;
+            min-width: 250px;
+            max-width: 250px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .interactive-plot-btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+        
+        .interactive-plot-btn:hover::before {
+            left: 100%;
+        }
+        
+        .interactive-plot-btn:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+        }
+        
+        .interactive-plot-btn:active {
+            transform: translateY(-1px);
+        }
+        
+        .her-btn {
+            background: linear-gradient(135deg, #f39c12 0%, #e67e22 100%);
+            box-shadow: 0 4px 15px rgba(243, 156, 18, 0.3);
+        }
+        
+        .her-btn:hover {
+            box-shadow: 0 8px 25px rgba(243, 156, 18, 0.4);
+        }
+        
+        .co2-btn {
+            background: linear-gradient(135deg, #4ecdc4 0%, #44a08d 100%);
+            box-shadow: 0 4px 15px rgba(78, 205, 196, 0.3);
+        }
+        
+        .co2-btn:hover {
+            box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
+        }
+        
+        .close-btn {
+            background: linear-gradient(135deg, #ff4757 0%, #c44569 100%) !important;
+            box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3) !important;
+        }
+        
+        .close-btn:hover {
+            box-shadow: 0 8px 25px rgba(255, 71, 87, 0.4) !important;
+        }
+        
+        .main-content {
+            padding: 32px;
+            background: #fafafa;
+            min-height: 700px;
+        }
+        
+        .data-section {
+            background: #ffffff;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+            transition: all 0.2s ease;
+            border: 1px solid #e8eaed;
+        }
+        
+        .data-section:hover {
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+        }
+        
+        .data-section h3 {
+            margin: 0;
+            padding: 20px 20px 16px 20px;
+            background: #f8f9fa;
+            color: #202124;
+            font-size: 1.1em;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            border-bottom: 1px solid #e8eaed;
+        }
+        
+        .data-content {
+            padding: 24px;
+            max-height: 600px;
+            overflow-y: auto;
+            background: #ffffff;
+        }
+        
+        .data-table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 14px;
+        }
+        
+        .data-table th {
+            background: #f8f9fa;
+            color: #202124;
+            font-weight: 500;
+            padding: 12px 8px;
+            text-align: left;
+            border-bottom: 2px solid #e8eaed;
+            position: sticky;
+            top: 0;
+            z-index: 10;
+            cursor: pointer;
+            user-select: none;
+            transition: background-color 0.2s ease;
+        }
+        
+        .data-table th:hover {
+            background: #e8eaed;
+        }
+        
+        .data-table th.sortable {
+            position: relative;
+        }
+        
+        .data-table th.sortable::after {
+            content: '↕';
+            position: absolute;
+            right: 8px;
+            opacity: 0.5;
+            font-size: 12px;
+        }
+        
+        .data-table th.sort-asc::after {
+            content: '↑';
+            opacity: 1;
+            color: #4285f4;
+        }
+        
+        .data-table th.sort-desc::after {
+            content: '↓';
+            opacity: 1;
+            color: #4285f4;
+        }
+        
+        .data-table td {
+            padding: 8px;
+            border-bottom: 1px solid #f1f3f4;
+            color: #5f6368;
+        }
+        
+        .data-table tr:hover {
+            background: #f8f9fa;
+        }
+        
+        .loading {
+            text-align: center;
+            color: #5f6368;
+            font-style: normal;
+            margin: 24px 0;
+            font-size: 14px;
+        }
+        
+        .info-panel {
+            margin: 16px;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 8px;
+            font-size: 14px;
+            color: #5f6368;
+            border: 1px solid #e8eaed;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+        }
+        
+        .info-panel strong {
+            color: #202124;
+            font-weight: 500;
+        }
+        
+        .main-panel {
+            background: #f8f9fa;
+            padding: 24px;
+            border-bottom: 1px solid #e8eaed;
+            display: flex;
+            gap: 32px;
+            align-items: stretch;
+        }
+        
+        .left-half {
+            flex: 1.2;
+            min-width: 0;
+        }
+        
+        .right-half {
+            flex: 1.8;
+            min-width: 0;
+            background: #ffffff;
+            border: 1px solid #e8eaed;
+            border-radius: 8px;
+            padding: 20px;
+            display: flex;
+            flex-direction: column;
+            color: #5f6368;
+            min-height: 400px;
+        }
+        
+        .periodic-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .periodic-table {
+            display: grid;
+            grid-template-columns: repeat(18, 1fr);
+            gap: 1px;
+            flex: 1;
+            overflow: hidden;
+            max-height: 100%;
+        }
+        
+        .element-block {
+            aspect-ratio: 1;
+            border: 1px solid #ddd;
+            border-radius: 3px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            background: #f8f9fa;
+            color: #666;
+            min-height: 0;
+            min-width: 0;
+        }
+        
+        .element-block:hover {
+            transform: scale(1.05);
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        
+        .element-block.enabled {
+            background: #e3f2fd;
+            color: #1976d2;
+            border-color: #1976d2;
+        }
+        
+        .element-block.enabled:hover {
+            background: #bbdefb;
+        }
+        
+        .element-block.selected {
+            background: #4caf50;
+            color: white;
+            border-color: #4caf50;
+        }
+        
+        .element-block.disabled {
+            background: #f5f5f5;
+            color: #ccc;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        
+        .element-symbol {
+            font-weight: bold;
+            font-size: 12px;
+        }
+        
+        .element-number {
+            font-size: 8px;
+            margin-top: 1px;
+        }
+        
+        .element-weight {
+            font-size: 7px;
+            margin-top: 1px;
+        }
+        
+
+        
+        .clear-all-btn {
+            background: #f44336;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .clear-all-btn:hover {
+            background: #d32f2f;
+        }
+        
+        .filter-only-btn {
+            background: #28a745;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .filter-only-btn:hover {
+            background: #218838;
+        }
+        
+        .filter-any-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            cursor: pointer;
+            transition: background-color 0.2s ease;
+        }
+        
+        .filter-any-btn:hover {
+            background: #138496;
+        }
+        
+        .stats-panel {
+            display: flex;
+            gap: 12px;
+            flex-wrap: nowrap;
+        }
+        
+        .stat-item {
+            background: #ffffff;
+            padding: 12px;
+            border-radius: 8px;
+            border: 1px solid #e8eaed;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            flex: 1;
+            text-align: center;
+        }
+        
+        .stat-value {
+            font-size: 1.5em;
+            font-weight: 500;
+            color: #4285f4;
+        }
+        
+        .stat-label {
+            font-size: 0.875em;
+            color: #5f6368;
+            margin-top: 4px;
+        }
+        
+        .column-controls {
+            background: #f8f9fa;
+            padding: 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            border: 1px solid #e8eaed;
+        }
+        
+        .column-controls-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 16px;
+        }
+        
+        .column-controls h4 {
+            margin: 0;
+            color: #202124;
+            font-size: 1em;
+            font-weight: 500;
+        }
+        
+        .column-controls-actions {
+            display: flex;
+            gap: 8px;
+        }
+        
+        .btn-small {
+            background: #ffffff;
+            color: #5f6368;
+            border: 1px solid #dadce0;
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-size: 0.875em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .btn-small:hover {
+            background: #f8f9fa;
+            border-color: #4285f4;
+            color: #4285f4;
+        }
+        
+        .column-selector {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+        }
+        
+
+        
+        .column-dropdown {
+            position: relative;
+            min-width: 250px;
+            max-width: 250px;
+        }
+        
+        .dropdown-toggle {
+            width: 100%;
+            background: #ffffff;
+            color: #202124;
+            border: 1px solid #dadce0;
+            padding: 8px 12px;
+            border-radius: 6px;
+            font-size: 0.875em;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            transition: all 0.2s ease;
+        }
+        
+        .dropdown-toggle:hover {
+            border-color: #4285f4;
+            box-shadow: 0 1px 3px rgba(66, 133, 244, 0.1);
+        }
+        
+        .dropdown-arrow {
+            transition: transform 0.2s ease;
+        }
+        
+        .dropdown-toggle.open .dropdown-arrow {
+            transform: rotate(180deg);
+        }
+        
+        .dropdown-content {
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: #ffffff;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+            max-height: 250px;
+            overflow-y: auto;
+            display: none;
+            margin-top: 4px;
+            width: 280px;
+        }
+        
+        /* Set specific z-index for dropdowns */
+        #batchDropdown {
+            z-index: 9999 !important;
+        }
+        
+        #groupingDropdown {
+            z-index: 1000 !important;
+        }
+        
+        #columnDropdown {
+            z-index: 10000 !important;
+        }
+        
+        .dropdown-content.show {
+            display: block;
+        }
+        
+        .dropdown-header {
+            padding: 8px 12px;
+            border-bottom: 1px solid #f1f3f4;
+            background: #f8f9fa;
+        }
+        
+        .select-all-label {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.875em;
+            font-weight: 500;
+            color: #202124;
+            cursor: pointer;
+            margin: 0;
+        }
+        
+        .select-all-label input[type="checkbox"] {
+            overflow: hidden;
+            padding: 0;
+            border: none;
+            opacity: 100;
+            width: 12px !important;
+            height: 12px !important;
+            accent-color: #4285f4;
+            flex-shrink: 0 !important;
+            margin-right: 8px !important;
+            min-width: 15px !important;
+            max-width: 15px !important;
+        }
+        
+        .column-list {
+            max-height: 200px;
+            overflow-y: auto;
+        }
+        
+        .column-item {
+            display: flex;
+            align-items: center;
+            padding: 6px 8px;
+            border-bottom: 1px solid #f1f3f4;
+            transition: background-color 0.2s ease;
+        }
+        
+        .column-item:hover {
+            background: #f8f9fa;
+        }
+        
+        .column-item:last-child {
+            border-bottom: none;
+        }
+        
+        .column-item input[type="checkbox"] {
+            width: 15px !important;
+            min-width: 15px !important;
+            max-width: 15px !important;
+            height: 12px;
+            accent-color: #4285f4;
+            cursor: pointer;
+            flex-shrink: 0;
+            margin-right: 0px;
+            overflow: hidden;
+            padding: 0;
+            border: none;
+            opacity: 100;
+        }
+        
+        .column-item label {
+            margin: 0;
+            color: #5f6368;
+            font-size: 0.85em;
+            cursor: pointer;
+            user-select: none;
+            flex: 1;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            min-width: 0;
+            padding-left: 4px;
+        }
+        
+        .column-item.hidden {
+            display: none;
+        }
+        
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 6px;
+        }
+        
+        ::-webkit-scrollbar-track {
+            background: #f1f3f4;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb {
+            background: #dadce0;
+            border-radius: 3px;
+        }
+        
+        ::-webkit-scrollbar-thumb:hover {
+            background: #bdc1c6;
+        }
+        
+        @media (max-width: 1200px) {
+            .main-panel {
+                flex-direction: column;
+                gap: 24px;
+            }
+            .controls {
+                flex-direction: column;
+                gap: 16px;
+            }
+            .buttons-section {
+                align-items: flex-start;
+            }
+            h1 {
+                font-size: 2em;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                margin: 16px;
+                border-radius: 8px;
+            }
+            h1 {
+                padding: 32px 24px 20px 24px;
+                font-size: 1.8em;
+            }
+            h3 {
+                padding: 0 24px 24px 24px;
+            }
+            .main-panel {
+                padding: 20px;
+                gap: 20px;
+            }
+            .main-content {
+                padding: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1><strong>OCx24 Dataset</strong></h1>
+        <h3>Dashboard to visualize the experimental dataset</h3>
+        
+        <!-- Main Panel with Two Halves -->
+        <div class="main-panel">
+            <!-- Left Half: Stats, Filters, and Buttons -->
+            <div class="left-half">
+                <!-- Stats Section -->
+                <div id="statsPanel" class="stats-panel"></div>
+                
+                <!-- Section Divider -->
+                <div class="section-divider"></div>
+                
+                <!-- Controls Section -->
+                <div class="controls">
+                    <!-- Filters Section -->
+                    <div class="filters-section">
+                        <div class="control-group">
+                            <label for="sourceFilter">Filter by Synthesis Method</label>
+                            <select id="sourceFilter" multiple>
+                                <option value="" selected>All</option>
+                            </select>
+                        </div>
+                        
+                        <div class="dropdown-filters">
+                            <div class="control-group">
+                                <label>Filter by Batch Number</label>
+                                <div class="column-dropdown">
+                                    <button class="dropdown-toggle" onclick="toggleBatchDropdown()">
+                                        <span id="batchSelectedCount">All batches selected</span>
+                                        <span class="dropdown-arrow">▼</span>
+                                    </button>
+                                    
+                                    <div id="batchDropdown" class="dropdown-content">
+                                        <div class="dropdown-header">
+                                            <label class="select-all-label">
+                                                <input type="checkbox" id="selectAllBatchCheckbox" onchange="toggleSelectAllBatch()">
+                                                Select All
+                                            </label>
+                                        </div>
+                                        <div id="batchList" class="column-list">
+                                            <!-- Batch checkboxes will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="control-group">
+                                <label>Filter by Reaction Type</label>
+                                <div class="column-dropdown">
+                                    <button class="dropdown-toggle" onclick="toggleReactionDropdown()">
+                                        <span id="reactionSelectedCount">All reactions</span>
+                                        <span class="dropdown-arrow">▼</span>
+                                    </button>
+                                    
+                                    <div id="reactionDropdown" class="dropdown-content">
+                                        <div class="dropdown-header">
+                                            <label class="select-all-label">
+                                                <input type="checkbox" id="selectAllReactionCheckbox" onchange="toggleSelectAllReaction()">
+                                                Select All
+                                            </label>
+                                        </div>
+                                        <div id="reactionList" class="column-list">
+                                            <!-- Reaction checkboxes will be populated by JavaScript -->
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Element Count Filter -->
+                    <div class="control-group element-count-control">
+                        <label>Filter by number of elements:</label>
+                        <div class="element-count-filters">
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="elementCount1" checked>
+                                1
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="elementCount2" checked>
+                                2
+                            </label>
+                            <label class="checkbox-label">
+                                <input type="checkbox" id="elementCount3" checked>
+                                3
+                            </label>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Section Divider -->
+                <div class="section-divider"></div>
+                
+                <!-- Grouping Configuration Section -->
+                <div class="grouping-section">
+                    <div class="control-group">
+                        <label for="groupingOptions">Average and Aggregate Data by</label>
+                        <div class="column-dropdown">
+                            <button class="dropdown-toggle" onclick="toggleGroupingDropdown()">
+                                <span id="groupingSelectedCount">Mandatory: reaction, current density</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </button>
+                            
+                            <div id="groupingDropdown" class="dropdown-content">
+                                <div class="dropdown-header">
+                                    <label class="select-all-label">
+                                        <input type="checkbox" id="selectAllGroupingCheckbox" onchange="toggleSelectAllGrouping()">
+                                        Select All
+                                    </label>
+                                </div>
+                                <div id="groupingList" class="column-list">
+                                    <!-- Grouping checkboxes will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <button id="averageBtn" class="filter-btn" onclick="averageByGrouping()">
+                            Aggregate Data
+                        </button>
+                    </div>
+                </div>
+                
+                <!-- Section Divider -->
+                <div class="section-divider"></div>
+                
+                <!-- Interactive Plot Buttons Section -->
+                <div class="plot-buttons-section">
+                    <button id="herPlotBtn" class="interactive-plot-btn her-btn" onclick="toggleHERPlot()">
+                        Build HER Plot
+                    </button>
+                    <button id="co2PlotBtn" class="interactive-plot-btn co2-btn" onclick="toggleCO2Plot()">
+                        Build CO2RR Plot
+                    </button>
+                </div>
+                
+                <!-- Action Buttons Section -->
+                <div class="action-buttons-section">
+                    <button id="exportBtn" class="export-btn" onclick="exportData()">
+                        ⊞ Export Data (CSV)
+                    </button>
+                    <button id="resetBtn" class="reset-btn" onclick="resetFilters()">
+                        ⟳ Reset Filters
+                    </button>
+                </div>
+                
+
+            </div>
+            
+                                <!-- Right Half: Periodic Table -->
+                    <div class="right-half">
+                        <div class="periodic-header">
+                            <label style="margin: 0;">Filter by Element</label>
+                            <div style="display: flex; gap: 8px;">
+                                <button id="filterOnlySelected" class="filter-only-btn" onclick="filterOnlySelected()" style="display: none;">Filter only selected</button>
+                                <button id="filterAnySelected" class="filter-any-btn" onclick="filterAnySelected()" style="display: none;">Filter any selected</button>
+                                <button id="clearAllElements" class="clear-all-btn" onclick="clearAllElements()" style="display: none;">Clear All</button>
+                            </div>
+                        </div>
+                        <div id="periodicTable" class="periodic-table">
+                            <!-- Periodic table will be generated here -->
+                        </div>
+                    </div>
+        </div>
+        
+        <div class="main-content">
+            <div class="data-section">
+                <h3>Filtered Data</h3>
+                <div class="data-content">
+                    <div id="loading" class="loading" style="display: none;">Loading data...</div>
+                    
+                    <!-- Column Controls -->
+                    <div class="column-controls">
+                        <div class="column-controls-header">
+                            <h4>Column Visibility</h4>
+                            <div class="column-controls-actions">
+                                <button class="btn-small" onclick="selectAllColumns()">Select All</button>
+                                <button class="btn-small" onclick="deselectAllColumns()">Deselect All</button>
+                                <button class="btn-small" onclick="resetToDefaultColumns()">Reset</button>
+                            </div>
+                        </div>
+                        
+                        <div class="column-selector">
+                            <div class="column-dropdown">
+                                <button class="dropdown-toggle" onclick="toggleColumnDropdown()">
+                                    <span id="selectedCount">All columns selected</span>
+                                    <span class="dropdown-arrow">▼</span>
+                                </button>
+                                
+                                <div id="columnDropdown" class="dropdown-content">
+                                    <div class="dropdown-header">
+                                        <label class="select-all-label">
+                                            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll()">
+                                            Select All
+                                        </label>
+                                    </div>
+                                    <div id="columnList" class="column-list">
+                                        <!-- Column checkboxes will be populated by JavaScript -->
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div id="dataTable"></div>
+                </div>
+            </div>
+        </div>
+        
+                    <div class="info-panel">
+                <strong>Filter Instructions:</strong><br>
+                • Use "Reset" to clear all filters and show all data<br>
+                • Export filtered data as CSV using the export button<br>
+                • You can aggregate by either target composition or xrf composition, but not both at the same time.
+                
+                <br><br><strong>Filter Options:</strong><br>
+                • <strong>UofT/VSP:</strong> Individual synthesis methods<br>
+                • <strong>Both (XRF compositions):</strong> Samples with same measured XRF composition in both UofT and VSP<br>
+                • <strong>Both (Target compositions):</strong> Samples with same target composition in both UofT and VSP<br>
+                • <strong>Either (UofT or VSP, All):</strong> All samples regardless of synthesis method
+            </div>
+    </div>
+    
+    <script>
+        // Global variables
+        let currentData = null;
+        let allData = null;
+        let averagedData = null; // Store original averaged data separately
+        let currentColumns = null;
+        let visibleColumns = null;
+        let displayedData = null; // Store the currently displayed data (including element filters)
+        let sortColumn = null;
+        let sortDirection = 'asc';
+        
+        // Grouping configuration
+        const mandatoryGroupingColumns = ['reaction', 'current density'];
+        const defaultOptionalColumns = ['source', 'xrf composition'];
+        let selectedGroupingColumns = new Set([...mandatoryGroupingColumns, ...defaultOptionalColumns]);
+        const optionalGroupingColumns = ['source', 'xrf composition', 'target composition', 'batch number', 'batch date'];
+        
+        // Load initial data
+        async function loadInitialData() {
+            try {
+                const response = await fetch('/get_data');
+                const result = await response.json();
+                allData = result.data;
+                currentData = allData;
+                currentColumns = result.columns; // Store column order
+                visibleColumns = [...currentColumns]; // All columns visible by default
+                
+                console.log('Initial load - currentColumns:', currentColumns);
+                console.log('Initial load - visibleColumns:', visibleColumns);
+                
+                displayData(currentData);
+                populateFilterOptions();
+                populateColumnControls();
+                populateGroupingOptions();
+                createPeriodicTable();
+                updateElementButtonStates(currentData);
+            } catch (error) {
+                console.error('Error loading initial data:', error);
+            }
+        }
+        
+        function populateFilterOptions() {
+            if (!allData || allData.length === 0) return;
+            
+            // Populate source filter with descriptive names
+            const sources = [...new Set(allData.map(row => row.source))].sort();
+            const sourceSelect = document.getElementById('sourceFilter');
+            sourceSelect.innerHTML = '';
+            
+            // Mapping of source values to display names
+            const sourceDisplayNames = {
+                'uoft': 'UofT (Chemical Reduction)',
+                'vsp': 'VSP (Spark Ablation)'
+            };
+            
+            // Define the desired order: UofT first, then VSP
+            const desiredOrder = ['uoft', 'vsp'];
+            
+            // Add options in the desired order
+            desiredOrder.forEach(source => {
+                if (sources.includes(source)) {
+                    const option = document.createElement('option');
+                    option.value = source;
+                    option.textContent = sourceDisplayNames[source] || source;
+                    sourceSelect.appendChild(option);
+                }
+            });
+            
+            // Add any remaining sources that weren't in the desired order
+            sources.forEach(source => {
+                if (!desiredOrder.includes(source)) {
+                    const option = document.createElement('option');
+                    option.value = source;
+                    option.textContent = sourceDisplayNames[source] || source;
+                    sourceSelect.appendChild(option);
+                }
+            });
+            
+            // Add the "both" option for samples made by both UofT and VSP
+            const bothOption = document.createElement('option');
+            bothOption.value = 'both';
+            bothOption.textContent = 'Both (XRF compositions made by UofT and VSP)';
+            sourceSelect.appendChild(bothOption);
+            
+            // Add the "both_target" option for samples made by both UofT and VSP based on target composition
+            const bothTargetOption = document.createElement('option');
+            bothTargetOption.value = 'both_target';
+            bothTargetOption.textContent = 'Both (Target compositions made by UofT and VSP)';
+            sourceSelect.appendChild(bothTargetOption);
+            
+            // Add the default "All" option at the end
+            const defaultOption = document.createElement('option');
+            defaultOption.value = '';
+            defaultOption.textContent = 'Either (UofT or VSP, All)';
+            defaultOption.selected = true;
+            sourceSelect.appendChild(defaultOption);
+            
+            // Add event listeners for automatic filtering
+            sourceSelect.addEventListener('change', function() {
+                updateBatchOptions();
+                setTimeout(applyFilters, 100); // Small delay to ensure batch options are updated
+            });
+            
+            // Add event listeners for element count filters
+            document.getElementById('elementCount1').addEventListener('change', applyFilters);
+            document.getElementById('elementCount2').addEventListener('change', applyFilters);
+            document.getElementById('elementCount3').addEventListener('change', applyFilters);
+            
+            // Populate batch filter with checkboxes
+            populateBatchCheckboxes();
+            
+            // Populate reaction filter with checkboxes
+            populateReactionList();
+        }
+        
+        function updateBatchOptions() {
+            // Repopulate batch checkboxes based on source filter
+            populateBatchCheckboxes();
+        }
+        
+        function populateBatchCheckboxes() {
+            if (!allData || allData.length === 0) {
+                console.log('No data available for batch checkboxes');
+                return;
+            }
+            
+            const sourceSelect = document.getElementById('sourceFilter');
+            if (!sourceSelect) {
+                console.error('Source filter element not found');
+                return;
+            }
+            
+            const selectedSources = Array.from(sourceSelect.selectedOptions).map(opt => opt.value).filter(v => v);
+            console.log('Populating batch checkboxes for sources:', selectedSources);
+            
+            // Get available batches based on source filter
+            let availableBatches;
+            if (selectedSources.length === 0) {
+                // If no sources selected, show all batches
+                availableBatches = [...new Set(allData.map(row => row['batch number']))].sort((a, b) => {
+                    const aNum = parseInt(a) || 0;
+                    const bNum = parseInt(b) || 0;
+                    if (aNum !== bNum) return aNum - bNum;
+                    return String(a).localeCompare(String(b));
+                });
+            } else {
+                // Handle special "both" options
+                if (selectedSources.includes('both') || selectedSources.includes('both_target')) {
+                    // Get all unique compositions that exist in both UofT and VSP sources
+                    const bothBatches = new Set();
+                    
+                    // Determine which composition type to use
+                    const useTargetComposition = selectedSources.includes('both_target');
+                    const compositionField = useTargetComposition ? 'target composition' : 'xrf composition';
+                    
+                    // Get all unique compositions
+                    const compositions = [...new Set(allData.map(row => row[compositionField]))];
+                    
+                    for (const composition of compositions) {
+                        // Check if this composition exists in both UofT and VSP sources
+                        const uoftSamples = allData.filter(row => row[compositionField] === composition && row.source === 'uoft');
+                        const vspSamples = allData.filter(row => row[compositionField] === composition && row.source === 'vsp');
+                        
+                        if (uoftSamples.length > 0 && vspSamples.length > 0) {
+                            // This composition exists in both sources, add ALL batch numbers from both sources
+                            uoftSamples.forEach(sample => bothBatches.add(sample['batch number']));
+                            vspSamples.forEach(sample => bothBatches.add(sample['batch number']));
+                        }
+                    }
+                    
+                    availableBatches = Array.from(bothBatches).sort((a, b) => {
+                        const aNum = parseInt(a) || 0;
+                        const bNum = parseInt(b) || 0;
+                        if (aNum !== bNum) return aNum - bNum;
+                        return String(a).localeCompare(String(b));
+                    });
+                } else {
+                    // Regular source filtering (exclude special 'both' options from the filter list)
+                    const sourceFilters = selectedSources.filter(s => !['both', 'both_target'].includes(s));
+                    if (sourceFilters.length > 0) {
+                        const filteredData = allData.filter(row => sourceFilters.includes(row.source));
+                        availableBatches = [...new Set(filteredData.map(row => row['batch number']))].sort((a, b) => {
+                            const aNum = parseInt(a) || 0;
+                            const bNum = parseInt(b) || 0;
+                            if (aNum !== bNum) return aNum - bNum;
+                            return String(a).localeCompare(String(b));
+                        });
+                    } else {
+                        // Only special 'both' options were selected but we already handled them above
+                        availableBatches = [];
+                    }
+                }
+            }
+            
+            const container = document.getElementById('batchList');
+            if (!container) {
+                console.error('Batch list container not found');
+                return;
+            }
+            container.innerHTML = '';
+            
+            availableBatches.forEach(batch => {
+                const batchItem = document.createElement('div');
+                batchItem.className = 'column-item';
+                batchItem.dataset.batch = batch;
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `batch-${batch}`;
+                checkbox.checked = true; // All selected by default
+                checkbox.onchange = () => {
+                    toggleBatch(batch, checkbox.checked);
+                };
+                
+                const label = document.createElement('label');
+                label.htmlFor = `batch-${batch}`;
+                label.textContent = batch;
+                
+                batchItem.appendChild(checkbox);
+                batchItem.appendChild(label);
+                container.appendChild(batchItem);
+            });
+            
+            updateBatchSelectedCount();
+            updateSelectAllBatchCheckbox();
+        }
+        
+        function toggleBatch(batch, isSelected) {
+            console.log('Batch toggled:', batch, 'isSelected:', isSelected);
+            try {
+                updateBatchSelectedCount();
+                updateSelectAllBatchCheckbox();
+                applyFilters();
+            } catch (error) {
+                console.error('Error in toggleBatch:', error);
+            }
+        }
+        
+        function updateBatchSelectedCount() {
+            const checkboxes = document.querySelectorAll('#batchList input[type="checkbox"]');
+            const checked = document.querySelectorAll('#batchList input[type="checkbox"]:checked');
+            const count = checked.length;
+            const total = checkboxes.length;
+            const countElement = document.getElementById('batchSelectedCount');
+            
+            if (!countElement) {
+                console.error('Batch selected count element not found');
+                return;
+            }
+            
+            if (count === total) {
+                countElement.textContent = 'All batches selected';
+            } else if (count === 0) {
+                countElement.textContent = 'No batches selected';
+            } else {
+                countElement.textContent = `${count} of ${total} batches selected`;
+            }
+        }
+        
+        function updateSelectAllBatchCheckbox() {
+            const selectAllCheckbox = document.getElementById('selectAllBatchCheckbox');
+            if (!selectAllCheckbox) {
+                console.error('Select all batch checkbox not found');
+                return;
+            }
+            
+            const checkboxes = document.querySelectorAll('#batchList input[type="checkbox"]');
+            const checked = document.querySelectorAll('#batchList input[type="checkbox"]:checked');
+            const total = checkboxes.length;
+            const selected = checked.length;
+            
+            if (selected === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (selected === total) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+                selectAllCheckbox.checked = false;
+            }
+        }
+        
+        function toggleSelectAllBatch() {
+            const selectAllCheckbox = document.getElementById('selectAllBatchCheckbox');
+            const checkboxes = document.querySelectorAll('#batchList input[type="checkbox"]');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            
+            updateBatchSelectedCount();
+            updateSelectAllBatchCheckbox();
+            applyFilters();
+        }
+        
+        function toggleBatchDropdown() {
+            const dropdown = document.getElementById('batchDropdown');
+            const toggle = dropdown.parentElement.querySelector('.dropdown-toggle');
+            
+            dropdown.classList.toggle('show');
+            toggle.classList.toggle('open');
+        }
+        
+        // Reaction dropdown functions
+        function populateReactionList() {
+            if (!currentData || currentData.length === 0) {
+                console.log('No data available for reaction list');
+                return;
+            }
+            
+            const reactionList = document.getElementById('reactionList');
+            if (!reactionList) {
+                console.error('Reaction list element not found');
+                return;
+            }
+            
+            // Get unique reactions from data
+            const reactions = [...new Set(currentData.map(row => row.reaction))].filter(reaction => reaction && reaction.trim() !== '');
+            reactions.sort();
+            
+            console.log('Unique reactions found:', reactions);
+            
+            // Clear existing content
+            reactionList.innerHTML = '';
+            
+            // Create checkboxes for each reaction
+            reactions.forEach(reaction => {
+                const label = document.createElement('label');
+                label.className = 'column-item';
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.value = reaction;
+                checkbox.checked = true; // Default to selected
+                checkbox.onchange = () => toggleReaction(reaction, checkbox.checked);
+                
+                const span = document.createElement('span');
+                span.textContent = reaction;
+                
+                label.appendChild(checkbox);
+                label.appendChild(span);
+                reactionList.appendChild(label);
+            });
+            
+            updateReactionSelectedCount();
+            updateSelectAllReactionCheckbox();
+        }
+        
+        function toggleReaction(reaction, isSelected) {
+            console.log('Reaction toggled:', reaction, 'isSelected:', isSelected);
+            try {
+                updateReactionSelectedCount();
+                updateSelectAllReactionCheckbox();
+                applyFilters();
+            } catch (error) {
+                console.error('Error in toggleReaction:', error);
+            }
+        }
+        
+        function updateReactionSelectedCount() {
+            const checkboxes = document.querySelectorAll('#reactionList input[type="checkbox"]');
+            const checked = document.querySelectorAll('#reactionList input[type="checkbox"]:checked');
+            const count = checked.length;
+            const total = checkboxes.length;
+            const countElement = document.getElementById('reactionSelectedCount');
+            
+            if (!countElement) {
+                console.error('Reaction selected count element not found');
+                return;
+            }
+            
+            if (count === total) {
+                countElement.textContent = 'All reactions';
+            } else if (count === 0) {
+                countElement.textContent = 'No reactions selected';
+            } else {
+                countElement.textContent = `${count} of ${total} reactions selected`;
+            }
+        }
+        
+        function updateSelectAllReactionCheckbox() {
+            const selectAllCheckbox = document.getElementById('selectAllReactionCheckbox');
+            const checkboxes = document.querySelectorAll('#reactionList input[type="checkbox"]');
+            const checked = document.querySelectorAll('#reactionList input[type="checkbox"]:checked');
+            
+            if (selectAllCheckbox && checkboxes.length > 0) {
+                selectAllCheckbox.checked = checked.length === checkboxes.length;
+                selectAllCheckbox.indeterminate = checked.length > 0 && checked.length < checkboxes.length;
+            }
+        }
+        
+        function toggleSelectAllReaction() {
+            const selectAllCheckbox = document.getElementById('selectAllReactionCheckbox');
+            const checkboxes = document.querySelectorAll('#reactionList input[type="checkbox"]');
+            
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = selectAllCheckbox.checked;
+            });
+            
+            updateReactionSelectedCount();
+            updateSelectAllReactionCheckbox();
+            applyFilters();
+        }
+        
+        function toggleReactionDropdown() {
+            const dropdown = document.getElementById('reactionDropdown');
+            const toggle = dropdown.parentElement.querySelector('.dropdown-toggle');
+            
+            dropdown.classList.toggle('show');
+            toggle.classList.toggle('open');
+        }
+        
+        function populateColumnControls() {
+            if (!currentColumns || currentColumns.length === 0) {
+                console.log('No columns available for controls');
+                return;
+            }
+            
+            console.log('Populating column controls with columns:', currentColumns);
+            console.log('Current visibleColumns:', visibleColumns);
+            
+            const container = document.getElementById('columnList');
+            container.innerHTML = '';
+            
+            currentColumns.forEach(column => {
+                const columnItem = document.createElement('div');
+                columnItem.className = 'column-item';
+                columnItem.dataset.column = column;
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `col-${column}`;
+                checkbox.checked = visibleColumns.includes(column);
+                console.log(`Setting checkbox for ${column}: ${checkbox.checked}`);
+                checkbox.onchange = () => {
+                    console.log(`Checkbox changed for ${column}: ${checkbox.checked}`);
+                    toggleColumn(column, checkbox.checked);
+                };
+                
+                const label = document.createElement('label');
+                label.htmlFor = `col-${column}`;
+                label.textContent = column;
+                
+                columnItem.appendChild(checkbox);
+                columnItem.appendChild(label);
+                container.appendChild(columnItem);
+            });
+            
+            console.log('Created', currentColumns.length, 'column items');
+            updateSelectedCount();
+            updateSelectAllCheckbox();
+        }
+        
+        function toggleColumn(column, isVisible) {
+            console.log('Toggling column:', column, 'isVisible:', isVisible);
+            console.log('Current visibleColumns before:', visibleColumns);
+            
+            if (isVisible) {
+                if (!visibleColumns.includes(column)) {
+                    // Find the position of this column in the original order
+                    const originalIndex = currentColumns.indexOf(column);
+                    if (originalIndex !== -1) {
+                        // Insert the column at its original position
+                        visibleColumns.splice(originalIndex, 0, column);
+                        console.log('Added column at original position:', column, 'at index:', originalIndex);
+                    } else {
+                        visibleColumns.push(column);
+                        console.log('Added column at end (not found in original):', column);
+                    }
+                }
+            } else {
+                visibleColumns = visibleColumns.filter(col => col !== column);
+                console.log('Removed column:', column);
+            }
+            
+            console.log('VisibleColumns after:', visibleColumns);
+            updateSelectedCount();
+            updateSelectAllCheckbox();
+            
+            // Force refresh the table immediately
+            const tableContainer = document.getElementById('dataTable');
+            if (tableContainer) {
+                const table = createDataTable(currentData);
+                tableContainer.innerHTML = table;
+            }
+        }
+        
+        function updateSelectedCount() {
+            const count = visibleColumns.length;
+            const total = currentColumns.length;
+            const countElement = document.getElementById('selectedCount');
+            
+            if (count === total) {
+                countElement.textContent = 'All columns selected';
+            } else if (count === 0) {
+                countElement.textContent = 'No columns selected';
+            } else {
+                countElement.textContent = `${count} of ${total} columns selected`;
+            }
+        }
+        
+        function updateSelectAllCheckbox() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            const total = currentColumns.length;
+            const selected = visibleColumns.length;
+            
+            if (selected === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (selected === total) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+                selectAllCheckbox.checked = false;
+            }
+        }
+        
+        function toggleSelectAll() {
+            const selectAllCheckbox = document.getElementById('selectAllCheckbox');
+            if (selectAllCheckbox.checked) {
+                selectAllColumns();
+            } else {
+                deselectAllColumns();
+            }
+        }
+        
+        function selectAllColumns() {
+            // Maintain original column order
+            visibleColumns = [...currentColumns];
+            updateAllCheckboxes();
+            updateSelectedCount();
+            updateSelectAllCheckbox();
+            
+            // Force refresh the table immediately
+            const tableContainer = document.getElementById('dataTable');
+            if (tableContainer) {
+                const table = createDataTable(currentData);
+                tableContainer.innerHTML = table;
+            }
+        }
+        
+        function deselectAllColumns() {
+            visibleColumns = [];
+            updateAllCheckboxes();
+            updateSelectedCount();
+            updateSelectAllCheckbox();
+            displayData(currentData);
+        }
+        
+        function resetToDefaultColumns() {
+            // Reset to all columns visible in original order
+            visibleColumns = [...currentColumns];
+            updateAllCheckboxes();
+            updateSelectedCount();
+            updateSelectAllCheckbox();
+            
+            // Force refresh the table immediately
+            const tableContainer = document.getElementById('dataTable');
+            if (tableContainer) {
+                const table = createDataTable(currentData);
+                tableContainer.innerHTML = table;
+            }
+        }
+        
+        function updateAllCheckboxes() {
+            currentColumns.forEach(column => {
+                const checkbox = document.getElementById(`col-${column}`);
+                if (checkbox) {
+                    checkbox.checked = visibleColumns.includes(column);
+                }
+            });
+        }
+        
+        function toggleColumnDropdown() {
+            const dropdown = document.getElementById('columnDropdown');
+            const toggle = document.querySelector('.dropdown-toggle');
+            
+            console.log('Toggling dropdown, current state:', dropdown.classList.contains('show'));
+            
+            dropdown.classList.toggle('show');
+            toggle.classList.toggle('open');
+        }
+        
+        // Grouping functions
+        function populateGroupingOptions() {
+            const container = document.getElementById('groupingList');
+            if (!container) return;
+            
+            container.innerHTML = '';
+            
+            optionalGroupingColumns.forEach(column => {
+                const groupingItem = document.createElement('div');
+                groupingItem.className = 'column-item';
+                groupingItem.dataset.column = column;
+                
+                const checkbox = document.createElement('input');
+                checkbox.type = 'checkbox';
+                checkbox.id = `grouping-${column}`;
+                checkbox.checked = selectedGroupingColumns.has(column);
+                checkbox.onchange = () => {
+                    toggleGroupingColumn(column, checkbox.checked);
+                };
+                
+                const label = document.createElement('label');
+                label.htmlFor = `grouping-${column}`;
+                label.textContent = column;
+                
+                groupingItem.appendChild(checkbox);
+                groupingItem.appendChild(label);
+                container.appendChild(groupingItem);
+            });
+            
+            updateGroupingSelectedCount();
+            updateSelectAllGroupingCheckbox();
+        }
+        
+        function toggleGroupingColumn(column, isSelected) {
+            if (isSelected) {
+                // Prevent selecting both composition columns at the same time
+                if (column === 'xrf composition') {
+                    selectedGroupingColumns.delete('target composition');
+                    // Update the target composition checkbox
+                    const targetCheckbox = document.getElementById('grouping-target composition');
+                    if (targetCheckbox) {
+                        targetCheckbox.checked = false;
+                    }
+                } else if (column === 'target composition') {
+                    selectedGroupingColumns.delete('xrf composition');
+                    // Update the xrf composition checkbox
+                    const xrfCheckbox = document.getElementById('grouping-xrf composition');
+                    if (xrfCheckbox) {
+                        xrfCheckbox.checked = false;
+                    }
+                }
+                selectedGroupingColumns.add(column);
+            } else {
+                selectedGroupingColumns.delete(column);
+            }
+            
+            updateGroupingSelectedCount();
+            updateSelectAllGroupingCheckbox();
+        }
+        
+        function updateGroupingSelectedCount() {
+            const optionalSelected = Array.from(selectedGroupingColumns).filter(col => 
+                optionalGroupingColumns.includes(col)
+            );
+            const count = optionalSelected.length;
+            const total = optionalGroupingColumns.length;
+            const countElement = document.getElementById('groupingSelectedCount');
+            
+            if (!countElement) return;
+            
+            let text = '';
+            if (count > 0) {
+                text += ` | Selected: ${count} of ${total}`;
+            }
+            countElement.textContent = text;
+        }
+        
+        function updateSelectAllGroupingCheckbox() {
+            const selectAllCheckbox = document.getElementById('selectAllGroupingCheckbox');
+            if (!selectAllCheckbox) return;
+            
+            const optionalSelected = Array.from(selectedGroupingColumns).filter(col => 
+                optionalGroupingColumns.includes(col)
+            );
+            const total = optionalGroupingColumns.length;
+            const selected = optionalSelected.length;
+            
+            if (selected === 0) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = false;
+            } else if (selected === total) {
+                selectAllCheckbox.indeterminate = false;
+                selectAllCheckbox.checked = true;
+            } else {
+                selectAllCheckbox.indeterminate = true;
+                selectAllCheckbox.checked = false;
+            }
+        }
+        
+        function toggleSelectAllGrouping() {
+            const selectAllCheckbox = document.getElementById('selectAllGroupingCheckbox');
+            const checkboxes = document.querySelectorAll('#groupingList input[type="checkbox"]');
+            
+            if (selectAllCheckbox.checked) {
+                // When selecting all, prioritize 'xrf composition' over 'target composition'
+                checkboxes.forEach(checkbox => {
+                    const column = checkbox.id.replace('grouping-', '');
+                    if (column === 'target composition') {
+                        // Skip target composition if xrf composition is available
+                        checkbox.checked = false;
+                        selectedGroupingColumns.delete(column);
+                    } else {
+                        checkbox.checked = true;
+                        selectedGroupingColumns.add(column);
+                    }
+                });
+            } else {
+                // When deselecting all, just clear everything
+                checkboxes.forEach(checkbox => {
+                    checkbox.checked = false;
+                    const column = checkbox.id.replace('grouping-', '');
+                    selectedGroupingColumns.delete(column);
+                });
+            }
+            
+            updateGroupingSelectedCount();
+            updateSelectAllGroupingCheckbox();
+        }
+        
+        function toggleGroupingDropdown() {
+            const dropdown = document.getElementById('groupingDropdown');
+            const toggle = dropdown.parentElement.querySelector('.dropdown-toggle');
+            
+            dropdown.classList.toggle('show');
+            toggle.classList.toggle('open');
+        }
+        
+
+        
+        // Close dropdown when clicking outside
+        document.addEventListener('click', function(event) {
+            const columnDropdown = document.getElementById('columnDropdown');
+            const columnToggle = document.querySelector('.column-controls .dropdown-toggle');
+            
+            if (!columnDropdown.contains(event.target) && !columnToggle.contains(event.target)) {
+                columnDropdown.classList.remove('show');
+                columnToggle.classList.remove('open');
+            }
+            
+            const batchDropdown = document.getElementById('batchDropdown');
+            const batchToggle = batchDropdown.parentElement.querySelector('.dropdown-toggle');
+            
+            if (batchDropdown && batchToggle && !batchDropdown.contains(event.target) && !batchToggle.contains(event.target)) {
+                batchDropdown.classList.remove('show');
+                batchToggle.classList.remove('open');
+            }
+            
+            const reactionDropdown = document.getElementById('reactionDropdown');
+            const reactionToggle = reactionDropdown.parentElement.querySelector('.dropdown-toggle');
+            
+            if (reactionDropdown && reactionToggle && !reactionDropdown.contains(event.target) && !reactionToggle.contains(event.target)) {
+                reactionDropdown.classList.remove('show');
+                reactionToggle.classList.remove('open');
+            }
+            
+            const groupingDropdown = document.getElementById('groupingDropdown');
+            const groupingToggle = groupingDropdown.parentElement.querySelector('.dropdown-toggle');
+            
+            if (groupingDropdown && groupingToggle && !groupingDropdown.contains(event.target) && !groupingToggle.contains(event.target)) {
+                groupingDropdown.classList.remove('show');
+                groupingToggle.classList.remove('open');
+            }
+        });
+        
+        function sortData(column) {
+            if (sortColumn === column) {
+                sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
+            } else {
+                sortColumn = column;
+                sortDirection = 'asc';
+            }
+            
+            // Sort the data
+            const sortedData = [...currentData].sort((a, b) => {
+                let aVal = a[column];
+                let bVal = b[column];
+                
+                // Handle null/undefined values
+                if (aVal === null || aVal === undefined) aVal = '';
+                if (bVal === null || bVal === undefined) bVal = '';
+                
+                // Try to convert to numbers for numeric sorting
+                const aNum = parseFloat(aVal);
+                const bNum = parseFloat(bVal);
+                
+                if (!isNaN(aNum) && !isNaN(bNum)) {
+                    return sortDirection === 'asc' ? aNum - bNum : bNum - aNum;
+                } else {
+                    // String sorting
+                    const aStr = String(aVal).toLowerCase();
+                    const bStr = String(bVal).toLowerCase();
+                    if (sortDirection === 'asc') {
+                        return aStr.localeCompare(bStr);
+                    } else {
+                        return bStr.localeCompare(aStr);
+                    }
+                }
+            });
+            
+            currentData = sortedData;
+            displayData(currentData);
+        }
+        
+        async function applyFilters() {
+            const loadingDiv = document.getElementById('loading');
+            loadingDiv.style.display = 'block';
+            
+            try {
+                // Collect filter values
+                const selectedBatches = Array.from(document.querySelectorAll('#batchList input[type="checkbox"]:checked')).map(cb => cb.id.replace('batch-', ''));
+                const selectedReactions = Array.from(document.querySelectorAll('#reactionList input[type="checkbox"]:checked')).map(cb => cb.value);
+                
+                const sourceOptions = Array.from(document.getElementById('sourceFilter').selectedOptions).map(opt => opt.value);
+                console.log('DEBUG: All selected source options:', sourceOptions);
+                
+                // Collect element count filter values
+                const selectedElementCounts = [];
+                if (document.getElementById('elementCount1').checked) selectedElementCounts.push(1);
+                if (document.getElementById('elementCount2').checked) selectedElementCounts.push(2);
+                if (document.getElementById('elementCount3').checked) selectedElementCounts.push(3);
+                
+                const filters = {
+                    source: sourceOptions.filter(v => v),
+                    batch: selectedBatches, // Send empty array if no batches selected
+                    reaction: selectedReactions, // Send empty array if no reactions selected
+                    elementCount: selectedElementCounts // Send array of selected element counts
+                };
+                
+                console.log('DEBUG: Filtered source options:', filters.source);
+                console.log('DEBUG: Is "both" in the filtered options?', filters.source.includes('both'));
+                
+                console.log('Applying filters:', filters);
+                console.log('Selected batches:', selectedBatches);
+                console.log('Number of selected batches:', selectedBatches.length);
+                console.log('Selected reactions:', selectedReactions);
+                console.log('Number of selected reactions:', selectedReactions.length);
+                
+                // Send filters and current data to backend
+                // If we have averaged data, use that as the base for filtering
+                const dataToSend = averagedData || currentData;
+                const response = await fetch('/filter_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        filters: filters,
+                        currentData: dataToSend
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                
+                const result = await response.json();
+                currentData = result.data;
+                currentColumns = result.columns; // Update column order
+                visibleColumns = [...currentColumns]; // Reset visible columns
+                
+                console.log('Filtered data length:', currentData.length);
+                
+                // Re-apply element filters if any are selected
+                if (selectedElements.size > 0) {
+                    filterDataByElements();
+                } else {
+                    displayData(currentData);
+                }
+                populateColumnControls();
+                
+            } catch (error) {
+                console.error('Error applying filters:', error);
+                loadingDiv.textContent = 'Error applying filters. Please try again.';
+            } finally {
+                loadingDiv.style.display = 'none';
+            }
+        }
+        
+        async function resetFilters() {
+            try {
+                // Clear all filter inputs and reset to "All" selections
+                const sourceSelect = document.getElementById('sourceFilter');
+                
+                // Reset source filter to "All" selection (empty value option)
+                // Find the option with empty value (which is the "All" option)
+                const allOption = Array.from(sourceSelect.options).find(option => option.value === '');
+                if (allOption) {
+                    allOption.selected = true;
+                    // Deselect all other options
+                    Array.from(sourceSelect.options).forEach(option => {
+                        if (option.value !== '') {
+                            option.selected = false;
+                        }
+                    });
+                }
+                
+                // Reset element count checkboxes to all selected
+                document.getElementById('elementCount1').checked = true;
+                document.getElementById('elementCount2').checked = true;
+                document.getElementById('elementCount3').checked = true;
+                
+                // Fetch original data from backend
+                const response = await fetch('/get_data');
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Update global variables with original data
+                    allData = result.data;
+                    currentData = allData;
+                    averagedData = null; // Clear averaged data
+                    currentColumns = result.columns;
+                    visibleColumns = [...currentColumns]; // Reset visible columns
+                    
+                    // Reset sorting
+                    sortColumn = null;
+                    sortDirection = 'asc';
+                    
+                    // Reset batch checkboxes to show all batches selected
+                    populateBatchCheckboxes();
+                    
+                    // Clear element filters
+                    selectedElements.clear();
+                    updateSelectedElementsDisplay();
+                    
+                    // Display the original data
+                    displayData(currentData);
+                    populateColumnControls();
+                    
+                    // Re-enable the averaging button and reset grouping options
+                    const averageBtn = document.getElementById('averageBtn');
+                    averageBtn.textContent = 'Aggregate Data';
+                    averageBtn.disabled = false;
+                    
+                    // Reset grouping options to default
+                    selectedGroupingColumns = new Set([...mandatoryGroupingColumns, ...defaultOptionalColumns]);
+                    populateGroupingOptions();
+                    
+                    console.log('Reset to original data - rows:', currentData.length, 'columns:', currentColumns.length);
+                } else {
+                    console.error('Failed to fetch original data:', result.error);
+                    alert('Failed to reset data. Please try again.');
+                }
+            } catch (error) {
+                console.error('Error resetting filters:', error);
+                alert('Error resetting data. Please try again.');
+            }
+        }
+        
+        function displayData(data) {
+            if (!data || data.length === 0) {
+                document.getElementById('dataTable').innerHTML = '<p>No data matches the current filters.</p>';
+                document.getElementById('statsPanel').innerHTML = '';
+                displayedData = []; // Store empty array for export
+                return;
+            }
+            
+            console.log('Displaying data with visibleColumns:', visibleColumns);
+            
+            // Store the currently displayed data for export
+            displayedData = data;
+            
+            // Update stats panel
+            updateStatsPanel(data);
+            
+            // Update element button states
+            updateElementButtonStates(data);
+            
+            // Create table
+            const table = createDataTable(data);
+            document.getElementById('dataTable').innerHTML = table;
+        }
+        
+        function updateStatsPanel(data) {
+            // Calculate stats from the current filtered data
+            const stats = {
+                totalRows: data.length,
+                uniqueSources: [...new Set(data.map(row => row.source))].length,
+                uniqueBatches: [...new Set(data.map(row => row['batch number']))].length,
+                uniqueMaterials: [...new Set(data.map(row => row['xrf composition']))].length
+            };
+            
+            document.getElementById('statsPanel').innerHTML = `
+                <div class="stat-item">
+                    <div class="stat-value">${stats.totalRows}</div>
+                    <div class="stat-label">Total Experiments</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.uniqueSources}</div>
+                    <div class="stat-label">Unique Sources</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.uniqueBatches}</div>
+                    <div class="stat-label">Unique Batches</div>
+                </div>
+                <div class="stat-item">
+                    <div class="stat-value">${stats.uniqueMaterials}</div>
+                    <div class="stat-label">Unique Materials</div>
+                </div>
+            `;
+        }
+        
+        function createDataTable(data) {
+            if (!data || data.length === 0) return '<p>No data available.</p>';
+            
+            // Use visible columns only
+            const columns = visibleColumns || currentColumns || Object.keys(data[0]);
+            console.log('Creating table with columns:', columns);
+            console.log('Total columns available:', currentColumns ? currentColumns.length : 0);
+            console.log('Visible columns count:', visibleColumns ? visibleColumns.length : 0);
+            
+            const maxRows = 100; // Limit display for performance
+            const displayData = data.slice(0, maxRows);
+            
+            let table = '<table class="data-table"><thead><tr>';
+            columns.forEach(col => {
+                const sortClass = sortColumn === col ? `sort-${sortDirection}` : 'sortable';
+                table += `<th class="${sortClass}" onclick="sortData('${col}')">${col}</th>`;
+            });
+            table += '</tr></thead><tbody>';
+            
+            displayData.forEach(row => {
+                table += '<tr>';
+                columns.forEach(col => {
+                    const value = row[col];
+                    const displayValue = value !== null && value !== undefined ? value : '';
+                    table += `<td>${displayValue}</td>`;
+                });
+                table += '</tr>';
+            });
+            
+            table += '</tbody></table>';
+            
+            if (data.length > maxRows) {
+                table += `<p><em>Showing first ${maxRows} of ${data.length} rows. Use filters to narrow down results.</em></p>`;
+            }
+            
+            // Add debug info
+            table += `<p><small>Debug: Showing ${columns.length} columns out of ${currentColumns ? currentColumns.length : 0} total</small></p>`;
+            
+            return table;
+        }
+        
+        // Function to average data by selected grouping options
+        async function averageByGrouping() {
+            try {
+                const averageBtn = document.getElementById('averageBtn');
+                averageBtn.textContent = 'Grouping...';
+                averageBtn.disabled = true;
+                
+                // Get selected grouping columns
+                const groupingColumns = Array.from(selectedGroupingColumns);
+                console.log('Grouping by columns:', groupingColumns);
+                
+                // Send request to average data with selected grouping columns
+                const response = await fetch('/average_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        groupingColumns: groupingColumns
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Averaging failed');
+                }
+                
+                const result = await response.json();
+                currentData = result.data;
+                averagedData = result.data; // Store the original averaged data
+                currentColumns = result.columns; // Update column order
+                visibleColumns = [...currentColumns]; // Reset visible columns
+                
+                console.log('Averaged data length:', currentData.length);
+                
+                // Re-apply element filters if any are selected
+                if (selectedElements.size > 0) {
+                    filterDataByElements();
+                } else {
+                    displayData(currentData);
+                }
+                populateColumnControls();
+                
+                // Update filter options to reflect the new averaged data
+                updateBatchOptions();
+                populateBatchCheckboxes();
+                
+                // Keep button disabled after averaging
+                averageBtn.textContent = 'Aggregate Data';
+                averageBtn.disabled = true;
+                
+            } catch (error) {
+                console.error('Averaging error:', error);
+                alert('Averaging failed. Please try again.');
+                
+                // Reset button
+                const averageBtn = document.getElementById('averageBtn');
+                averageBtn.textContent = '📊 Average by XRF Composition';
+                averageBtn.disabled = false;
+            }
+        }
+        
+        // Function to export data as CSV
+        async function exportData() {
+            try {
+                const exportBtn = document.getElementById('exportBtn');
+                exportBtn.textContent = '⊞ Exporting...';
+                exportBtn.disabled = true;
+                
+                // Send currently displayed data to export (includes all filters)
+                const response = await fetch('/export_csv', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        data: displayedData,
+                        columns: currentColumns
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error('Export failed');
+                }
+                
+                // Get the CSV data
+                const csvData = await response.text();
+                
+                // Create and download the file
+                const blob = new Blob([csvData], { type: 'text/csv' });
+                const url = window.URL.createObjectURL(blob);
+                const a = document.createElement('a');
+                a.href = url;
+                
+                // Generate descriptive filename based on current state
+                let filename = 'ocx24_data';
+                if (averagedData) {
+                    filename += '_averaged';
+                }
+                if (selectedElements.size > 0) {
+                    filename += '_filtered_elements';
+                }
+                filename += '.csv';
+                
+                a.download = filename;
+                document.body.appendChild(a);
+                a.click();
+                window.URL.revokeObjectURL(url);
+                document.body.removeChild(a);
+                
+                // Reset button
+                exportBtn.textContent = '⊞ Export Data (CSV)';
+                exportBtn.disabled = false;
+                
+            } catch (error) {
+                console.error('Export error:', error);
+                alert('Export failed. Please try again.');
+                
+                // Reset button
+                const exportBtn = document.getElementById('exportBtn');
+                exportBtn.textContent = '⊞ Export Data (CSV)';
+                exportBtn.disabled = false;
+            }
+        }
+        
+        // Test function to verify column toggle is working
+        function testColumnToggle() {
+            console.log('Testing column toggle functionality...');
+            console.log('Current visibleColumns:', visibleColumns);
+            console.log('Current columns:', currentColumns);
+            
+            const checkboxes = document.querySelectorAll('.column-item input[type="checkbox"]');
+            console.log('Found checkboxes:', checkboxes.length);
+            
+            checkboxes.forEach((checkbox, index) => {
+                const columnName = checkbox.id.replace('col-', '');
+                console.log(`Checkbox ${index}: ${columnName}, checked: ${checkbox.checked}`);
+            });
+        }
+        
+        // Manual test function - run this from console to test
+        function manualTestToggle(columnName) {
+            console.log('Manual test: toggling column', columnName);
+            const checkbox = document.getElementById(`col-${columnName}`);
+            if (checkbox) {
+                checkbox.checked = !checkbox.checked;
+                toggleColumn(columnName, checkbox.checked);
+            } else {
+                console.log('Checkbox not found for column:', columnName);
+            }
+        }
+
+        // Periodic table data with correct positions
+        const periodicTableData = [
+            // Period 1
+            { symbol: 'H', number: 1, weight: 1.008, row: 1, col: 1 },
+            { symbol: 'He', number: 2, weight: 4.003, row: 1, col: 18 },
+            
+            // Period 2
+            { symbol: 'Li', number: 3, weight: 6.941, row: 2, col: 1 },
+            { symbol: 'Be', number: 4, weight: 9.012, row: 2, col: 2 },
+            { symbol: 'B', number: 5, weight: 10.811, row: 2, col: 13 },
+            { symbol: 'C', number: 6, weight: 12.011, row: 2, col: 14 },
+            { symbol: 'N', number: 7, weight: 14.007, row: 2, col: 15 },
+            { symbol: 'O', number: 8, weight: 15.999, row: 2, col: 16 },
+            { symbol: 'F', number: 9, weight: 18.998, row: 2, col: 17 },
+            { symbol: 'Ne', number: 10, weight: 20.180, row: 2, col: 18 },
+            
+            // Period 3
+            { symbol: 'Na', number: 11, weight: 22.990, row: 3, col: 1 },
+            { symbol: 'Mg', number: 12, weight: 24.305, row: 3, col: 2 },
+            { symbol: 'Al', number: 13, weight: 26.982, row: 3, col: 13 },
+            { symbol: 'Si', number: 14, weight: 28.085, row: 3, col: 14 },
+            { symbol: 'P', number: 15, weight: 30.974, row: 3, col: 15 },
+            { symbol: 'S', number: 16, weight: 32.065, row: 3, col: 16 },
+            { symbol: 'Cl', number: 17, weight: 35.453, row: 3, col: 17 },
+            { symbol: 'Ar', number: 18, weight: 39.948, row: 3, col: 18 },
+            
+            // Period 4
+            { symbol: 'K', number: 19, weight: 39.098, row: 4, col: 1 },
+            { symbol: 'Ca', number: 20, weight: 40.078, row: 4, col: 2 },
+            { symbol: 'Sc', number: 21, weight: 44.956, row: 4, col: 3 },
+            { symbol: 'Ti', number: 22, weight: 47.867, row: 4, col: 4 },
+            { symbol: 'V', number: 23, weight: 50.942, row: 4, col: 5 },
+            { symbol: 'Cr', number: 24, weight: 51.996, row: 4, col: 6 },
+            { symbol: 'Mn', number: 25, weight: 54.938, row: 4, col: 7 },
+            { symbol: 'Fe', number: 26, weight: 55.845, row: 4, col: 8 },
+            { symbol: 'Co', number: 27, weight: 58.933, row: 4, col: 9 },
+            { symbol: 'Ni', number: 28, weight: 58.693, row: 4, col: 10 },
+            { symbol: 'Cu', number: 29, weight: 63.546, row: 4, col: 11 },
+            { symbol: 'Zn', number: 30, weight: 65.409, row: 4, col: 12 },
+            { symbol: 'Ga', number: 31, weight: 69.723, row: 4, col: 13 },
+            { symbol: 'Ge', number: 32, weight: 72.640, row: 4, col: 14 },
+            { symbol: 'As', number: 33, weight: 74.922, row: 4, col: 15 },
+            { symbol: 'Se', number: 34, weight: 78.960, row: 4, col: 16 },
+            { symbol: 'Br', number: 35, weight: 79.904, row: 4, col: 17 },
+            { symbol: 'Kr', number: 36, weight: 83.798, row: 4, col: 18 },
+            
+            // Period 5
+            { symbol: 'Rb', number: 37, weight: 85.468, row: 5, col: 1 },
+            { symbol: 'Sr', number: 38, weight: 87.620, row: 5, col: 2 },
+            { symbol: 'Y', number: 39, weight: 88.906, row: 5, col: 3 },
+            { symbol: 'Zr', number: 40, weight: 91.224, row: 5, col: 4 },
+            { symbol: 'Nb', number: 41, weight: 92.906, row: 5, col: 5 },
+            { symbol: 'Mo', number: 42, weight: 95.960, row: 5, col: 6 },
+            { symbol: 'Tc', number: 43, weight: 98.000, row: 5, col: 7 },
+            { symbol: 'Ru', number: 44, weight: 101.070, row: 5, col: 8 },
+            { symbol: 'Rh', number: 45, weight: 102.906, row: 5, col: 9 },
+            { symbol: 'Pd', number: 46, weight: 106.420, row: 5, col: 10 },
+            { symbol: 'Ag', number: 47, weight: 107.868, row: 5, col: 11 },
+            { symbol: 'Cd', number: 48, weight: 112.411, row: 5, col: 12 },
+            { symbol: 'In', number: 49, weight: 114.818, row: 5, col: 13 },
+            { symbol: 'Sn', number: 50, weight: 118.710, row: 5, col: 14 },
+            { symbol: 'Sb', number: 51, weight: 121.760, row: 5, col: 15 },
+            { symbol: 'Te', number: 52, weight: 127.600, row: 5, col: 16 },
+            { symbol: 'I', number: 53, weight: 126.905, row: 5, col: 17 },
+            { symbol: 'Xe', number: 54, weight: 130.293, row: 5, col: 18 },
+            
+            // Period 6
+            { symbol: 'Cs', number: 55, weight: 132.905, row: 6, col: 1 },
+            { symbol: 'Ba', number: 56, weight: 137.327, row: 6, col: 2 },
+            { symbol: 'La', number: 57, weight: 138.905, row: 6, col: 3 },
+            { symbol: 'Hf', number: 72, weight: 178.490, row: 6, col: 4 },
+            { symbol: 'Ta', number: 73, weight: 180.948, row: 6, col: 5 },
+            { symbol: 'W', number: 74, weight: 183.840, row: 6, col: 6 },
+            { symbol: 'Re', number: 75, weight: 186.207, row: 6, col: 7 },
+            { symbol: 'Os', number: 76, weight: 190.230, row: 6, col: 8 },
+            { symbol: 'Ir', number: 77, weight: 192.217, row: 6, col: 9 },
+            { symbol: 'Pt', number: 78, weight: 195.084, row: 6, col: 10 },
+            { symbol: 'Au', number: 79, weight: 196.967, row: 6, col: 11 },
+            { symbol: 'Hg', number: 80, weight: 200.590, row: 6, col: 12 },
+            { symbol: 'Tl', number: 81, weight: 204.383, row: 6, col: 13 },
+            { symbol: 'Pb', number: 82, weight: 207.200, row: 6, col: 14 },
+            { symbol: 'Bi', number: 83, weight: 208.980, row: 6, col: 15 },
+            { symbol: 'Po', number: 84, weight: 209.000, row: 6, col: 16 },
+            { symbol: 'At', number: 85, weight: 210.000, row: 6, col: 17 },
+            { symbol: 'Rn', number: 86, weight: 222.000, row: 6, col: 18 },
+            
+            // Period 7
+            { symbol: 'Fr', number: 87, weight: 223.000, row: 7, col: 1 },
+            { symbol: 'Ra', number: 88, weight: 226.000, row: 7, col: 2 },
+            { symbol: 'Ac', number: 89, weight: 227.000, row: 7, col: 3 },
+            { symbol: 'Rf', number: 104, weight: 267.000, row: 7, col: 4 },
+            { symbol: 'Db', number: 105, weight: 268.000, row: 7, col: 5 },
+            { symbol: 'Sg', number: 106, weight: 269.000, row: 7, col: 6 },
+            { symbol: 'Bh', number: 107, weight: 270.000, row: 7, col: 7 },
+            { symbol: 'Hs', number: 108, weight: 269.000, row: 7, col: 8 },
+            { symbol: 'Mt', number: 109, weight: 278.000, row: 7, col: 9 },
+            { symbol: 'Ds', number: 110, weight: 281.000, row: 7, col: 10 },
+            { symbol: 'Rg', number: 111, weight: 282.000, row: 7, col: 11 },
+            { symbol: 'Cn', number: 112, weight: 285.000, row: 7, col: 12 },
+            { symbol: 'Nh', number: 113, weight: 286.000, row: 7, col: 13 },
+            { symbol: 'Fl', number: 114, weight: 289.000, row: 7, col: 14 },
+            { symbol: 'Mc', number: 115, weight: 290.000, row: 7, col: 15 },
+            { symbol: 'Lv', number: 116, weight: 293.000, row: 7, col: 16 },
+            { symbol: 'Ts', number: 117, weight: 294.000, row: 7, col: 17 },
+            { symbol: 'Og', number: 118, weight: 294.000, row: 7, col: 18 },
+            
+            // Lanthanides (f-block, row 8)
+            { symbol: 'Ce', number: 58, weight: 140.116, row: 8, col: 4 },
+            { symbol: 'Pr', number: 59, weight: 140.908, row: 8, col: 5 },
+            { symbol: 'Nd', number: 60, weight: 144.242, row: 8, col: 6 },
+            { symbol: 'Pm', number: 61, weight: 145.000, row: 8, col: 7 },
+            { symbol: 'Sm', number: 62, weight: 150.360, row: 8, col: 8 },
+            { symbol: 'Eu', number: 63, weight: 151.964, row: 8, col: 9 },
+            { symbol: 'Gd', number: 64, weight: 157.250, row: 8, col: 10 },
+            { symbol: 'Tb', number: 65, weight: 158.925, row: 8, col: 11 },
+            { symbol: 'Dy', number: 66, weight: 162.500, row: 8, col: 12 },
+            { symbol: 'Ho', number: 67, weight: 164.930, row: 8, col: 13 },
+            { symbol: 'Er', number: 68, weight: 167.259, row: 8, col: 14 },
+            { symbol: 'Tm', number: 69, weight: 168.934, row: 8, col: 15 },
+            { symbol: 'Yb', number: 70, weight: 173.054, row: 8, col: 16 },
+            { symbol: 'Lu', number: 71, weight: 174.967, row: 8, col: 17 },
+            
+            // Actinides (f-block, row 9)
+            { symbol: 'Th', number: 90, weight: 232.038, row: 9, col: 4 },
+            { symbol: 'Pa', number: 91, weight: 231.036, row: 9, col: 5 },
+            { symbol: 'U', number: 92, weight: 238.029, row: 9, col: 6 },
+            { symbol: 'Np', number: 93, weight: 237.000, row: 9, col: 7 },
+            { symbol: 'Pu', number: 94, weight: 244.000, row: 9, col: 8 },
+            { symbol: 'Am', number: 95, weight: 243.000, row: 9, col: 9 },
+            { symbol: 'Cm', number: 96, weight: 247.000, row: 9, col: 10 },
+            { symbol: 'Bk', number: 97, weight: 247.000, row: 9, col: 11 },
+            { symbol: 'Cf', number: 98, weight: 251.000, row: 9, col: 12 },
+            { symbol: 'Es', number: 99, weight: 252.000, row: 9, col: 13 },
+            { symbol: 'Fm', number: 100, weight: 257.000, row: 9, col: 14 },
+            { symbol: 'Md', number: 101, weight: 258.000, row: 9, col: 15 },
+            { symbol: 'No', number: 102, weight: 259.000, row: 9, col: 16 },
+            { symbol: 'Lr', number: 103, weight: 262.000, row: 9, col: 17 }
+        ];
+
+        let selectedElements = new Set();
+        let strictFilterMode = false; // Track whether we're in strict filtering mode
+        let anyFilterMode = false; // Track whether we're in "any" filtering mode
+
+        function createPeriodicTable() {
+            const table = document.getElementById('periodicTable');
+            table.innerHTML = '';
+
+            // Create proper periodic table structure
+            // Period 1: H (1,1) to He (1,18)
+            // Period 2: Li (2,1) to Ne (2,18) with gap
+            // Period 3: Na (3,1) to Ar (3,18) with gap
+            // Period 4: K (4,1) to Kr (4,18)
+            // Period 5: Rb (5,1) to Xe (5,18)
+            // Period 6: Cs (6,1) to Rn (6,18) with Lanthanides
+            // Period 7: Fr (7,1) to Og (7,18) with Actinides
+            // Row 8: Lanthanides (Ce to Lu)
+            // Row 9: Actinides (Th to Lr)
+
+            const maxRow = 9;
+            const maxCol = 18;
+
+            for (let row = 1; row <= maxRow; row++) {
+                for (let col = 1; col <= maxCol; col++) {
+                    const element = periodicTableData.find(el => el.row === row && el.col === col);
+                    const block = document.createElement('div');
+                    block.className = 'element-block';
+                    block.dataset.symbol = element ? element.symbol : '';
+                    block.dataset.number = element ? element.number : '';
+                    
+                    if (element) {
+                        block.innerHTML = `
+                            <div class="element-symbol">${element.symbol}</div>
+                            <div class="element-number">${element.number}</div>
+                            <div class="element-weight">${element.weight}</div>
+                        `;
+                        block.addEventListener('click', () => toggleElement(element.symbol));
+                    } else {
+                        // Handle special cases for proper periodic table layout
+                        if (row === 2 && col >= 3 && col <= 12) {
+                            block.style.visibility = 'hidden';
+                        } else if (row === 3 && col >= 3 && col <= 12) {
+                            block.style.visibility = 'hidden';
+                        } else if (row === 6 && col >= 3 && col <= 12) {
+                            block.style.visibility = 'hidden';
+                        } else if (row === 7 && col >= 3 && col <= 12) {
+                            block.style.visibility = 'hidden';
+                        } else if (row === 8 && (col < 4 || col > 17)) {
+                            block.style.visibility = 'hidden';
+                        } else if (row === 9 && (col < 4 || col > 17)) {
+                            block.style.visibility = 'hidden';
+                        } else {
+                            block.style.visibility = 'hidden';
+                        }
+                    }
+                    
+                    table.appendChild(block);
+                }
+            }
+        }
+
+        function toggleElement(symbol) {
+            // Check if the element is disabled
+            const block = document.querySelector(`[data-symbol="${symbol}"]`);
+            if (block && block.classList.contains('disabled')) {
+                return; // Don't do anything if disabled
+            }
+            
+            if (selectedElements.has(symbol)) {
+                selectedElements.delete(symbol);
+            } else {
+                selectedElements.add(symbol);
+            }
+            strictFilterMode = false; // Reset to normal filtering when toggling elements
+            anyFilterMode = false;
+            updateSelectedElementsDisplay();
+            filterDataByElements();
+        }
+
+        function updateSelectedElementsDisplay() {
+            const clearAllBtn = document.getElementById('clearAllElements');
+            const filterOnlyBtn = document.getElementById('filterOnlySelected');
+            const filterAnyBtn = document.getElementById('filterAnySelected');
+            
+            if (selectedElements.size > 0) {
+                clearAllBtn.style.display = 'block';
+                filterOnlyBtn.style.display = 'block';
+                filterAnyBtn.style.display = 'block';
+            } else {
+                clearAllBtn.style.display = 'none';
+                filterOnlyBtn.style.display = 'none';
+                filterAnyBtn.style.display = 'none';
+            }
+        }
+
+        function clearAllElements() {
+            selectedElements.clear();
+            strictFilterMode = false;
+            anyFilterMode = false;
+            updateSelectedElementsDisplay();
+            filterDataByElements();
+        }
+        
+        function filterOnlySelected() {
+            strictFilterMode = true;
+            anyFilterMode = false;
+            filterDataByElements();
+        }
+        
+        function filterAnySelected() {
+            strictFilterMode = false;
+            anyFilterMode = true;
+            filterDataByElements();
+        }
+
+
+
+        function filterDataByElements() {
+            if (selectedElements.size === 0) {
+                // No elements selected, show current filtered data (from source/batch filters)
+                displayData(currentData);
+                return;
+            }
+
+            // Start with currentData (which already has source/batch filters applied)
+            let filteredData = currentData;
+            
+            if (strictFilterMode) {
+                // Strict filtering: only compositions with exactly the selected elements
+                filteredData = filteredData.filter(row => {
+                    // Check that all selected elements have non-zero values
+                    const selectedElementsArray = Array.from(selectedElements);
+                    const hasAllSelected = selectedElementsArray.every(symbol => {
+                        const value = parseFloat(row[symbol]) || 0;
+                        return value > 0;
+                    });
+                    
+                    if (!hasAllSelected) return false;
+                    
+                    // Check that no other elements have non-zero values
+                    // Get all element columns (assuming they are single-letter symbols)
+                    const elementColumns = Object.keys(row).filter(key => 
+                        key.length <= 2 && /^[A-Z][a-z]?$/.test(key) && 
+                        !['sample id', 'source', 'batch number', 'batch date', 'target composition', 'xrf composition', 'rep', 'reaction', 'current density', 'voltage', 'fe_h2', 'fe_co', 'fe_ch4', 'fe_c2h4', 'fe_gas_total', 'fe_liquid'].includes(key)
+                    );
+                    
+                    const hasOnlySelected = elementColumns.every(symbol => {
+                        if (selectedElements.has(symbol)) {
+                            return true; // This element is selected, so it should have non-zero value
+                        } else {
+                            const value = parseFloat(row[symbol]) || 0;
+                            return value === 0; // This element is not selected, so it should be zero
+                        }
+                    });
+                    
+                    return hasOnlySelected;
+                });
+            } else if (anyFilterMode) {
+                // Any filtering: show rows that contain ANY of the selected elements
+                filteredData = filteredData.filter(row => {
+                    const selectedElementsArray = Array.from(selectedElements);
+                    return selectedElementsArray.some(symbol => {
+                        const value = parseFloat(row[symbol]) || 0;
+                        return value > 0;
+                    });
+                });
+            } else {
+                // Normal filtering: each selected element must have non-zero values
+                Array.from(selectedElements).forEach(symbol => {
+                    filteredData = filteredData.filter(row => {
+                        const value = parseFloat(row[symbol]) || 0;
+                        return value > 0;
+                    });
+                });
+            }
+
+            displayData(filteredData);
+        }
+
+        function updateElementButtonStates(data) {
+            const blocks = document.querySelectorAll('.element-block');
+            
+            blocks.forEach(block => {
+                const symbol = block.dataset.symbol;
+                if (!symbol) return;
+
+                // Check if this element column exists in the data
+                const hasColumn = data.length > 0 && symbol in data[0];
+                
+                if (!hasColumn) {
+                    block.className = 'element-block disabled';
+                    return;
+                }
+
+                // Check if this element has any non-zero values in current filtered data
+                const hasNonZeroValues = data.some(row => {
+                    const value = parseFloat(row[symbol]) || 0;
+                    return value > 0;
+                });
+
+                if (hasNonZeroValues) {
+                    if (selectedElements.has(symbol)) {
+                        block.className = 'element-block selected';
+                    } else {
+                        block.className = 'element-block enabled';
+                    }
+                } else {
+                    block.className = 'element-block disabled';
+                }
+            });
+        }
+        
+        // Interactive Plot Functions
+        let herServerRunning = false;
+        let co2ServerRunning = false;
+        
+        async function checkHERServerStatus() {
+            try {
+                const response = await fetch('/her_server_status');
+                const data = await response.json();
+                herServerRunning = data.running;
+                updateHERButtonState();
+            } catch (error) {
+                console.error('Error checking HER server status:', error);
+                herServerRunning = false;
+                updateHERButtonState();
+            }
+        }
+        
+        function updateHERButtonState() {
+            const herBtn = document.getElementById('herPlotBtn');
+            if (herServerRunning) {
+                herBtn.textContent = 'Close HER Plot';
+                herBtn.classList.add('close-btn');
+            } else {
+                herBtn.textContent = 'Build HER Plot';
+                herBtn.classList.remove('close-btn');
+            }
+        }
+        
+        async function toggleHERPlot() {
+            if (herServerRunning) {
+                // Close the HER plot server
+                console.log('Closing HER Performance Plot...');
+                try {
+                    const response = await fetch('/close_her_plot');
+                    const data = await response.json();
+                    if (data.success) {
+                        herServerRunning = false;
+                        updateHERButtonState();
+                        console.log('HER plot server closed successfully');
+                    } else {
+                        console.error('Failed to close HER plot server:', data.message);
+                        alert('Failed to close HER plot server: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error closing HER plot server:', error);
+                    alert('Error closing HER plot server: ' + error.message);
+                }
+            } else {
+                // Open the HER plot with current data
+                console.log('Building HER Performance Plot...');
+                
+                // Get current data (filtered/averaged)
+                let plotData = null;
+                if (displayedData && displayedData.length > 0) {
+                    plotData = displayedData;
+                } else if (currentData && currentData.length > 0) {
+                    plotData = currentData;
+                } else if (allData && allData.length > 0) {
+                    plotData = allData;
+                }
+                
+                // Save current data and open HER plot
+                if (plotData) {
+                    // Save current data to a file that the plot server can read
+                    fetch('/save_current_data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            data: plotData,
+                            plot_type: 'her'
+                        })
+                    });
+                    console.log('Saving current data for HER plot:', plotData.length, 'rows');
+                }
+                let plotUrl = '/her_plot';
+                
+                window.open(plotUrl, '_blank');
+                // Check status after a delay to update button state
+                setTimeout(checkHERServerStatus, 5000);
+            }
+        }
+        
+        async function checkCO2ServerStatus() {
+            try {
+                const response = await fetch('/co2_server_status');
+                const data = await response.json();
+                co2ServerRunning = data.running;
+                updateCO2ButtonState();
+            } catch (error) {
+                console.error('Error checking CO2RR server status:', error);
+                co2ServerRunning = false;
+                updateCO2ButtonState();
+            }
+        }
+        
+        function updateCO2ButtonState() {
+            const co2Btn = document.getElementById('co2PlotBtn');
+            if (co2ServerRunning) {
+                co2Btn.textContent = 'Close CO2RR Plot';
+                co2Btn.classList.add('close-btn');
+            } else {
+                co2Btn.textContent = 'Build CO2RR Plot';
+                co2Btn.classList.remove('close-btn');
+            }
+        }
+        
+        async function toggleCO2Plot() {
+            if (co2ServerRunning) {
+                // Close the CO2RR plot server
+                console.log('Closing CO2RR Performance Plot...');
+                try {
+                    const response = await fetch('/close_co2_plot');
+                    const data = await response.json();
+                    if (data.success) {
+                        co2ServerRunning = false;
+                        updateCO2ButtonState();
+                        console.log('CO2RR plot server closed successfully');
+                    } else {
+                        console.error('Failed to close CO2RR plot server:', data.message);
+                        alert('Failed to close CO2RR plot server: ' + data.message);
+                    }
+                } catch (error) {
+                    console.error('Error closing CO2RR plot server:', error);
+                    alert('Error closing CO2RR plot server: ' + error.message);
+                }
+            } else {
+                // Open the CO2RR plot with current data
+                console.log('Building CO2RR Performance Plot...');
+                
+                // Get current data (filtered/averaged)
+                let plotData = null;
+                if (displayedData && displayedData.length > 0) {
+                    plotData = displayedData;
+                } else if (currentData && currentData.length > 0) {
+                    plotData = currentData;
+                } else if (allData && allData.length > 0) {
+                    plotData = allData;
+                }
+                
+                // Save current data and open CO2RR plot
+                if (plotData) {
+                    // Save current data to a file that the plot server can read
+                    fetch('/save_current_data', {
+                        method: 'POST',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify({
+                            data: plotData,
+                            plot_type: 'co2'
+                        })
+                    });
+                    console.log('Saving current data for CO2RR plot:', plotData.length, 'rows');
+                }
+                let plotUrl = '/co2_plot';
+                
+                window.open(plotUrl, '_blank');
+                // Check status after a delay to update button state
+                setTimeout(checkCO2ServerStatus, 5000);
+            }
+        }
+        
+        // Initialize the dashboard
+        loadInitialData();
+        
+        // Check server statuses on page load
+        checkHERServerStatus();
+        checkCO2ServerStatus();
+        
+        // Test column toggle after a short delay
+        setTimeout(testColumnToggle, 2000);
+    </script>
+    
+
+</body>
+</html>
