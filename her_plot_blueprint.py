@@ -908,7 +908,10 @@ def her_plot_main():
                         marker: {{
                             size: 12,
                             color: color,
-                            line: {{width: 1.5, color: 'rgba(0,0,0,0.3)'}},
+                            line: {{
+                                width: colorData.map(row => clickedPoints.has(row['sample id']) ? 4 : 1.5),
+                                color: colorData.map(row => clickedPoints.has(row['sample id']) ? '#00FF00' : 'rgba(0,0,0,0.3)')
+                            }},
                             symbol: 'circle',
                             opacity: 0.9
                         }},
@@ -954,7 +957,10 @@ def her_plot_main():
                         marker: {{
                             size: 12,
                             color: color,
-                            line: {{width: 1.5, color: 'rgba(0,0,0,0.3)'}},
+                            line: {{
+                                width: colorData.map(row => clickedPoints.has(row['sample id']) ? 4 : 1.5),
+                                color: colorData.map(row => clickedPoints.has(row['sample id']) ? '#00FF00' : 'rgba(0,0,0,0.3)')
+                            }},
                             symbol: 'diamond',
                             opacity: 0.9
                         }},
@@ -1117,11 +1123,17 @@ def her_plot_main():
                         if (sampleId) {{
                             console.log('Sample ID:', sampleId);
                             
+                            // Add to clicked points set
+                            clickedPoints.add(sampleId);
+                            
                             // Store clicked point data for XRD legend
                             clickedPointData = {{
                                 source: pointData.source ? pointData.source[pointIndex] : 'Unknown',
                                 'xrf composition': pointData['xrf composition'] ? pointData['xrf composition'][pointIndex] : 'Unknown'
                             }};
+                            
+                            // Update plot to show clicked point with red border
+                            updateClickedPointVisual(sampleId);
                             
                             // Load XRD data for the clicked sample
                             loadXrdPlot(sampleId);
@@ -1132,6 +1144,28 @@ def her_plot_main():
                 }});
                 
                 console.log('Plot created successfully');
+            }}
+            
+            // Function to update visual appearance of clicked points
+            function updateClickedPointVisual(sampleId) {{
+                // Get current plot data
+                const plotDiv = document.getElementById('plot');
+                const plotData = plotDiv.data;
+                
+                // Update marker borders for clicked points
+                plotData.forEach(trace => {{
+                    if (trace.customdata) {{
+                        trace.marker.line.width = trace.customdata.map(id => 
+                            clickedPoints.has(id) ? 4 : 1.5
+                        );
+                        trace.marker.line.color = trace.customdata.map(id => 
+                            clickedPoints.has(id) ? '#00FF00' : 'rgba(0,0,0,0.3)'
+                        );
+                    }}
+                }});
+                
+                // Redraw the plot
+                Plotly.redraw('plot');
             }}
             
             // Function to export data as CSV
@@ -1190,6 +1224,7 @@ def her_plot_main():
             let accumulatedPoints = [];
             let accumulatedXrdData = [];
             let clickedPointData = null;
+            let clickedPoints = new Set(); // Track clicked points by sample ID
             
             // Initialize XRD plot (empty)
             document.getElementById('xrdPlotContent').innerHTML = '';
@@ -1344,7 +1379,21 @@ def her_plot_main():
             // Function to reset XRD accumulation
             function resetXrdPlot() {{
                 accumulatedXrdData = [];
+                clickedPoints.clear(); // Clear clicked points
                 document.getElementById('xrdPlotContent').innerHTML = '';
+                
+                // Update plot to remove red borders
+                const plotDiv = document.getElementById('plot');
+                if (plotDiv && plotDiv.data) {{
+                    plotDiv.data.forEach(trace => {{
+                        if (trace.marker && trace.marker.line) {{
+                            trace.marker.line.width = 1.5;
+                            trace.marker.line.color = 'rgba(0,0,0,0.3)';
+                        }}
+                    }});
+                    Plotly.redraw('plot');
+                }}
+                
                 console.log('XRD accumulation reset');
             }}
             

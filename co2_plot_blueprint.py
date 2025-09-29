@@ -990,6 +990,7 @@ def co2_plot_main():
             let clickedPointData = null; // Store the clicked point data globally
             let accumulatedPoints = []; // Store multiple clicked points for comparison
             let accumulatedXrdData = []; // Store multiple XRD datasets for comparison
+            let clickedPoints = new Set(); // Track clicked points by sample ID
             
             // Initialize with data (filtered at default current density)
             const initialData = {json.dumps(filter_df_by_current_density(df_with_pca, default_current_density).to_dict('records'))};
@@ -1135,6 +1136,7 @@ def co2_plot_main():
                     const y = [];
                     const text = [];
                     const errorArray = [];
+                    const customdata = [];
                     
                     rows.forEach(row => {{
                         const xv = Number(row[xCol]);
@@ -1153,12 +1155,15 @@ def co2_plot_main():
                             }}
                             errorArray.push(errorValue);
                             
+                            // Add sample ID to customdata for visual feedback
+                            customdata.push(row['sample id'] || 'Unknown');
+                            
                             text.push(
                                 `Source: ${{row['source']}}<br>Sample ID: ${{row['sample id'] || 'N/A'}}<br>Batch: ${{row['batch number'] || 'N/A'}} (${{row['batch date'] || 'N/A'}})<br>Chemical Formula: ${{row['xrf composition'] || row['target composition'] || 'N/A'}}<br>${{currentMode === 'current_density' ? 'Current Density: ' + currentDensityOptions[currentDensityIndex] + ' mA/cm²' : 'Voltage: ' + currentVoltage.toFixed(2) + 'V'}}<br>X: ${{xv.toFixed(3)}}<br>Y: ${{yv.toFixed(3)}}`
                             );
                         }}
                     }});
-                    return {{ x, y, text, errors: errorArray }};
+                    return {{ x, y, text, errors: errorArray, customdata }};
                 }}
                 
                 // UOFT points (circles)
@@ -1208,14 +1213,18 @@ def co2_plot_main():
                                 marker: {{
                                     size: 12,
                                     color: color,
-                                    line: {{ width: 1.5, color: 'rgba(0,0,0,0.3)' }},
+                                    line: {{
+                                        width: d.customdata.map(id => clickedPoints.has(id) ? 4 : 1.5),
+                                        color: d.customdata.map(id => clickedPoints.has(id) ? '#00FF00' : 'rgba(0,0,0,0.3)')
+                                    }},
                                     symbol: 'circle',
                                     opacity: 0.9
                                 }},
                                 text: d.text,
                                 hoverinfo: 'text',
                                 showlegend: true,
-                                name: 'UofT (chemical reduction)'
+                                name: 'UofT (chemical reduction)',
+                                customdata: d.customdata
                             }};
                             
                             // Add error bars for fe_ columns or voltage columns (only if checkbox is checked)
@@ -1243,7 +1252,10 @@ def co2_plot_main():
                             marker: {{
                                 size: 12,
                                 color: uoftData.map(row => row[zCol]),
-                                line: {{ width: 1.5, color: 'rgba(0,0,0,0.3)' }},
+                                line: {{
+                                    width: d.customdata.map(id => clickedPoints.has(id) ? 4 : 1.5),
+                                    color: d.customdata.map(id => clickedPoints.has(id) ? 'red' : 'rgba(0,0,0,0.3)')
+                                }},
                                 symbol: 'circle',
                                 opacity: 0.9,
                                 coloraxis: 'coloraxis'
@@ -1251,7 +1263,8 @@ def co2_plot_main():
                             text: d.text,
                             hoverinfo: 'text',
                             showlegend: false,
-                            name: 'UofT (chemical reduction)'
+                            name: 'UofT (chemical reduction)',
+                            customdata: d.customdata
                         }};
                         
                         // Add error bars for fe_ columns or voltage columns (only if checkbox is checked)
@@ -1315,14 +1328,18 @@ def co2_plot_main():
                                 marker: {{
                                     size: 12,
                                     color: color,
-                                    line: {{ width: 1.5, color: 'rgba(0,0,0,0.3)' }},
+                                    line: {{
+                                        width: d.customdata.map(id => clickedPoints.has(id) ? 4 : 1.5),
+                                        color: d.customdata.map(id => clickedPoints.has(id) ? '#00FF00' : 'rgba(0,0,0,0.3)')
+                                    }},
                                     symbol: 'diamond',
                                     opacity: 0.9
                                 }},
                                 text: d.text,
                                 hoverinfo: 'text',
                                 showlegend: true,
-                                name: 'VSP (spark ablation)'
+                                name: 'VSP (spark ablation)',
+                                customdata: d.customdata
                             }};
                             
                             // Add error bars for fe_ columns or voltage columns (only if checkbox is checked)
@@ -1350,7 +1367,10 @@ def co2_plot_main():
                             marker: {{
                                 size: 12,
                                 color: vspData.map(row => row[zCol]),
-                                line: {{ width: 1.5, color: 'rgba(0,0,0,0.3)' }},
+                                line: {{
+                                    width: d.customdata.map(id => clickedPoints.has(id) ? 4 : 1.5),
+                                    color: d.customdata.map(id => clickedPoints.has(id) ? 'red' : 'rgba(0,0,0,0.3)')
+                                }},
                                 symbol: 'diamond',
                                 opacity: 0.9,
                                 coloraxis: 'coloraxis'
@@ -1358,7 +1378,8 @@ def co2_plot_main():
                             text: d.text,
                             hoverinfo: 'text',
                             showlegend: false,
-                            name: 'VSP (spark ablation)'
+                            name: 'VSP (spark ablation)',
+                            customdata: d.customdata
                         }};
                         
                         // Add error bars for fe_ columns or voltage columns (only if checkbox is checked)
@@ -1619,6 +1640,14 @@ def co2_plot_main():
                     }};
                     
                     console.log('Clicked point data stored:', clickedPointData);
+                    console.log('Sample ID extracted:', sampleId);
+                    console.log('XRF Composition:', xrfComposition);
+                    
+                    // Add to clicked points set for visual feedback
+                    clickedPoints.add(sampleId);
+                    
+                    // Update plot to show clicked point with red border
+                    updateClickedPointVisual(sampleId);
                     
                     // Add to accumulated points if it's a new point
                     addPointToAccumulation(clickedPointData);
@@ -1627,6 +1656,7 @@ def co2_plot_main():
                     showAccumulatedPoints(xCol, yCol);
                     
                     // Load XRD data for the clicked sample
+                    console.log('About to load XRD for sample:', sampleId);
                     loadXrdPlot(sampleId);
                     
                     console.log('Point clicked successfully!');
@@ -1843,7 +1873,25 @@ def co2_plot_main():
                 clickedPointData = null;
                 document.querySelector('.plot-section:nth-child(2) .header-row h3').textContent = 'Point Analysis';
                 document.getElementById('pointPlotContent').innerHTML = '';
-                console.log('Point plot reset');
+                
+                // Also reset XRD data and clicked points
+                accumulatedXrdData = [];
+                clickedPoints.clear(); // Clear clicked points
+                document.getElementById('xrdPlotContent').innerHTML = '';
+                
+                // Update plot to remove green borders
+                const plotDiv = document.getElementById('plot');
+                if (plotDiv && plotDiv.data) {{
+                    plotDiv.data.forEach(trace => {{
+                        if (trace.marker && trace.marker.line) {{
+                            trace.marker.line.width = 1.5;
+                            trace.marker.line.color = 'rgba(0,0,0,0.3)';
+                        }}
+                    }});
+                    Plotly.redraw('plot');
+                }}
+                
+                console.log('Point Analysis and XRD reset');
             }}
             
             // Function to update the second plot when mode or parameters change
@@ -2019,8 +2067,50 @@ def co2_plot_main():
             // Function to reset XRD accumulation
             function resetXrdPlot() {{
                 accumulatedXrdData = [];
+                clickedPoints.clear(); // Clear clicked points
                 document.getElementById('xrdPlotContent').innerHTML = '';
-                console.log('XRD accumulation reset');
+                
+                // Also reset point analysis
+                accumulatedPoints = [];
+                clickedPointData = null;
+                document.querySelector('.plot-section:nth-child(2) .header-row h3').textContent = 'Point Analysis';
+                document.getElementById('pointPlotContent').innerHTML = '';
+                
+                // Update plot to remove green borders
+                const plotDiv = document.getElementById('plot');
+                if (plotDiv && plotDiv.data) {{
+                    plotDiv.data.forEach(trace => {{
+                        if (trace.marker && trace.marker.line) {{
+                            trace.marker.line.width = 1.5;
+                            trace.marker.line.color = 'rgba(0,0,0,0.3)';
+                        }}
+                    }});
+                    Plotly.redraw('plot');
+                }}
+                
+                console.log('XRD and Point Analysis reset');
+            }}
+            
+            // Function to update visual appearance of clicked points
+            function updateClickedPointVisual(sampleId) {{
+                // Get current plot data
+                const plotDiv = document.getElementById('plot');
+                const plotData = plotDiv.data;
+                
+                // Update marker borders for clicked points
+                plotData.forEach(trace => {{
+                    if (trace.customdata) {{
+                        trace.marker.line.width = trace.customdata.map(id => 
+                            clickedPoints.has(id) ? 4 : 1.5
+                        );
+                    trace.marker.line.color = trace.customdata.map(id => 
+                        clickedPoints.has(id) ? '#00FF00' : 'rgba(0,0,0,0.3)'
+                    );
+                    }}
+                }});
+                
+                // Redraw the plot efficiently
+                Plotly.redraw('plot');
             }}
             
             // Function to export data as CSV
@@ -2282,7 +2372,7 @@ def get_xrd_data():
         if xrd_data is None:
             return jsonify({
                 'success': False, 
-                'error': f'No XRD data found for sample {sample_id} ({data_type})',
+                'error': f'No XRD data found/collected for sample: {sample_id}',
                 'sample_id': sample_id,
                 'data_type': data_type
             }), 404
