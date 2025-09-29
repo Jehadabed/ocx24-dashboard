@@ -49,4 +49,8 @@ See `requirements.txt` for a complete list of Python dependencies including:
 - `Data/` - Data files directory
 - `environment.yml` - Conda environment specification
 
+## Acknowledgments
+
+Developed through vibe coding with [Cursor](https://cursor.sh), [Warp](https://warp.dev), and me.
+
 
