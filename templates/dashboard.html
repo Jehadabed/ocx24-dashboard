@@ -723,6 +723,45 @@
             color: #5f6368;
             margin-top: 4px;
         }
+
+        .composition-toggle {
+            margin-top: 4px;
+            display: flex;
+            gap: 4px;
+        }
+
+        .toggle-btn {
+            background: #e8f0fe;
+            color: #5f6368;
+            border: 1px solid #dadce0;
+            border-radius: 4px;
+            padding: 2px 8px;
+            font-size: 0.7em;
+            cursor: pointer;
+            transition: all 0.2s;
+            min-width: 40px;
+        }
+
+        .toggle-btn:hover {
+            background: #f1f3f4;
+            border-color: #4285f4;
+        }
+
+        .toggle-btn.active {
+            background: #4285f4;
+            color: white;
+            border-color: #4285f4;
+        }
+
+        .forced-indicator {
+            font-size: 0.7em;
+            color: #5f6368;
+            font-style: italic;
+            padding: 2px 8px;
+            background: #f8f9fa;
+            border-radius: 4px;
+            border: 1px solid #dadce0;
+        }
         
         .column-controls {
             background: #f8f9fa;
@@ -2188,22 +2227,46 @@
         }
         
         function updateStatsPanel(data) {
+            // Check which composition columns are available
+            const hasXrf = data.length > 0 && 'xrf composition' in data[0];
+            const hasTarget = data.length > 0 && 'target composition' in data[0];
+            
+            // Determine which composition to use
+            let compositionType, uniqueMaterials;
+            if (hasXrf && hasTarget) {
+                // Both available - use toggle
+                compositionType = useXrfComposition ? 'xrf composition' : 'target composition';
+                uniqueMaterials = [...new Set(data.map(row => row[compositionType]))].length;
+            } else if (hasXrf) {
+                // Only XRF available
+                compositionType = 'xrf composition';
+                uniqueMaterials = [...new Set(data.map(row => row[compositionType]))].length;
+            } else if (hasTarget) {
+                // Only Target available
+                compositionType = 'target composition';
+                uniqueMaterials = [...new Set(data.map(row => row[compositionType]))].length;
+            } else {
+                // Neither available
+                compositionType = null;
+                uniqueMaterials = 0;
+            }
+            
             // Calculate stats from the current filtered data
             const stats = {
                 totalRows: data.length,
                 uniqueSources: [...new Set(data.map(row => row.source))].length,
                 uniqueBatches: [...new Set(data.map(row => row['batch number']))].length,
-                uniqueMaterials: [...new Set(data.map(row => row['xrf composition']))].length
+                uniqueMaterials: uniqueMaterials
             };
             
             document.getElementById('statsPanel').innerHTML = `
                 <div class="stat-item">
                     <div class="stat-value">${stats.totalRows}</div>
-                    <div class="stat-label">Total Experiments</div>
+                    <div class="stat-label"># Experiments</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.uniqueSources}</div>
-                    <div class="stat-label">Unique Sources</div>
+                    <div class="stat-label"># Synthesis Methods</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.uniqueBatches}</div>
@@ -2211,9 +2274,28 @@
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.uniqueMaterials}</div>
-                    <div class="stat-label">Unique Materials</div>
+                    <div class="stat-label">Unique Chemistries</div>
+                    <div class="composition-toggle">
+                        ${hasXrf && hasTarget ? `
+                            <button class="toggle-btn ${useXrfComposition ? 'active' : ''}" onclick="toggleCompositionType()" title="Toggle between XRF and Nominal composition">
+                                XRF
+                            </button>
+                            <button class="toggle-btn ${!useXrfComposition ? 'active' : ''}" onclick="toggleCompositionType()" title="Toggle between XRF and Nominal composition">
+                                Nominal
+                            </button>
+                        ` : `
+                            <span class="forced-indicator">
+                                ${hasXrf ? 'XRF' : hasTarget ? 'Nominal' : 'None'}
+                            </span>
+                        `}
+                    </div>
                 </div>
             `;
+        }
+        
+        function toggleCompositionType() {
+            useXrfComposition = !useXrfComposition;
+            updateStatsPanel(currentData || []);
         }
         
         function createDataTable(data) {
@@ -2554,6 +2636,7 @@
         let strictFilterMode = false; // Track whether we're in strict filtering mode
         let anyFilterMode = false; // Track whether we're in "any" filtering mode
         let excludedElements = new Set(); // Track elements to exclude
+        let useXrfComposition = true; // Toggle for unique chemistries counting
 
         function createPeriodicTable() {
             const table = document.getElementById('periodicTable');
