@@ -610,6 +610,23 @@
             border-color: #4caf50;
         }
         
+        .element-block.excluded {
+            background: #f44336;
+            color: white;
+            border-color: #f44336;
+            position: relative;
+        }
+        
+        .element-block.excluded::after {
+            content: '✕';
+            position: absolute;
+            top: 2px;
+            right: 2px;
+            font-size: 10px;
+            font-weight: bold;
+            color: white;
+        }
+        
         .element-block.disabled {
             background: #f5f5f5;
             color: #ccc;
@@ -1125,7 +1142,12 @@
                                 <!-- Right Half: Periodic Table -->
                     <div class="right-half">
                         <div class="periodic-header">
-                            <label style="margin: 0;">Filter by Element</label>
+                            <div>
+                                <label style="margin: 0;">Filter by Element</label>
+                                <div style="font-size: 0.8em; color: #666; margin-top: 2px;">
+                                    Left-click to include • Right-click to exclude
+                                </div>
+                            </div>
                             <div style="display: flex; gap: 8px;">
                                 <button id="filterOnlySelected" class="filter-only-btn" onclick="filterOnlySelected()" style="display: none;">Filter only selected</button>
                                 <button id="filterAnySelected" class="filter-any-btn" onclick="filterAnySelected()" style="display: none;">Filter any selected</button>
@@ -2113,7 +2135,9 @@
                     
                     // Clear element filters
                     selectedElements.clear();
+                    excludedElements.clear();
                     updateSelectedElementsDisplay();
+                    updateElementButtonStates(currentData || []);
                     
                     // Display the original data
                     displayData(currentData);
@@ -2334,6 +2358,9 @@
                 if (selectedElements.size > 0) {
                     filename += '_filtered_elements';
                 }
+                if (excludedElements.size > 0) {
+                    filename += '_excluded_elements';
+                }
                 filename += '.csv';
                 
                 a.download = filename;
@@ -2526,6 +2553,7 @@
         let selectedElements = new Set();
         let strictFilterMode = false; // Track whether we're in strict filtering mode
         let anyFilterMode = false; // Track whether we're in "any" filtering mode
+        let excludedElements = new Set(); // Track elements to exclude
 
         function createPeriodicTable() {
             const table = document.getElementById('periodicTable');
@@ -2560,6 +2588,10 @@
                             <div class="element-weight">${element.weight}</div>
                         `;
                         block.addEventListener('click', () => toggleElement(element.symbol));
+                        block.addEventListener('contextmenu', (e) => {
+                            e.preventDefault();
+                            toggleElementExclusion(element.symbol);
+                        });
                     } else {
                         // Handle special cases for proper periodic table layout
                         if (row === 2 && col >= 3 && col <= 12) {
@@ -2591,6 +2623,15 @@
                 return; // Don't do anything if disabled
             }
             
+            // If element is excluded, remove exclusion and return to default state
+            if (excludedElements.has(symbol)) {
+                excludedElements.delete(symbol);
+                updateElementButtonStates(currentData || []);
+                filterDataByElements();
+                return;
+            }
+            
+            // Normal element selection (left click)
             if (selectedElements.has(symbol)) {
                 selectedElements.delete(symbol);
             } else {
@@ -2599,6 +2640,34 @@
             strictFilterMode = false; // Reset to normal filtering when toggling elements
             anyFilterMode = false;
             updateSelectedElementsDisplay();
+            filterDataByElements();
+        }
+        
+        function toggleElementExclusion(symbol) {
+            // Check if the element is disabled
+            const block = document.querySelector(`[data-symbol="${symbol}"]`);
+            if (block && block.classList.contains('disabled')) {
+                return; // Don't do anything if disabled
+            }
+            
+            // If element is currently selected (green), remove selection and don't exclude
+            if (selectedElements.has(symbol)) {
+                selectedElements.delete(symbol);
+                updateSelectedElementsDisplay();
+                updateElementButtonStates(currentData || []);
+                filterDataByElements();
+                return;
+            }
+            
+            // Toggle exclusion (right click) for non-selected elements
+            if (excludedElements.has(symbol)) {
+                excludedElements.delete(symbol);
+            } else {
+                excludedElements.add(symbol);
+            }
+            
+            // Update visual state immediately
+            updateElementButtonStates(currentData || []);
             filterDataByElements();
         }
 
@@ -2620,9 +2689,11 @@
 
         function clearAllElements() {
             selectedElements.clear();
+            excludedElements.clear();
             strictFilterMode = false;
             anyFilterMode = false;
             updateSelectedElementsDisplay();
+            updateElementButtonStates(currentData || []);
             filterDataByElements();
         }
         
@@ -2641,62 +2712,70 @@
 
 
         function filterDataByElements() {
-            if (selectedElements.size === 0) {
-                // No elements selected, show current filtered data (from source/batch filters)
-                displayData(currentData);
-                return;
-            }
-
             // Start with currentData (which already has source/batch filters applied)
             let filteredData = currentData;
             
-            if (strictFilterMode) {
-                // Strict filtering: only compositions with exactly the selected elements
+            // Apply exclusion filter first (if any elements are excluded)
+            if (excludedElements.size > 0) {
                 filteredData = filteredData.filter(row => {
-                    // Check that all selected elements have non-zero values
-                    const selectedElementsArray = Array.from(selectedElements);
-                    const hasAllSelected = selectedElementsArray.every(symbol => {
-                        const value = parseFloat(row[symbol]) || 0;
-                        return value > 0;
-                    });
-                    
-                    if (!hasAllSelected) return false;
-                    
-                    // Check that no other elements have non-zero values
-                    // Get all element columns (assuming they are single-letter symbols)
-                    const elementColumns = Object.keys(row).filter(key => 
-                        key.length <= 2 && /^[A-Z][a-z]?$/.test(key) && 
-                        !['sample id', 'source', 'batch number', 'batch date', 'target composition', 'xrf composition', 'rep', 'reaction', 'current density', 'voltage', 'fe_h2', 'fe_co', 'fe_ch4', 'fe_c2h4', 'fe_gas_total', 'fe_liquid'].includes(key)
-                    );
-                    
-                    const hasOnlySelected = elementColumns.every(symbol => {
-                        if (selectedElements.has(symbol)) {
-                            return true; // This element is selected, so it should have non-zero value
-                        } else {
-                            const value = parseFloat(row[symbol]) || 0;
-                            return value === 0; // This element is not selected, so it should be zero
-                        }
-                    });
-                    
-                    return hasOnlySelected;
-                });
-            } else if (anyFilterMode) {
-                // Any filtering: show rows that contain ANY of the selected elements
-                filteredData = filteredData.filter(row => {
-                    const selectedElementsArray = Array.from(selectedElements);
-                    return selectedElementsArray.some(symbol => {
+                    // Exclude rows that contain ANY of the excluded elements
+                    return !Array.from(excludedElements).some(symbol => {
                         const value = parseFloat(row[symbol]) || 0;
                         return value > 0;
                     });
                 });
-            } else {
-                // Normal filtering: each selected element must have non-zero values
-                Array.from(selectedElements).forEach(symbol => {
+            }
+            
+            // Apply inclusion filter (if any elements are selected)
+            if (selectedElements.size > 0) {
+                if (strictFilterMode) {
+                    // Strict filtering: only compositions with exactly the selected elements
                     filteredData = filteredData.filter(row => {
-                        const value = parseFloat(row[symbol]) || 0;
-                        return value > 0;
+                        // Check that all selected elements have non-zero values
+                        const selectedElementsArray = Array.from(selectedElements);
+                        const hasAllSelected = selectedElementsArray.every(symbol => {
+                            const value = parseFloat(row[symbol]) || 0;
+                            return value > 0;
+                        });
+                        
+                        if (!hasAllSelected) return false;
+                        
+                        // Check that no other elements have non-zero values
+                        // Get all element columns (assuming they are single-letter symbols)
+                        const elementColumns = Object.keys(row).filter(key => 
+                            key.length <= 2 && /^[A-Z][a-z]?$/.test(key) && 
+                            !['sample id', 'source', 'batch number', 'batch date', 'target composition', 'xrf composition', 'rep', 'reaction', 'current density', 'voltage', 'fe_h2', 'fe_co', 'fe_ch4', 'fe_c2h4', 'fe_gas_total', 'fe_liquid'].includes(key)
+                        );
+                        
+                        const hasOnlySelected = elementColumns.every(symbol => {
+                            if (selectedElements.has(symbol)) {
+                                return true; // This element is selected, so it should have non-zero value
+                            } else {
+                                const value = parseFloat(row[symbol]) || 0;
+                                return value === 0; // This element is not selected, so it should be zero
+                            }
+                        });
+                        
+                        return hasOnlySelected;
                     });
-                });
+                } else if (anyFilterMode) {
+                    // Any filtering: show rows that contain ANY of the selected elements
+                    filteredData = filteredData.filter(row => {
+                        const selectedElementsArray = Array.from(selectedElements);
+                        return selectedElementsArray.some(symbol => {
+                            const value = parseFloat(row[symbol]) || 0;
+                            return value > 0;
+                        });
+                    });
+                } else {
+                    // Normal filtering: each selected element must have non-zero values
+                    Array.from(selectedElements).forEach(symbol => {
+                        filteredData = filteredData.filter(row => {
+                            const value = parseFloat(row[symbol]) || 0;
+                            return value > 0;
+                        });
+                    });
+                }
             }
 
             displayData(filteredData);
@@ -2709,11 +2788,18 @@
                 const symbol = block.dataset.symbol;
                 if (!symbol) return;
 
-                // Check if this element column exists in the data
-                const hasColumn = data.length > 0 && symbol in data[0];
+                // Check if this element column exists in the original data
+                const hasColumn = (currentData && currentData.length > 0 && symbol in currentData[0]) || 
+                                 (allData && allData.length > 0 && symbol in allData[0]);
                 
                 if (!hasColumn) {
                     block.className = 'element-block disabled';
+                    return;
+                }
+
+                // If element is excluded, always show as excluded (red) regardless of filtered data
+                if (excludedElements.has(symbol)) {
+                    block.className = 'element-block excluded';
                     return;
                 }
 
