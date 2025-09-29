@@ -286,7 +286,7 @@ def calculate_pca_components(df):
 def format_column_name(column_name):
     """Format column names to be more readable."""
     if column_name in ['voltage_mean', 'voltage']:
-        return 'Voltage'
+        return 'Full Cell Voltage (V)'
     elif column_name.startswith('fe_'):
         base_name = column_name.replace('fe_', '').replace('_mean', '')
         if base_name == 'h2':
@@ -1707,7 +1707,7 @@ def co2_plot_main():
                 if (columnName === 'default_colors') {{
                     return 'Default';
                 }} else if (columnName === 'voltage_mean' || columnName === 'voltage') {{
-                    return 'Voltage';
+                    return 'Full Cell Voltage (V)';
                 }} else if (columnName === 'current density') {{
                     return 'Current Density';
                 }} else if (columnName.startsWith('fe_')) {{
@@ -1883,7 +1883,7 @@ def co2_plot_main():
                         x: 0.5
                     }},
                     xaxis: {{ 
-                        title: currentMode === 'current_density' ? 'Current Density (mA/cm²)' : 'Voltage (V)', 
+                        title: currentMode === 'current_density' ? 'Current Density (mA/cm²)' : 'Full Cell Voltage (V)', 
                         showgrid: true, 
                         gridwidth: 1, 
                         gridcolor: 'lightgray',

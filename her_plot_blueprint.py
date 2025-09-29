@@ -136,7 +136,7 @@ def calculate_pca_components(df):
 def format_column_name(column_name):
     """Format column names to be more readable."""
     if column_name in ['voltage_mean', 'voltage']:
-        return 'Voltage'
+        return 'Full Cell Voltage (V)'
     elif column_name.startswith('fe_'):
         base_name = column_name.replace('fe_', '').replace('_mean', '')
         if base_name == 'h2':
@@ -790,8 +790,8 @@ def her_plot_main():
             
             function formatColumnName(columnName) {{
                 const formatMap = {{
-                    'voltage_mean': 'Voltage',
-                    'voltage': 'Voltage',
+                    'voltage_mean': 'Full Cell Voltage (V)',
+                    'voltage': 'Full Cell Voltage (V)',
                     'PCA1': 'PCA1',
                     'PCA2': 'PCA2'
                 }};
@@ -1006,7 +1006,7 @@ def her_plot_main():
                         gridcolor: '#e8e8e8'
                     }},
                     yaxis: {{
-                        title: 'Voltage (V)',
+                        title: 'Full Cell Voltage (V)',
                         showgrid: true,
                         gridcolor: '#e8e8e8'
                     }},
