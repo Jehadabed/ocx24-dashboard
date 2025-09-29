@@ -1,6 +1,6 @@
 import pandas as pd
 import matplotlib.pyplot as plt
-from flask import Blueprint, render_template_string, request, jsonify, Response
+from flask import Blueprint, render_template_string, request, jsonify, Response, send_file
 import os
 from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
@@ -723,6 +723,32 @@ def co2_plot_main():
                 transform: translateY(0);
             }}
             
+            .download-notebook-btn {{
+                background: #ffffff;
+                color: #1a73e8;
+                border: 1px solid #1a73e8;
+                padding: 10px 16px;
+                border-radius: 6px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                text-transform: none;
+                letter-spacing: 0.2px;
+                margin-top: 8px;
+            }}
+            
+            .download-notebook-btn:hover {{
+                background: #1a73e8;
+                color: #ffffff;
+                box-shadow: 0 2px 8px rgba(26, 115, 232, 0.15);
+                transform: translateY(-1px);
+            }}
+            
+            .download-notebook-btn:active {{
+                transform: translateY(0);
+            }}
+            
             .plots-container {{
                 display: flex;
                 flex-direction: column;
@@ -1097,6 +1123,10 @@ def co2_plot_main():
                 • Current density-dependent ohmic losses<br>
                 The methodology follows established protocols for accurate half-cell potential determination in CO₂ reduction electrolyzers.<br>
                 <a href="https://www.nature.com/articles/s41893-025-01643-4" target="_blank">Arabyarmohammadi, F. et al. Voltage distribution within carbon dioxide reduction electrolysers. <em>Nature Sustainability</em> (2025)</a>
+                <br><br>
+                <button onclick="downloadNotebook()" class="download-notebook-btn">
+                    📓 Download Jupyter Notebook with Working Example
+                </button>
                 
                 <br><br><strong>XRD Analysis:</strong><br>
                 Click on any point in the main plot to view the corresponding XRD pattern in the third window.<br>
@@ -2365,6 +2395,11 @@ def co2_plot_main():
                 }}
             }}
             
+            // Function to download Jupyter notebook
+            function downloadNotebook() {{
+                window.open('/co2/download_notebook', '_blank');
+            }}
+            
             // Initialize the plot
             updatePlot();
             
@@ -2441,6 +2476,18 @@ def export_csv():
         
     except Exception as e:
         return jsonify({'success': False, 'error': str(e)}), 500
+
+@co2_plot_bp.route('/download_notebook')
+def download_notebook():
+    """Download the Jupyter notebook with voltage conversion functions"""
+    try:
+        notebook_path = 'voltage_conversion_example.ipynb'
+        if os.path.exists(notebook_path):
+            return send_file(notebook_path, as_attachment=True, download_name='voltage_conversion_example.ipynb')
+        else:
+            return jsonify({'error': 'Notebook file not found'}), 404
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # Create a route to update data based on mode
 @co2_plot_bp.route('/update_data', methods=['POST'])
