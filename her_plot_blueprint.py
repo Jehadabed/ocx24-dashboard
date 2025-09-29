@@ -843,6 +843,10 @@ def her_plot_main():
             <div id="loading" class="loading" style="display: none;">Updating plot...</div>
             
             <div class="info-panel">
+                 <strong>Symbol Coding:</strong><br>
+                <span style="font-weight: bold;">Circles</span>: Samples synthesized by Chemical Reduction (UofT)<br>
+                <span style="font-weight: bold;">Diamonds</span>: Samples synthesized by Spark Ablation (VSP)<br>
+                
                 <strong>Default Color Coding:</strong><br>
                 • <span style="color: #ef4444;">Red points</span>: Performance below Pd (UofT) threshold<br>
                 • <span style="color: #3b82f6;">Blue points</span>: Performance below Pd (VSP) threshold<br>

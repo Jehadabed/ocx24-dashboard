@@ -6,6 +6,7 @@ from sklearn.decomposition import PCA
 from sklearn.preprocessing import StandardScaler
 import numpy as np
 from scipy.stats import linregress
+from scipy.optimize import curve_fit
 import json
 import glob
 
@@ -19,6 +20,111 @@ ATOMIC_WEIGHTS = {
     'Ni': 58.6934, 'Pd': 106.42, 'Pt': 195.084, 'Rh': 102.90550, 'Sn': 118.710,
     'Tl': 204.38, 'W': 183.84, 'Zn': 65.38
 }
+
+# Voltage conversion functions
+def lin_fxn(x, a, b):
+    return a*x+b
+
+def fit_lin(X, Y):
+    params, covariance = curve_fit(lin_fxn, X, Y)
+    a_fit, b_fit = params
+    return (a_fit, b_fit)
+
+def est_x(x, X, Y):
+    fit = fit_lin(X, Y)
+    x = fit[0]*x+fit[1]
+    return x
+
+def load_calibration_data_for_voltage_conversion():
+    """Load calibration data for voltage conversion from full cell to half cell."""
+    # Experiment conditions: Neutral CO2RR in 4cm2 cell, Sputtered Copper Catalyst, 0.1M Bicarbonate - ref electrode (3M kcl) 230mV vs SHE
+    ref_pot = 0.23 #V Ag/AgCl electrode
+    cathode_pH = 12.5
+    anode_pH = 3
+    Nern_pH_loss = (cathode_pH-anode_pH)*0.059 
+    geo_area = 4 #cm2
+    membrane_loss = 0.1 #V
+    cathode_thermo = +0.08
+    anode_thermo = +1.23
+    thermo_pot = anode_thermo-cathode_thermo
+    
+    # Measurements from calibration work
+    j = np.array([50,100,200])
+    cathode_pot = np.array([-1.62,-2.0,-2.3])
+    cathode_R = np.array([0.48,0.34,0.3])
+    anode_pot = np.array([1.3,1.35,1.4])
+    anode_R = np.array([0,0,0]) #almost negligible
+    fullcell_pot = np.array([3,3.4,3.7])
+    fullcell_R = np.array([0.47,0.35,0.3])
+    
+    n = len(cathode_pot)
+    cathode_pot_corr = np.zeros(n)
+    anode_pot_corr = np.zeros(n)
+    cathode_overpot = np.zeros(n)
+    anode_overpot = np.zeros(n)
+    fullcell_pot_corr = np.zeros(n)
+
+    for i in range(0, n):
+        cathode_pot_corr[i] = correct_potential(cathode_pot[i], cathode_R[i], cathode_pH, j[i], geo_area, ref_pot)
+        anode_pot_corr[i] = correct_potential(anode_pot[i], anode_R[i], anode_pH, j[i], geo_area, ref_pot)
+        cathode_overpot[i] = get_overpotential(cathode_pot_corr[i],0.08)
+        anode_overpot[i] = get_overpotential(anode_pot_corr[i], 1.23)
+
+        fullcell_pot_corr[i] = fullcell_pot[i]-fullcell_R[i]*j[i]/1000*geo_area
+
+    conditions_dict = {
+        'ref pot': ref_pot,
+        'cathode pH': cathode_pH,
+        'anode pH': anode_pH,
+        'Nern pH loss': Nern_pH_loss,
+        'geo area': geo_area,
+        'membrane loss': membrane_loss,
+        'cathod thermo': cathode_thermo,
+        'anode thermo': anode_thermo,
+        'thermo pot': thermo_pot,
+    }
+    measurements_dict = {
+        'j': j, 'cathode pot': cathode_pot, 'cathode R': cathode_R, 'anode pot': anode_pot, 'anode R': anode_R, 
+        'fullcell pot': fullcell_pot, 'fullcell R': fullcell_R,
+    }
+
+    data_dict = {
+        'cathode pot corr': cathode_pot_corr, 'anode pot corr': anode_pot_corr,
+        'cathode overpot': cathode_overpot, 'anode overpot': anode_overpot, 'fullcell pot corr': fullcell_pot_corr    
+    }
+    return {'measurements': measurements_dict, 'conditions': conditions_dict, 'extracted params': data_dict}
+
+def she2rhe(ushe, pH, ref_pot):
+    ushe = ushe+ref_pot+(0.059*pH)
+    return ushe
+
+def rhe2she(urhe, pH, ref_pot):
+    urhe = urhe-ref_pot-(0.059*pH)
+    return urhe
+
+def correct_potential(pot, R, pH, j, area, ref_pot):
+    if pot<0:
+        corrected_pot = she2rhe(pot+j/1000*area*R,pH, ref_pot)
+    else:
+        corrected_pot = she2rhe(pot-j/1000*area*R,pH, ref_pot)
+    return corrected_pot
+
+def cell2rhe(vcell, X, Y):
+    vrhe = est_x(vcell, X, Y)
+    return vrhe
+
+def get_overpotential(pot, pot_theory):
+    overpot = abs(pot-pot_theory)
+    return overpot
+
+def fullcell2halfcell(vcell):
+    '''
+    Main function to convert a voltage value from full cell to half cell vs she or rhe
+    '''
+    cali_dict = load_calibration_data_for_voltage_conversion()
+    urhe = cell2rhe(vcell, cali_dict['measurements']['fullcell pot'], cali_dict['extracted params']['cathode pot corr'])
+    ushe = rhe2she(urhe, cali_dict['conditions']['cathode pH'],  cali_dict['conditions']['ref pot'])
+    return ushe, urhe
 
 def convert_atomic_to_weight_fraction(df, element_columns):
     """
@@ -287,6 +393,10 @@ def format_column_name(column_name):
     """Format column names to be more readable."""
     if column_name in ['voltage_mean', 'voltage']:
         return 'Full Cell Voltage (V)'
+    elif column_name == 'voltage_she':
+        return 'Est. Half-cell potential vs SHE (V)'
+    elif column_name == 'voltage_rhe':
+        return 'Est. Half-cell potential vs RHE (V)'
     elif column_name.startswith('fe_'):
         base_name = column_name.replace('fe_', '').replace('_mean', '')
         if base_name == 'h2':
@@ -878,6 +988,15 @@ def co2_plot_main():
                            onchange="updatePlot()">
                 </div>
                 
+                <div class="control-group">
+                    <label for="voltageType">Voltage Type</label>
+                    <select id="voltageType" onchange="updatePlot()">
+                        <option value="fullcell">Full Cell Voltage</option>
+                        <option value="she">Est. Half-cell potential vs SHE</option>
+                        <option value="rhe">Est. Half-cell potential vs RHE</option>
+                    </select>
+                </div>
+                
                 <div class="checkbox-container">
                     <input type="checkbox" id="errorBars" checked onchange="updatePlot()">
                     <label for="errorBars">Show Error Bars</label>
@@ -970,6 +1089,15 @@ def co2_plot_main():
                 • <strong>UofT (Chemical Reduction):</strong> Samples were first made as powders, XRF-measured once, then used to prepare 3 GDEs (Gas Diffusion Electrodes) for electrochemical testing. Since all GDEs came from the same powder vial (same composition), they were grouped together to calculate mean and standard deviation.<br>
                 • <strong>VSP (Spark Ablation):</strong> Samples were deposited directly as 3 separate GDEs. Each had slightly different XRF compositions, so they could not be grouped. Their results are shown individually, without averaged error bars.
                 
+                <br><br><strong>Voltage Conversion Methodology:</strong><br>
+                The conversion from full cell voltage to half-cell potentials (vs SHE and vs RHE) is performed using calibration data from electrochemical measurements in a three-electrode configuration. The conversion accounts for:<br>
+                • Membrane overpotential and ionic resistance<br>
+                • Nernstian pH gradient effects<br>
+                • Reference electrode potential corrections<br>
+                • Current density-dependent ohmic losses<br>
+                The methodology follows established protocols for accurate half-cell potential determination in CO₂ reduction electrolyzers.<br>
+                <a href="https://www.nature.com/articles/s41893-025-01643-4" target="_blank">Arabyarmohammadi, F. et al. Voltage distribution within carbon dioxide reduction electrolysers. <em>Nature Sustainability</em> (2025)</a>
+                
                 <br><br><strong>XRD Analysis:</strong><br>
                 Click on any point in the main plot to view the corresponding XRD pattern in the third window.<br>
                 • XRD data is loaded from <code>/Data/XRD/raw/</code> directory<br>
@@ -1051,6 +1179,7 @@ def co2_plot_main():
                     
                     // Get current unit type
                     const selectedUnit = document.querySelector('input[name="unitType"]:checked').value;
+                    const voltageType = document.getElementById('voltageType').value;
                     
                     // Prepare request data based on current mode
                     let requestData = {{
@@ -1058,7 +1187,8 @@ def co2_plot_main():
                         xAxis: xCol,
                         yAxis: yCol,
                         zAxis: zCol,
-                        unitType: selectedUnit
+                        unitType: selectedUnit,
+                        voltageType: voltageType
                     }};
                     
                     if (currentMode === 'current_density') {{
@@ -1410,9 +1540,18 @@ def co2_plot_main():
                 const zAxisUnit = getColumnUnits(zCol, selectedUnit);
                 const zColFormatted = formatColumnName(zCol);
                 
+                // Get voltage type for dynamic labeling
+                const voltageType = document.getElementById('voltageType').value;
+                let voltageLabel = 'Full Cell Voltage (V)';
+                if (voltageType === 'she') {{
+                    voltageLabel = 'Est. Half-cell potential vs SHE (V)';
+                }} else if (voltageType === 'rhe') {{
+                    voltageLabel = 'Est. Half-cell potential vs RHE (V)';
+                }}
+                
                 const layout = {{
                     title: {{
-                        text: `${{xColFormatted}} vs ${{yColFormatted}} ${{currentMode === 'current_density' ? 'at ' + currentDensityOptions[currentDensityIndex] + ' mA/cm²' : 'at ' + currentVoltage.toFixed(2) + 'V'}}`,
+                        text: `${{xColFormatted}} vs ${{(yCol === 'voltage' || yCol === 'voltage_mean') ? voltageLabel.replace(' (V)', '') : yColFormatted}} ${{currentMode === 'current_density' ? 'at ' + currentDensityOptions[currentDensityIndex] + ' mA/cm²' : 'at ' + currentVoltage.toFixed(2) + 'V'}}`,
                         font: {{ size: 18, color: '#202124' }},
                         x: 0.5
                     }},
@@ -1427,7 +1566,7 @@ def co2_plot_main():
                         tickfont: {{ size: 12, color: '#666' }}
                     }},
                     yaxis: {{ 
-                        title: yColFormatted + yAxisUnit, 
+                        title: (yCol === 'voltage' || yCol === 'voltage_mean') ? voltageLabel : (yColFormatted + yAxisUnit), 
                         showgrid: true, 
                         gridwidth: 1, 
                         gridcolor: 'lightgray',
@@ -1708,6 +1847,10 @@ def co2_plot_main():
                     return 'Default';
                 }} else if (columnName === 'voltage_mean' || columnName === 'voltage') {{
                     return 'Full Cell Voltage (V)';
+                }} else if (columnName === 'voltage_she') {{
+                    return 'Est. Half-cell potential vs SHE (V)';
+                }} else if (columnName === 'voltage_rhe') {{
+                    return 'Est. Half-cell potential vs RHE (V)';
                 }} else if (columnName === 'current density') {{
                     return 'Current Density';
                 }} else if (columnName.startsWith('fe_')) {{
@@ -2262,7 +2405,27 @@ def export_csv():
         current_df = load_original_data()
         df_with_pca = calculate_pca_components(current_df)
         
-        # Use the dataframe with PCA components
+        # Add voltage conversion columns if voltage data exists
+        if 'voltage' in df_with_pca.columns:
+            # Convert voltage values to SHE and RHE
+            voltage_values = df_with_pca['voltage'].values
+            she_values = []
+            rhe_values = []
+            
+            for v in voltage_values:
+                if pd.notna(v):
+                    ushe, urhe = fullcell2halfcell(v)
+                    she_values.append(ushe)
+                    rhe_values.append(urhe)
+                else:
+                    she_values.append(np.nan)
+                    rhe_values.append(np.nan)
+            
+            # Add the new columns
+            df_with_pca['V vs SHE'] = she_values
+            df_with_pca['V vs RHE'] = rhe_values
+        
+        # Use the dataframe with PCA components and voltage conversions
         csv_data = df_with_pca.to_csv(index=False)
         
         # Create response with CSV data
@@ -2287,6 +2450,7 @@ def update_data():
         y_axis = data.get('yAxis', 'PCA2')
         z_axis = data.get('zAxis', 'default_colors')
         unit_type = data.get('unitType', 'atomic')  # Get the unit type
+        voltage_type = data.get('voltageType', 'fullcell')  # Get the voltage type
         
         # Get current data
         current_df = load_original_data()
@@ -2301,6 +2465,30 @@ def update_data():
             new_df = generate_df_at_voltage(current_df, target_voltage=voltage)
         
         new_df = calculate_pca_components(new_df)
+        
+        # Apply voltage conversion if needed
+        if voltage_type in ['she', 'rhe'] and 'voltage' in new_df.columns:
+            # Convert voltage values
+            voltage_values = new_df['voltage'].values
+            converted_voltages = []
+            
+            for v in voltage_values:
+                if pd.notna(v):
+                    ushe, urhe = fullcell2halfcell(v)
+                    if voltage_type == 'she':
+                        converted_voltages.append(ushe)
+                    else:  # rhe
+                        converted_voltages.append(urhe)
+                else:
+                    converted_voltages.append(np.nan)
+            
+            # Create new column with converted voltage
+            if voltage_type == 'she':
+                new_df['voltage_she'] = converted_voltages
+                new_df['voltage'] = new_df['voltage_she']  # Replace original voltage
+            else:  # rhe
+                new_df['voltage_rhe'] = converted_voltages
+                new_df['voltage'] = new_df['voltage_rhe']  # Replace original voltage
         
         # Store original data for calculations (color mapping, reference lines)
         original_df = new_df.copy()
