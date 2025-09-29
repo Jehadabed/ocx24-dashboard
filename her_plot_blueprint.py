@@ -1684,9 +1684,11 @@ def update_data():
         df = calculate_pca_components(df)
         
         # Apply voltage conversion if needed
-        if voltage_type in ['she', 'rhe'] and 'voltage' in df.columns:
+        if voltage_type in ['she', 'rhe'] and ('voltage' in df.columns or 'voltage_mean' in df.columns):
+            # Determine which voltage column to use
+            voltage_col = 'voltage_mean' if 'voltage_mean' in df.columns else 'voltage'
             # Convert voltage values
-            voltage_values = df['voltage'].values
+            voltage_values = df[voltage_col].values
             converted_voltages = []
             
             for v in voltage_values:
@@ -1702,10 +1704,10 @@ def update_data():
             # Create new column with converted voltage
             if voltage_type == 'she':
                 df['voltage_she'] = converted_voltages
-                df['voltage'] = df['voltage_she']  # Replace original voltage
+                df[voltage_col] = df['voltage_she']  # Replace original voltage
             else:  # rhe
                 df['voltage_rhe'] = converted_voltages
-                df['voltage'] = df['voltage_rhe']  # Replace original voltage
+                df[voltage_col] = df['voltage_rhe']  # Replace original voltage
         
         # Store original data for calculations (color mapping, reference lines)
         original_df = df.copy()
@@ -1734,9 +1736,11 @@ def export_csv():
         df_with_pca = calculate_pca_components(current_df)
         
         # Add voltage conversion columns if voltage data exists
-        if 'voltage' in df_with_pca.columns:
+        if 'voltage' in df_with_pca.columns or 'voltage_mean' in df_with_pca.columns:
+            # Determine which voltage column to use
+            voltage_col = 'voltage_mean' if 'voltage_mean' in df_with_pca.columns else 'voltage'
             # Convert voltage values to SHE and RHE
-            voltage_values = df_with_pca['voltage'].values
+            voltage_values = df_with_pca[voltage_col].values
             she_values = []
             rhe_values = []
             
