@@ -48,6 +48,36 @@
             letter-spacing: 0.2px;
         }
         
+        .dataset-description {
+            background: #ffffff;
+            padding: 24px 32px;
+            margin: 0;
+            border-bottom: 1px solid #e8eaed;
+            font-size: 0.95em;
+            line-height: 1.7;
+            color: #3c4043;
+        }
+        
+        .dataset-description p {
+            margin: 0 0 16px 0;
+            text-align: left;
+        }
+        
+        .dataset-description ul {
+            margin: 12px 0 16px 20px;
+            padding: 0;
+        }
+        
+        .dataset-description li {
+            margin: 8px 0;
+            color: #3c4043;
+        }
+        
+        .dataset-description strong {
+            color: #1a73e8;
+            font-weight: 500;
+        }
+        
         .controls {
             display: flex;
             flex-direction: column;
@@ -1029,6 +1059,15 @@
     <div class="container">
         <h1><strong>OCx24 Dataset</strong></h1>
         <h3>Dashboard to visualize the experimental dataset</h3>
+        <div class="dataset-description">
+            <p>This dataset contains electrochemical performance data for metal alloy catalysts tested for CO₂ reduction and hydrogen evolution reactions. The samples were synthesized using two different methods:</p>
+            <ul>
+                <li><strong>Chemical Reduction:</strong> Produces powder catalysts</li>
+                <li><strong>Spark Ablation:</strong> Produces porous film catalysts</li>
+            </ul>
+            <p>All catalysts were applied to Gas Diffusion Electrodes (GDEs) and tested in Membrane Electrode Assemblies (MEAs) at pH=7 using KHCO₃ electrolyte. The electrochemical testing was performed in a two-electrode configuration with direct voltage measurement. Gas products were analyzed using Gas Chromatography (GC).</p>
+            <p>Each synthesis method includes multiple duplicate samples for statistical reliability. All samples contain X-ray Fluorescence (XRF) composition data, and most samples include X-ray Diffraction (XRD) structural characterization data.</p>
+        </div>
         
         <!-- Main Panel with Two Halves -->
         <div class="main-panel">
