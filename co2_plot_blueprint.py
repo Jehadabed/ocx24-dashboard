@@ -1643,21 +1643,43 @@ def co2_plot_main():
                     console.log('Sample ID extracted:', sampleId);
                     console.log('XRF Composition:', xrfComposition);
                     
-                    // Add to clicked points set for visual feedback
-                    clickedPoints.add(sampleId);
-                    
-                    // Update plot to show clicked point with red border
-                    updateClickedPointVisual(sampleId);
-                    
-                    // Add to accumulated points if it's a new point
-                    addPointToAccumulation(clickedPointData);
-                    
-                    // Show accumulated points in the second plot
-                    showAccumulatedPoints(xCol, yCol);
-                    
-                    // Load XRD data for the clicked sample
-                    console.log('About to load XRD for sample:', sampleId);
-                    loadXrdPlot(sampleId);
+                    // Check if this point is already selected
+                    if (clickedPoints.has(sampleId)) {{
+                        console.log('Point already selected, deselecting:', sampleId);
+                        
+                        // Remove from clicked points set
+                        clickedPoints.delete(sampleId);
+                        
+                        // Update plot to remove green border
+                        updateClickedPointVisual(sampleId);
+                        
+                        // Remove from accumulated points
+                        removePointFromAccumulation(sampleId);
+                        
+                        // Remove XRD data for the clicked sample
+                        removeXrdPlot(sampleId);
+                        
+                        // Update accumulated points display
+                        showAccumulatedPoints(xCol, yCol);
+                    }} else {{
+                        console.log('Point not selected, selecting:', sampleId);
+                        
+                        // Add to clicked points set for visual feedback
+                        clickedPoints.add(sampleId);
+                        
+                        // Update plot to show clicked point with green border
+                        updateClickedPointVisual(sampleId);
+                        
+                        // Add to accumulated points if it's a new point
+                        addPointToAccumulation(clickedPointData);
+                        
+                        // Show accumulated points in the second plot
+                        showAccumulatedPoints(xCol, yCol);
+                        
+                        // Load XRD data for the clicked sample
+                        console.log('About to load XRD for sample:', sampleId);
+                        loadXrdPlot(sampleId);
+                    }}
                     
                     console.log('Point clicked successfully!');
                 }});
@@ -1728,6 +1750,37 @@ def co2_plot_main():
                     console.log('Point added to accumulation. Total points:', accumulatedPoints.length);
                 }} else {{
                     console.log('Point already in accumulation, skipping duplicate');
+                }}
+            }}
+            
+            // Function to remove a point from accumulation
+            function removePointFromAccumulation(sampleId) {{
+                console.log('Removing point from accumulation for sample:', sampleId);
+                
+                // Find and remove the point by sample ID
+                const index = accumulatedPoints.findIndex(point => point['sample id'] === sampleId);
+                if (index !== -1) {{
+                    accumulatedPoints.splice(index, 1);
+                    console.log('Removed point from accumulation. Remaining points:', accumulatedPoints.length);
+                }} else {{
+                    console.log('Point not found in accumulation:', sampleId);
+                }}
+            }}
+            
+            // Function to remove XRD plot for a specific sample ID
+            function removeXrdPlot(sampleId) {{
+                console.log('Removing XRD plot for sample:', sampleId);
+                
+                // Remove from accumulation
+                const index = accumulatedXrdData.findIndex(item => item.sampleId === sampleId);
+                if (index !== -1) {{
+                    accumulatedXrdData.splice(index, 1);
+                    console.log('Removed XRD data from accumulation. Remaining samples:', accumulatedXrdData.length);
+                    
+                    // Update XRD plot display
+                    showAccumulatedXrdPlots();
+                }} else {{
+                    console.log('Sample not found in XRD accumulation:', sampleId);
                 }}
             }}
             

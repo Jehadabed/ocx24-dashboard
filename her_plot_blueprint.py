@@ -1108,7 +1108,7 @@ def her_plot_main():
                 
                 Plotly.newPlot('plot', traces, layout, {{responsive: true}});
                 
-                // Add click event handler for XRD loading
+                // Add click event handler for XRD loading and deselection
                 document.getElementById('plot').on('plotly_click', function(data) {{
                     console.log('Plot clicked:', data);
                     
@@ -1123,20 +1123,36 @@ def her_plot_main():
                         if (sampleId) {{
                             console.log('Sample ID:', sampleId);
                             
-                            // Add to clicked points set
-                            clickedPoints.add(sampleId);
-                            
-                            // Store clicked point data for XRD legend
-                            clickedPointData = {{
-                                source: pointData.source ? pointData.source[pointIndex] : 'Unknown',
-                                'xrf composition': pointData['xrf composition'] ? pointData['xrf composition'][pointIndex] : 'Unknown'
-                            }};
-                            
-                            // Update plot to show clicked point with red border
-                            updateClickedPointVisual(sampleId);
-                            
-                            // Load XRD data for the clicked sample
-                            loadXrdPlot(sampleId);
+                            // Check if this point is already selected
+                            if (clickedPoints.has(sampleId)) {{
+                                console.log('Point already selected, deselecting:', sampleId);
+                                
+                                // Remove from clicked points set
+                                clickedPoints.delete(sampleId);
+                                
+                                // Update plot to remove green border
+                                updateClickedPointVisual(sampleId);
+                                
+                                // Remove XRD data for the clicked sample
+                                removeXrdPlot(sampleId);
+                            }} else {{
+                                console.log('Point not selected, selecting:', sampleId);
+                                
+                                // Add to clicked points set
+                                clickedPoints.add(sampleId);
+                                
+                                // Store clicked point data for XRD legend
+                                clickedPointData = {{
+                                    source: pointData.source ? pointData.source[pointIndex] : 'Unknown',
+                                    'xrf composition': pointData['xrf composition'] ? pointData['xrf composition'][pointIndex] : 'Unknown'
+                                }};
+                                
+                                // Update plot to show clicked point with green border
+                                updateClickedPointVisual(sampleId);
+                                
+                                // Load XRD data for the clicked sample
+                                loadXrdPlot(sampleId);
+                            }}
                         }} else {{
                             console.log('No sample ID found for clicked point');
                         }}
@@ -1282,6 +1298,23 @@ def her_plot_main():
                 }} catch (error) {{
                     console.error('Error loading XRD data:', error);
                     alert('Error loading XRD data:\\n\\n' + error.message);
+                }}
+            }}
+            
+            // Function to remove XRD plot for a specific sample ID
+            function removeXrdPlot(sampleId) {{
+                console.log('Removing XRD plot for sample:', sampleId);
+                
+                // Remove from accumulation
+                const index = accumulatedXrdData.findIndex(item => item.sampleId === sampleId);
+                if (index !== -1) {{
+                    accumulatedXrdData.splice(index, 1);
+                    console.log('Removed XRD data from accumulation. Remaining samples:', accumulatedXrdData.length);
+                    
+                    // Update XRD plot display
+                    showAccumulatedXrdPlots();
+                }} else {{
+                    console.log('Sample not found in XRD accumulation:', sampleId);
                 }}
             }}
             
