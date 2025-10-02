@@ -1723,7 +1723,15 @@ def co2_plot_main():
                     layout.annotations = annotations;
                 }}
                 
-                Plotly.newPlot('plot', traces, layout);
+                Plotly.newPlot('plot', traces, layout, {{
+                    toImageButtonOptions: {{
+                        format: 'png',
+                        filename: 'co2_plot',
+                        height: 800,
+                        width: 1200,
+                        scale: 3
+                    }}
+                }});
                 
                 // Add click event to the plot
                 document.getElementById('plot').on('plotly_click', function(data) {{
@@ -2090,7 +2098,15 @@ def co2_plot_main():
                     }}
                 }};
                 
-                Plotly.newPlot('pointPlotContent', traces, layout);
+                Plotly.newPlot('pointPlotContent', traces, layout, {{
+                    toImageButtonOptions: {{
+                        format: 'png',
+                        filename: 'co2_point_plot',
+                        height: 600,
+                        width: 1200,
+                        scale: 3
+                    }}
+                }});
             }}
             
             // Function to reset the accumulated points plot
@@ -2285,7 +2301,15 @@ def co2_plot_main():
                     height: 400
                 }};
                 
-                Plotly.newPlot('xrdPlotContent', traces, layout);
+                Plotly.newPlot('xrdPlotContent', traces, layout, {{
+                    toImageButtonOptions: {{
+                        format: 'png',
+                        filename: 'co2_xrd_plot',
+                        height: 600,
+                        width: 1500,
+                        scale: 3
+                    }}
+                }});
                 
                 console.log('DEBUG: Accumulated XRD plots created successfully. Total traces:', traces.length);
             }}
