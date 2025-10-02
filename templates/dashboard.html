@@ -2530,9 +2530,6 @@
             
             // Use visible columns only
             const columns = visibleColumns || currentColumns || Object.keys(data[0]);
-            console.log('Creating table with columns:', columns);
-            console.log('Total columns available:', currentColumns ? currentColumns.length : 0);
-            console.log('Visible columns count:', visibleColumns ? visibleColumns.length : 0);
             
             const maxRows = 100; // Limit display for performance
             const displayData = data.slice(0, maxRows);
@@ -2560,9 +2557,6 @@
                 table += `<p><em>Showing first ${maxRows} of ${data.length} rows. Use filters to narrow down results.</em></p>`;
             }
             
-            // Add debug info
-            table += `<p><small>Debug: Showing ${columns.length} columns out of ${currentColumns ? currentColumns.length : 0} total</small></p>`;
-            
             return table;
         }
         
@@ -2575,13 +2569,6 @@
                 
                 // Get selected grouping columns
                 const groupingColumns = Array.from(selectedGroupingColumns);
-                console.log('Grouping by columns:', groupingColumns);
-                console.log('DEBUG - Data state:');
-                console.log('  allData length:', allData ? allData.length : 'null');
-                console.log('  currentData length:', currentData ? currentData.length : 'null');
-                console.log('  averagedData length:', averagedData ? averagedData.length : 'null');
-                console.log('  usingUploadedData:', usingUploadedData);
-                console.log('  uploaded_data_cache:', uploaded_data_cache ? uploaded_data_cache.data.length : 'null');
                 
                 // Get composition tolerance with validation
                 const toleranceInput = document.getElementById('compositionTolerance');
@@ -2593,49 +2580,9 @@
                     toleranceInput.focus();
                     return;
                 }
-                }
-                console.log('Composition tolerance:', tolerance);
                 
-                // Show first few rows of each dataset to identify differences
-                if (allData && allData.length > 0) {
-                    console.log('First row of allData:', allData[0]);
-                }
-                if (currentData && currentData.length > 0 && currentData !== allData) {
-                    console.log('First row of currentData:', currentData[0]);
-                }
-                
-                // Send request to average data with selected grouping columns
-                // Use the current data (which could be filtered or base data)
-                // Priority: currentData (filtered) > averagedData (previous aggregation) > allData (base)
-                let baseDataToAverage;
-                if (currentData && currentData !== averagedData) {
-                    // We have current data that's different from averaged data (likely filtered)
-                    baseDataToAverage = currentData;
-                    console.log('Using current filtered data for aggregation:', currentData.length, 'rows');
-                } else if (averagedData) {
-                    // Re-aggregate already averaged data
-                    baseDataToAverage = averagedData;
-                    console.log('Re-aggregating previously averaged data:', averagedData.length, 'rows');
-                } else {
-                    // Use base data (uploaded or original)
-                    baseDataToAverage = allData;
-                    console.log('Using base data for aggregation:', allData.length, 'rows');
-                }
-                const response = await fetch('/average_data', {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        groupingColumns: groupingColumns,
-                        compositionTolerance: tolerance,
-                        currentData: baseDataToAverage
-                    })
-                });
-                
-                console.log('DEBUG - Sent to backend:');
-                console.log('  Data length:', baseDataToAverage ? baseDataToAverage.length : 'null');
-                console.log('  Sample IDs in sent data:', baseDataToAverage ? baseDataToAverage.slice(0, 3).map(row => row['sample id']) : 'null');
+                // Use current data for aggregation (this will be uploaded data if available)
+                const baseDataToAverage = currentData || allData;
                 
                 const response = await fetch('/average_data', {
                     method: 'POST',
@@ -2658,8 +2605,6 @@
                 averagedData = result.data; // Store the original averaged data
                 currentColumns = result.columns; // Update column order
                 visibleColumns = [...currentColumns]; // Reset visible columns
-                
-                console.log('Averaged data length:', currentData.length);
                 
                 // Re-apply element filters if any are selected
                 if (selectedElements.size > 0) {
