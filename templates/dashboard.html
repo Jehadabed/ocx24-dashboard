@@ -2590,17 +2590,25 @@
                 const baseDataToAverage = currentData || allData;
                 console.log('  Will send to backend:', baseDataToAverage ? baseDataToAverage.length : 'null', 'rows');
                 
+                console.log('About to send request to /average_data...');
+                
+                const requestBody = {
+                    groupingColumns: groupingColumns,
+                    compositionTolerance: tolerance,
+                    currentData: baseDataToAverage
+                };
+                
+                console.log('Request body size:', JSON.stringify(requestBody).length, 'characters');
+                
                 const response = await fetch('/average_data', {
                     method: 'POST',
                     headers: {
                         'Content-Type': 'application/json',
                     },
-                    body: JSON.stringify({
-                        groupingColumns: groupingColumns,
-                        compositionTolerance: tolerance,
-                        currentData: baseDataToAverage
-                    })
+                    body: JSON.stringify(requestBody)
                 });
+                
+                console.log('Response status:', response.status, response.statusText);
                 
                 if (!response.ok) {
                     throw new Error('Averaging failed');
