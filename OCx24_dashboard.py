@@ -719,13 +719,6 @@ def create_filter_dashboard():
             composition_tolerance = request_data.get('compositionTolerance', 0.01)
             current_data_list = request_data.get('currentData')
             
-            print(f"BACKEND DEBUG: Request keys: {list(request_data.keys())}")
-            print(f"BACKEND DEBUG: currentData type: {type(current_data_list)}")
-            if current_data_list:
-                print(f"BACKEND DEBUG: currentData length: {len(current_data_list)}")
-            else:
-                print(f"BACKEND DEBUG: currentData is None or empty")
-            
             # Use provided current data or fall back to main_df
             if current_data_list:
                 work_df = pd.DataFrame(current_data_list)

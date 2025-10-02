@@ -2582,23 +2582,13 @@
                 }
                 
                 // Use current data for aggregation (this will be uploaded data if available)
-                console.log('DEBUG: Data state during aggregation:');
-                console.log('  currentData rows:', currentData ? currentData.length : 'null');
-                console.log('  allData rows:', allData ? allData.length : 'null');
-                console.log('  usingUploadedData flag:', usingUploadedData);
-                
                 const baseDataToAverage = currentData || allData;
-                console.log('  Will send to backend:', baseDataToAverage ? baseDataToAverage.length : 'null', 'rows');
-                
-                console.log('About to send request to /average_data...');
                 
                 const requestBody = {
                     groupingColumns: groupingColumns,
                     compositionTolerance: tolerance,
                     currentData: baseDataToAverage
                 };
-                
-                console.log('Request body size:', JSON.stringify(requestBody).length, 'characters');
                 
                 const response = await fetch('/average_data', {
                     method: 'POST',
@@ -2607,8 +2597,6 @@
                     },
                     body: JSON.stringify(requestBody)
                 });
-                
-                console.log('Response status:', response.status, response.statusText);
                 
                 if (!response.ok) {
                     throw new Error('Averaging failed');
