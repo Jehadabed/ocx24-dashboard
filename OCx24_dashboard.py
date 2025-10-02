@@ -648,6 +648,13 @@ def create_filter_dashboard():
                 
                 averaged_df = df_for_averaging.groupby(available_group_columns).agg(agg_dict).reset_index()
                 
+                # Add sample count as a separate column if sample id column exists
+                if 'sample id' in df_for_averaging.columns:
+                    sample_counts = df_for_averaging.groupby(available_group_columns)['sample id'].nunique().reset_index()
+                    sample_counts = sample_counts.rename(columns={'sample id': 'sample_count'})
+                    averaged_df = averaged_df.merge(sample_counts, on=available_group_columns, how='left')
+                    print(f"Added sample_count column with unique sample ID counts")
+                
                 # Add calculated standard deviation columns for each averaged column
                 for col in voltage_fe_columns:
                     std_col_name = col + '_std'
@@ -671,7 +678,15 @@ def create_filter_dashboard():
                 all_other_cols = [col for col in main_df.columns 
                                 if col not in available_group_columns and col != 'rep']
                 agg_dict = {col: 'first' for col in all_other_cols}
+                
                 averaged_df = df_for_grouping.groupby(available_group_columns).agg(agg_dict).reset_index()
+                
+                # Add sample count as a separate column if sample id column exists
+                if 'sample id' in df_for_grouping.columns:
+                    sample_counts = df_for_grouping.groupby(available_group_columns)['sample id'].nunique().reset_index()
+                    sample_counts = sample_counts.rename(columns={'sample id': 'sample_count'})
+                    averaged_df = averaged_df.merge(sample_counts, on=available_group_columns, how='left')
+                    print(f"Added sample_count column with unique sample ID counts")
             
             # Rename voltage and fe_ columns to add "_mean" suffix BEFORE reordering
             # But exclude _std columns from this renaming

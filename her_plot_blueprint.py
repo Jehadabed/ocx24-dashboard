@@ -1087,6 +1087,7 @@ def her_plot_main():
                             `Batch: ${{row['batch number'] || 'N/A'}}<br>` +
                             `Formula: ${{row['xrf composition'] || row['target composition'] || 'N/A'}}<br>` +
                             `Current Density: ${{row['current density']}} mA/cm²<br>` +
+                            (row['sample_count'] !== undefined ? `Samples Aggregated: ${{row['sample_count']}}<br>` : '') +
                             `X: ${{row[xCol].toFixed(3)}}${{getColumnUnits(xCol, currentUnitType)}}<br>` +
                             `Y: ${{row[yCol].toFixed(3)}} V`
                         ),
@@ -1136,6 +1137,7 @@ def her_plot_main():
                             `Batch: ${{row['batch number'] || 'N/A'}}<br>` +
                             `Formula: ${{row['xrf composition'] || row['target composition'] || 'N/A'}}<br>` +
                             `Current Density: ${{row['current density']}} mA/cm²<br>` +
+                            (row['sample_count'] !== undefined ? `Samples Aggregated: ${{row['sample_count']}}<br>` : '') +
                             `X: ${{row[xCol].toFixed(3)}}${{getColumnUnits(xCol, currentUnitType)}}<br>` +
                             `Y: ${{row[yCol].toFixed(3)}} V`
                         ),

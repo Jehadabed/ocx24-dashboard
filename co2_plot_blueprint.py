@@ -1319,7 +1319,7 @@ def co2_plot_main():
                             customdata.push(row['sample id'] || 'Unknown');
                             
                             text.push(
-                                'Source: ' + row['source'] + '<br>Sample ID: ' + (row['sample id'] || 'N/A') + '<br>Batch: ' + (row['batch number'] || 'N/A') + ' (' + (row['batch date'] || 'N/A') + ')<br>Chemical Formula: ' + (row['xrf composition'] || row['target composition'] || 'N/A') + '<br>' + (currentMode === 'current_density' ? 'Current Density: ' + currentDensityOptions[currentDensityIndex] + ' mA/cm²' : 'Voltage: ' + currentVoltage.toFixed(2) + 'V') + '<br>X: ' + xv.toFixed(3) + '<br>Y: ' + yv.toFixed(3)
+                                'Source: ' + row['source'] + '<br>Sample ID: ' + (row['sample id'] || 'N/A') + '<br>Batch: ' + (row['batch number'] || 'N/A') + ' (' + (row['batch date'] || 'N/A') + ')<br>Chemical Formula: ' + (row['xrf composition'] || row['target composition'] || 'N/A') + '<br>' + (currentMode === 'current_density' ? 'Current Density: ' + currentDensityOptions[currentDensityIndex] + ' mA/cm²' : 'Voltage: ' + currentVoltage.toFixed(2) + 'V') + '<br>' + (row['sample_count'] !== undefined ? 'Samples Aggregated: ' + row['sample_count'] + '<br>' : '') + 'X: ' + xv.toFixed(3) + '<br>Y: ' + yv.toFixed(3)
                             );
                         }}
                     }});
