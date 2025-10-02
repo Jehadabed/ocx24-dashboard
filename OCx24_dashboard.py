@@ -291,6 +291,86 @@ def create_filter_dashboard():
         except Exception as e:
             return jsonify({'success': False, 'error': str(e)}), 500
     
+    @app.route('/upload_xrd_data', methods=['POST'])
+    def upload_xrd_data():
+        """Handle XRD folder upload and store files"""
+        try:
+            if 'xrd_files' not in request.files:
+                return jsonify({'success': False, 'error': 'No XRD files provided'}), 400
+            
+            files = request.files.getlist('xrd_files')
+            if not files:
+                return jsonify({'success': False, 'error': 'No files selected'}), 400
+            
+            # Create custom XRD directories if they don't exist
+            custom_xrd_dir = "Data/CustomXRD"
+            raw_dir = os.path.join(custom_xrd_dir, "raw")
+            normalized_dir = os.path.join(custom_xrd_dir, "normalized")
+            
+            os.makedirs(raw_dir, exist_ok=True)
+            os.makedirs(normalized_dir, exist_ok=True)
+            
+            uploaded_files = []
+            raw_files = 0
+            normalized_files = 0
+            
+            for file in files:
+                if file.filename == '':
+                    continue
+                
+                filename = file.filename.lower()
+                if not (filename.endswith('.xy') or filename.endswith('.csv')):
+                    continue
+                
+                # Determine file type and destination
+                if filename.endswith('.xy'):
+                    dest_dir = raw_dir
+                    raw_files += 1
+                else:  # .csv files
+                    dest_dir = normalized_dir
+                    normalized_files += 1
+                
+                # Save the file
+                file_path = os.path.join(dest_dir, file.filename)
+                file.save(file_path)
+                uploaded_files.append(file.filename)
+                print(f"Saved XRD file: {file_path}")
+            
+            if not uploaded_files:
+                return jsonify({'success': False, 'error': 'No valid XRD files (.xy or .csv) found'}), 400
+            
+            return jsonify({
+                'success': True,
+                'files_uploaded': len(uploaded_files),
+                'raw_files': raw_files,
+                'normalized_files': normalized_files,
+                'files': uploaded_files
+            })
+            
+        except Exception as e:
+            print(f"XRD upload error: {e}")
+            return jsonify({'success': False, 'error': f'XRD upload failed: {str(e)}'}), 500
+    
+    @app.route('/reset_xrd_data', methods=['POST'])
+    def reset_xrd_data():
+        """Reset XRD data to original by removing custom XRD directory"""
+        try:
+            import shutil
+            
+            custom_xrd_dir = "Data/CustomXRD"
+            if os.path.exists(custom_xrd_dir):
+                shutil.rmtree(custom_xrd_dir)
+                print(f"Removed custom XRD directory: {custom_xrd_dir}")
+            
+            return jsonify({
+                'success': True,
+                'message': 'XRD data reset to original'
+            })
+            
+        except Exception as e:
+            print(f"XRD reset error: {e}")
+            return jsonify({'success': False, 'error': f'XRD reset failed: {str(e)}'}), 500
+    
     # Check if dataframe is empty
     if main_df.empty:
         print("ERROR: No data loaded! Cannot create filter dashboard.")
@@ -637,6 +717,15 @@ def create_filter_dashboard():
             request_data = request.get_json() or {}
             user_group_columns = request_data.get('groupingColumns', [])
             composition_tolerance = request_data.get('compositionTolerance', 0.01)
+            current_data_list = request_data.get('currentData')
+            
+            # Use provided current data or fall back to main_df
+            if current_data_list:
+                work_df = pd.DataFrame(current_data_list)
+                print(f"Using provided current data: {len(work_df)} rows")
+            else:
+                work_df = main_df.copy()
+                print(f"Using main dataframe: {len(work_df)} rows")
             
             # Validate composition tolerance
             try:
@@ -660,13 +749,13 @@ def create_filter_dashboard():
             print(f"Composition tolerance: {composition_tolerance}")
             
             # Check which grouping columns exist in the dataframe
-            available_group_columns = [col for col in group_columns if col in main_df.columns]
+            available_group_columns = [col for col in group_columns if col in work_df.columns]
             
             if not available_group_columns:
                 return jsonify({'success': False, 'error': 'No grouping columns found'}), 400
             
             # Handle composition tolerance for XRF and target composition columns
-            df_for_grouping = main_df.copy()
+            df_for_grouping = work_df.copy()
             composition_mappings = {}
             
             if 'xrf composition' in available_group_columns and composition_tolerance > 0:
@@ -684,12 +773,12 @@ def create_filter_dashboard():
                 print(f"Target composition groups: {len(set(target_mapping.values()))} groups from {len(target_mapping)} compositions")
             
             # Identify only voltage and fe_ columns for averaging
-            voltage_fe_columns = [col for col in main_df.columns 
+            voltage_fe_columns = [col for col in work_df.columns 
                                 if (col.startswith('voltage') or col.startswith('fe_')) 
                                 and col not in available_group_columns]
             
             # All other columns (excluding grouping columns and rep) should be preserved
-            preserve_columns = [col for col in main_df.columns 
+            preserve_columns = [col for col in work_df.columns 
                               if col not in available_group_columns 
                               and col not in voltage_fe_columns 
                               and col != 'rep']
@@ -741,7 +830,7 @@ def create_filter_dashboard():
                         averaged_df[std_col_name] = 0.0
             else:
                 # If no voltage/fe_ columns, just group and take first values for all columns
-                all_other_cols = [col for col in main_df.columns 
+                all_other_cols = [col for col in work_df.columns 
                                 if col not in available_group_columns and col != 'rep']
                 agg_dict = {col: 'first' for col in all_other_cols}
                 

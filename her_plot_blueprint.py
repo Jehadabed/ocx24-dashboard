@@ -284,24 +284,33 @@ def find_pd_mean_value(df, target_column, source):
     return mean_value
 
 def load_xrd_data(sample_id, data_type="raw"):
-    """Load XRD data for a specific sample ID from Data/XRD directory."""
+    """Load XRD data for a specific sample ID from Data/XRD or Data/CustomXRD directory."""
     try:
-        # Construct the file path based on data type
+        # First check for custom XRD data, then fall back to original
+        custom_xrd_base = "Data/CustomXRD"
+        original_xrd_base = "Data/XRD"
+        
+        # Construct potential file paths
         if data_type == "raw":
-            xrd_file_path = f"Data/XRD/raw/{sample_id}.xy"
+            custom_path = f"{custom_xrd_base}/raw/{sample_id}.xy"
+            original_path = f"{original_xrd_base}/raw/{sample_id}.xy"
         elif data_type == "normalized":
-            xrd_file_path = f"Data/XRD/normalized/{sample_id}.csv"
+            custom_path = f"{custom_xrd_base}/normalized/{sample_id}.csv"
+            original_path = f"{original_xrd_base}/normalized/{sample_id}.csv"
         else:
             print(f"Invalid data type: {data_type}")
             return None
-            
-        print(f"DEBUG: Looking for XRD file: {xrd_file_path}")
-        print(f"DEBUG: Current working directory: {os.getcwd()}")
-        print(f"DEBUG: File exists: {os.path.exists(xrd_file_path)}")
         
-        # Check if file exists
-        if not os.path.exists(xrd_file_path):
-            print(f"XRD file not found: {xrd_file_path}")
+        # Check custom XRD first, then original
+        xrd_file_path = None
+        if os.path.exists(custom_path):
+            xrd_file_path = custom_path
+            print(f"DEBUG: Using custom XRD file: {custom_path}")
+        elif os.path.exists(original_path):
+            xrd_file_path = original_path
+            print(f"DEBUG: Using original XRD file: {original_path}")
+        else:
+            print(f"XRD file not found in custom or original locations for sample {sample_id} ({data_type})")
             return None
         
         # Read the file
@@ -899,8 +908,9 @@ def her_plot_main():
                 
                 <br><br><strong>XRD Analysis:</strong><br>
                 Click on any point in the main plot to view the corresponding XRD pattern in the XRD Analysis window.<br>
-                • XRD data is loaded from <code>/Data/XRD/raw/</code> directory<br>
-                • Files are named using the sample ID (e.g., <code>sample_001.xy</code>)<br>
+                • XRD data is loaded from <code>/Data/XRD/raw/</code> or <code>/Data/CustomXRD/raw/</code> directories<br>
+                • Custom XRD data can be uploaded via the dashboard's "Load Your Own XRD Data" section<br>
+                • Files should be named using the sample ID (e.g., <code>sample_001.xy</code> for raw or <code>sample_001.csv</code> for normalized)<br>
                 • The plot shows 2θ (degrees) vs Intensity (counts)<br>
                 • If no XRD data is found for a sample, an error message will be displayed
             </div>

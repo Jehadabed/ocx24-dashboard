@@ -1215,6 +1215,21 @@
                     <button id="resetDataBtn" class="reset-data-btn" onclick="resetToOriginalData()" style="display: none;">Reset to Original Data</button>
                 </div>
                 <div id="uploadStatus" class="upload-status"></div>
+                
+                <div style="margin-top: 16px; padding-top: 16px; border-top: 1px solid #e8eaed;">
+                    <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #666;">Upload your own XRD data folder to analyze with the HER and CO2 plotters. XRD files should be named using sample IDs.</p>
+                    <div class="upload-controls">
+                        <div class="file-input-wrapper">
+                            <input type="file" id="xrdFolderInput" class="file-input" webkitdirectory multiple onchange="handleXrdFolderSelect(event)">
+                            <button type="button" class="file-input-btn" id="xrdFolderInputBtn" onclick="document.getElementById('xrdFolderInput').click()">
+                                Choose XRD Folder
+                            </button>
+                        </div>
+                        <button id="uploadXrdBtn" class="upload-btn" onclick="uploadXrdData()" disabled>Upload XRD</button>
+                        <button id="resetXrdBtn" class="reset-data-btn" onclick="resetToOriginalXrdData()" style="display: none;">Reset to Original XRD</button>
+                    </div>
+                    <div id="xrdUploadStatus" class="upload-status"></div>
+                </div>
             </div>
         </div>
         
@@ -2348,12 +2363,24 @@
                 document.getElementById('elementCount2').checked = true;
                 document.getElementById('elementCount3').checked = true;
                 
-                // Fetch original data from backend
-                const response = await fetch('/get_data');
-                const result = await response.json();
+                // Reset to original data (uploaded or default)
+                // Check if we're using uploaded data or original data
+                let result;
+                if (usingUploadedData && uploaded_data_cache) {
+                    // Use uploaded data cache
+                    result = {
+                        success: true,
+                        data: uploaded_data_cache.data,
+                        columns: uploaded_data_cache.columns
+                    };
+                } else {
+                    // Fetch original data from backend
+                    const response = await fetch('/get_data');
+                    result = await response.json();
+                }
                 
                 if (result.success) {
-                    // Update global variables with original data
+                    // Update global variables with the appropriate base data
                     allData = result.data;
                     currentData = allData;
                     averagedData = null; // Clear averaged data
@@ -2564,6 +2591,8 @@
                 console.log('Composition tolerance:', tolerance);
                 
                 // Send request to average data with selected grouping columns
+                // Use the current base data (uploaded or original)
+                const baseDataToAverage = averagedData || allData;
                 const response = await fetch('/average_data', {
                     method: 'POST',
                     headers: {
@@ -2571,7 +2600,8 @@
                     },
                     body: JSON.stringify({
                         groupingColumns: groupingColumns,
-                        compositionTolerance: tolerance
+                        compositionTolerance: tolerance,
+                        currentData: baseDataToAverage
                     })
                 });
                 
@@ -3209,6 +3239,7 @@
         // File upload functions
         let selectedFile = null;
         let usingUploadedData = false;
+        let uploaded_data_cache = null;
         
         function handleFileSelect(event) {
             selectedFile = event.target.files[0];
@@ -3269,6 +3300,12 @@
                 if (result.success) {
                     showUploadStatus(`Successfully uploaded ${result.rows} rows with ${result.columns} columns`, 'success');
                     
+                    // Cache uploaded data for reset functionality
+                    uploaded_data_cache = {
+                        data: result.data,
+                        columns: result.column_order
+                    };
+                    
                     // Update global data variables
                     allData = result.data;
                     currentData = result.data;
@@ -3312,6 +3349,9 @@
                 const result = await response.json();
                 
                 if (result.success) {
+                    // Clear uploaded data cache
+                    uploaded_data_cache = null;
+                    
                     // Reset global variables
                     allData = result.data;
                     currentData = allData;
@@ -3349,6 +3389,156 @@
             } catch (error) {
                 console.error('Reset error:', error);
                 showUploadStatus('Failed to reset data: Network error', 'error');
+            }
+        }
+        
+        // XRD folder upload functions
+        let selectedXrdFiles = null;
+        let usingUploadedXrdData = false;
+        
+        function handleXrdFolderSelect(event) {
+            selectedXrdFiles = event.target.files;
+            const uploadXrdBtn = document.getElementById('uploadXrdBtn');
+            const xrdFolderBtn = document.getElementById('xrdFolderInputBtn');
+            
+            if (selectedXrdFiles && selectedXrdFiles.length > 0) {
+                // Filter for supported file types (.xy, .csv)
+                const supportedFiles = Array.from(selectedXrdFiles).filter(file => 
+                    file.name.toLowerCase().endsWith('.xy') || file.name.toLowerCase().endsWith('.csv')
+                );
+                
+                if (supportedFiles.length > 0) {
+                    uploadXrdBtn.disabled = false;
+                    xrdFolderBtn.textContent = `${supportedFiles.length} XRD files selected`;
+                    xrdFolderBtn.classList.add('has-file');
+                    showXrdUploadStatus(`Selected ${supportedFiles.length} XRD files (${supportedFiles.filter(f => f.name.endsWith('.xy')).length} .xy, ${supportedFiles.filter(f => f.name.endsWith('.csv')).length} .csv)`, 'success');
+                } else {
+                    uploadXrdBtn.disabled = true;
+                    xrdFolderBtn.textContent = 'Choose XRD Folder';
+                    xrdFolderBtn.classList.remove('has-file');
+                    showXrdUploadStatus('No supported XRD files found. Please select .xy or .csv files.', 'error');
+                    selectedXrdFiles = null;
+                }
+            } else {
+                uploadXrdBtn.disabled = true;
+                xrdFolderBtn.textContent = 'Choose XRD Folder';
+                xrdFolderBtn.classList.remove('has-file');
+                hideXrdUploadStatus();
+                selectedXrdFiles = null;
+            }
+        }
+        
+        function showXrdUploadStatus(message, type) {
+            const status = document.getElementById('xrdUploadStatus');
+            status.textContent = message;
+            status.className = `upload-status ${type}`;
+            status.style.display = 'block';
+        }
+        
+        function hideXrdUploadStatus() {
+            const status = document.getElementById('xrdUploadStatus');
+            status.style.display = 'none';
+        }
+        
+        async function uploadXrdData() {
+            if (!selectedXrdFiles || selectedXrdFiles.length === 0) {
+                showXrdUploadStatus('Please select XRD files first', 'error');
+                return;
+            }
+            
+            const uploadXrdBtn = document.getElementById('uploadXrdBtn');
+            uploadXrdBtn.disabled = true;
+            uploadXrdBtn.textContent = 'Uploading...';
+            
+            try {
+                const formData = new FormData();
+                
+                // Filter and add only supported files
+                const supportedFiles = Array.from(selectedXrdFiles).filter(file => 
+                    file.name.toLowerCase().endsWith('.xy') || file.name.toLowerCase().endsWith('.csv')
+                );
+                
+                supportedFiles.forEach(file => {
+                    formData.append('xrd_files', file);
+                });
+                
+                const response = await fetch('/upload_xrd_data', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showXrdUploadStatus(`Successfully uploaded ${result.files_uploaded} XRD files (${result.raw_files} raw, ${result.normalized_files} normalized)`, 'success');
+                    
+                    usingUploadedXrdData = true;
+                    
+                    // Show reset button
+                    document.getElementById('resetXrdBtn').style.display = 'inline-block';
+                    
+                    // Update title to indicate custom XRD data
+                    const title = document.querySelector('h1');
+                    if (!title.textContent.includes('(Custom XRD)') && !title.textContent.includes('(Custom Data)')) {
+                        if (title.textContent.includes('OCx24 Dataset')) {
+                            title.innerHTML = '<strong>OCx24 Dataset (Custom XRD)</strong>';
+                        }
+                    } else if (title.textContent.includes('(Custom Data)')) {
+                        title.innerHTML = '<strong>OCx24 Dataset (Custom Data + XRD)</strong>';
+                    }
+                    
+                } else {
+                    showXrdUploadStatus('XRD upload failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('XRD upload error:', error);
+                showXrdUploadStatus('XRD upload failed: Network error', 'error');
+            } finally {
+                uploadXrdBtn.disabled = false;
+                uploadXrdBtn.textContent = 'Upload XRD';
+            }
+        }
+        
+        async function resetToOriginalXrdData() {
+            try {
+                const response = await fetch('/reset_xrd_data', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    }
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    usingUploadedXrdData = false;
+                    
+                    // Clear XRD file input
+                    document.getElementById('xrdFolderInput').value = '';
+                    const xrdFolderBtn = document.getElementById('xrdFolderInputBtn');
+                    xrdFolderBtn.textContent = 'Choose XRD Folder';
+                    xrdFolderBtn.classList.remove('has-file');
+                    document.getElementById('uploadXrdBtn').disabled = true;
+                    document.getElementById('resetXrdBtn').style.display = 'none';
+                    
+                    // Update title
+                    const title = document.querySelector('h1');
+                    if (title.textContent.includes('(Custom Data + XRD)')) {
+                        title.innerHTML = '<strong>OCx24 Dataset (Custom Data)</strong>';
+                    } else if (title.textContent.includes('(Custom XRD)')) {
+                        title.innerHTML = '<strong>OCx24 Dataset</strong>';
+                    }
+                    
+                    hideXrdUploadStatus();
+                    showXrdUploadStatus('Reset to original XRD data', 'success');
+                    setTimeout(hideXrdUploadStatus, 3000);
+                    
+                } else {
+                    showXrdUploadStatus('Failed to reset XRD data: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('XRD reset error:', error);
+                showXrdUploadStatus('Failed to reset XRD data: Network error', 'error');
             }
         }
         
