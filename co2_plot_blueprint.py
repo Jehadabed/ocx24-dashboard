@@ -1319,7 +1319,7 @@ def co2_plot_main():
                             customdata.push(row['sample id'] || 'Unknown');
                             
                             text.push(
-                                `Source: ${{row['source']}}<br>Sample ID: ${{row['sample id'] || 'N/A'}}<br>Batch: ${{row['batch number'] || 'N/A'}} (${{row['batch date'] || 'N/A'}})<br>Chemical Formula: ${{row['xrf composition'] || row['target composition'] || 'N/A'}}<br>${{currentMode === 'current_density' ? 'Current Density: ' + currentDensityOptions[currentDensityIndex] + ' mA/cm²' : 'Voltage: ' + currentVoltage.toFixed(2) + 'V'}}<br>X: ${{xv.toFixed(3)}}<br>Y: ${{yv.toFixed(3)}}`
+                                'Source: ' + row['source'] + '<br>Sample ID: ' + (row['sample id'] || 'N/A') + '<br>Batch: ' + (row['batch number'] || 'N/A') + ' (' + (row['batch date'] || 'N/A') + ')<br>Chemical Formula: ' + (row['xrf composition'] || row['target composition'] || 'N/A') + '<br>' + (currentMode === 'current_density' ? 'Current Density: ' + currentDensityOptions[currentDensityIndex] + ' mA/cm²' : 'Voltage: ' + currentVoltage.toFixed(2) + 'V') + '<br>X: ' + xv.toFixed(3) + '<br>Y: ' + yv.toFixed(3)
                             );
                         }}
                     }});
@@ -1581,7 +1581,7 @@ def co2_plot_main():
                 
                 const layout = {{
                     title: {{
-                        text: `${{xColFormatted}} vs ${{(yCol === 'voltage' || yCol === 'voltage_mean') ? voltageLabel.replace(' (V)', '') : yColFormatted}} ${{currentMode === 'current_density' ? 'at ' + currentDensityOptions[currentDensityIndex] + ' mA/cm²' : 'at ' + currentVoltage.toFixed(2) + 'V'}}`,
+                        text: xColFormatted + ' vs ' + ((yCol === 'voltage' || yCol === 'voltage_mean') ? voltageLabel.replace(' (V)', '') : yColFormatted) + ' ' + (currentMode === 'current_density' ? 'at ' + currentDensityOptions[currentDensityIndex] + ' mA/cm²' : 'at ' + currentVoltage.toFixed(2) + 'V'),
                         font: {{ size: 18, color: '#202124' }},
                         x: 0.5
                     }},
@@ -2233,7 +2233,11 @@ def co2_plot_main():
             
             // Function to show all accumulated XRD plots
             function showAccumulatedXrdPlots() {{
+                console.log('*** showAccumulatedXrdPlots() called ***');
+                console.log('accumulatedXrdData length:', accumulatedXrdData.length);
+                
                 if (accumulatedXrdData.length === 0) {{
+                    console.log('No XRD data to plot, clearing plot content');
                     document.getElementById('xrdPlotContent').innerHTML = '';
                     return;
                 }}
@@ -2248,6 +2252,16 @@ def co2_plot_main():
                     // Use stored source and XRF composition to match point analysis format
                     const source = xrdItem.source || 'Unknown';
                     const xrfComposition = xrdItem.xrfComposition || 'Unknown';
+                    
+                    console.log('Creating trace ' + index + ': ' + source + ' - ' + xrfComposition);
+                    console.log('DEBUG: XRD item data structure:', {{
+                        sampleId: xrdItem.sampleId,
+                        hasData: !!xrdItem.data,
+                        dataKeys: xrdItem.data ? Object.keys(xrdItem.data) : null,
+                        xLength: xrdItem.data && xrdItem.data.x ? xrdItem.data.x.length : null,
+                        yLength: xrdItem.data && xrdItem.data.y ? xrdItem.data.y.length : null,
+                        dataPoints: xrdItem.dataPoints
+                    }});
                     
                     const trace = {{
                         x: xrdItem.data.x,
@@ -2301,6 +2315,11 @@ def co2_plot_main():
                     height: 400
                 }};
                 
+                // Clear existing plot first
+                console.log('Clearing existing plot content...');
+                document.getElementById('xrdPlotContent').innerHTML = '';
+                
+                console.log('Creating new Plotly plot with', traces.length, 'traces...');
                 Plotly.newPlot('xrdPlotContent', traces, layout, {{
                     toImageButtonOptions: {{
                         format: 'png',
@@ -2311,7 +2330,7 @@ def co2_plot_main():
                     }}
                 }});
                 
-                console.log('DEBUG: Accumulated XRD plots created successfully. Total traces:', traces.length);
+                console.log('*** Plotly plot created successfully. Total traces:', traces.length, '***');
             }}
             
             // Function to reset XRD accumulation
@@ -2339,6 +2358,118 @@ def co2_plot_main():
                 }}
                 
                 console.log('XRD and Point Analysis reset');
+            }}
+            
+            // Function to reload all accumulated XRD plots with current data type
+            async function reloadAccumulatedXrdPlots() {{
+                console.log('*** reloadAccumulatedXrdPlots() called ***');
+                console.log('DEBUG: accumulatedXrdData before reload:', accumulatedXrdData.map(item => ({{ 
+                    sampleId: item.sampleId, 
+                    dataPoints: item.dataPoints,
+                    hasData: !!item.data 
+                }})));
+                
+                if (accumulatedXrdData.length === 0) {{
+                    console.log('No accumulated XRD data to reload');
+                    return; // Nothing to reload
+                }}
+                
+                console.log('Reloading accumulated XRD plots with new data type. Current samples:', accumulatedXrdData.length);
+                
+                // Store current accumulated data with metadata
+                const currentSamples = [...accumulatedXrdData];
+                console.log('Stored samples for reload:', currentSamples.map(s => s.sampleId));
+                
+                // Clear current accumulation
+                accumulatedXrdData = [];
+                console.log('Cleared accumulatedXrdData, length now:', accumulatedXrdData.length);
+                
+                // Reload each sample with new data type while preserving metadata
+                for (const xrdItem of currentSamples) {{
+                    console.log('Reloading sample:', xrdItem.sampleId);
+                    await reloadSingleXrdPlot(xrdItem.sampleId, xrdItem.source, xrdItem.xrfComposition);
+                }}
+                
+                console.log('Finished reloading all samples. Final accumulatedXrdData length:', accumulatedXrdData.length);
+                
+                // Update the plot once after all samples are reloaded
+                console.log('Updating plot with all reloaded data...');
+                showAccumulatedXrdPlots();
+            }}
+            
+            // Function to reload a single XRD plot while preserving metadata
+            async function reloadSingleXrdPlot(sampleId, source, xrfComposition) {{
+                try {{
+                    // Get selected data type from toggle
+                    const dataType = document.querySelector('input[name="xrdDataType"]:checked').value;
+                    
+                    // Fetch XRD data for the specific sample
+                    const response = await fetch('/co2/get_xrd_data', {{
+                        method: 'POST',
+                        headers: {{
+                            'Content-Type': 'application/json',
+                        }},
+                        body: JSON.stringify({{ 
+                            sample_id: sampleId,
+                            data_type: dataType
+                        }})
+                    }});
+                    
+                    if (!response.ok) {{
+                        throw new Error('Failed to fetch XRD data');
+                    }}
+                    
+                    const result = await response.json();
+                    console.log('DEBUG: API response for sample', sampleId, ':', {{
+                        success: result.success,
+                        dataType: dataType,
+                        hasData: !!result.data,
+                        dataKeys: result.data ? Object.keys(result.data) : null,
+                        dataPointsX: result.data && result.data.x ? result.data.x.length : null,
+                        dataPointsY: result.data && result.data.y ? result.data.y.length : null
+                    }});
+                    
+                    if (result.success) {{
+                        console.log('Successfully fetched XRD data for reload:', sampleId, 'data type:', dataType, 'points:', result.data_points);
+                        // Add to accumulation with preserved metadata (skip duplicate check and plot update for reload)
+                        addXrdToAccumulationWithMetadata(result.data, sampleId, result.data_points, source, xrfComposition, true, true);
+                        
+                        console.log('Reloaded XRD data for sample:', sampleId, 'with data type:', dataType);
+                    }} else {{
+                        console.error('Failed to load XRD data:', result.error);
+                    }}
+                }} catch (error) {{
+                    console.error('Error reloading XRD plot:', error);
+                }}
+            }}
+            
+            // Function to add XRD data to accumulation with explicit metadata
+            function addXrdToAccumulationWithMetadata(xrdData, sampleId, dataPoints, source, xrfComposition, skipDuplicateCheck = false, skipPlotUpdate = false) {{
+                // Check if this sample is already in accumulation (unless skipping for reload)
+                if (!skipDuplicateCheck) {{
+                    const existingIndex = accumulatedXrdData.findIndex(item => item.sampleId === sampleId);
+                    
+                    if (existingIndex !== -1) {{
+                        console.log('Sample already in XRD accumulation:', sampleId);
+                        return; // Don't add duplicates
+                    }}
+                }}
+                
+                // Add to accumulation with explicit metadata
+                accumulatedXrdData.push({{
+                    data: xrdData,
+                    sampleId: sampleId,
+                    dataPoints: dataPoints,
+                    source: source,
+                    xrfComposition: xrfComposition
+                }});
+                
+                console.log('Added XRD data to accumulation with metadata. Total samples:', accumulatedXrdData.length);
+                
+                // Show accumulated XRD plots (unless skipping for batch updates)
+                if (!skipPlotUpdate) {{
+                    showAccumulatedXrdPlots();
+                }}
             }}
             
             // Function to update visual appearance of clicked points
@@ -2431,15 +2562,21 @@ def co2_plot_main():
             document.getElementById('xrdPlotContent').innerHTML = '';
             
             // Add event listeners to XRD data type toggle
-            document.querySelectorAll('input[name="xrdDataType"]').forEach(radio => {{
+            console.log('Setting up XRD toggle event listeners...');
+            const xrdToggles = document.querySelectorAll('input[name="xrdDataType"]');
+            console.log('Found XRD toggles:', xrdToggles.length);
+            
+            xrdToggles.forEach((radio, index) => {{
+                console.log('Setting up listener for toggle ' + index + ':', radio.id, radio.value);
                 radio.addEventListener('change', function() {{
+                    console.log('*** XRD TOGGLE EVENT FIRED ***');
                     console.log('XRD data type changed to:', this.value);
-                    // Reload all accumulated XRD plots with new data type - simplified for now
-                    if (accumulatedXrdData.length > 0) {{
-                        console.log('Would reload XRD plots with new data type');
-                    }}
+                    console.log('Current accumulatedXrdData length:', accumulatedXrdData.length);
+                    // Reload all accumulated XRD plots with new data type
+                    reloadAccumulatedXrdPlots();
                 }});
             }});
+            console.log('XRD toggle event listeners setup complete');
             
             // Add event listeners to unit type toggle
             document.querySelectorAll('input[name="unitType"]').forEach(radio => {{
