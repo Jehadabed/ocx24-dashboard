@@ -318,22 +318,27 @@ def create_filter_dashboard():
                 if file.filename == '':
                     continue
                 
-                filename = file.filename.lower()
-                if not (filename.endswith('.xy') or filename.endswith('.csv')):
+                # Extract just the filename without any path components
+                # This handles cases where browser sends full folder structure like "XRD/raw/filename.xy"
+                original_filename = file.filename
+                base_filename = os.path.basename(original_filename)
+                filename_lower = base_filename.lower()
+                
+                if not (filename_lower.endswith('.xy') or filename_lower.endswith('.csv')):
                     continue
                 
-                # Determine file type and destination
-                if filename.endswith('.xy'):
+                # Determine file type and destination based on file extension
+                if filename_lower.endswith('.xy'):
                     dest_dir = raw_dir
                     raw_files += 1
                 else:  # .csv files
                     dest_dir = normalized_dir
                     normalized_files += 1
                 
-                # Save the file
-                file_path = os.path.join(dest_dir, file.filename)
+                # Save the file using just the base filename (no path)
+                file_path = os.path.join(dest_dir, base_filename)
                 file.save(file_path)
-                uploaded_files.append(file.filename)
+                uploaded_files.append(base_filename)
                 print(f"Saved XRD file: {file_path}")
             
             if not uploaded_files:

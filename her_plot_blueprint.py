@@ -823,6 +823,11 @@ def her_plot_main():
                     <label for="errorBars">Show Error Bars</label>
                 </div>
                 
+                <div class="checkbox-container">
+                    <input type="checkbox" id="disableXrdErrors">
+                    <label for="disableXrdErrors">Disable pop-up error messages</label>
+                </div>
+                
                 <div class="control-group">
                     <button id="exportBtn" class="export-btn" onclick="exportData()">
                         ⊞ Export Data (CSV)
@@ -1498,7 +1503,11 @@ def her_plot_main():
                     
                 }} catch (error) {{
                     console.error('Error loading XRD data:', error);
-                    alert('Error loading XRD data:\\n\\n' + error.message);
+                    // Only show alert if error messages are not disabled
+                    const disableErrors = document.getElementById('disableXrdErrors').checked;
+                    if (!disableErrors) {{
+                        alert('Error loading XRD data:\\n\\n' + error.message);
+                    }}
                 }}
             }}
             
