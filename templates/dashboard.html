@@ -118,6 +118,21 @@
             width: 100%;
         }
         
+        #compositionTolerance {
+            width: 45px !important;
+            min-width: 45px !important;
+            max-width: 45px !important;
+            height: 24px !important;
+            min-height: 24px !important;
+            max-height: 24px !important;
+        }
+        
+        #averageBtn {
+            width: auto !important;
+            min-width: 120px !important;
+            max-width: 150px !important;
+        }
+        
         .element-count-control {
             flex-direction: row !important;
             align-items: center;
@@ -1101,6 +1116,13 @@
                                 </div>
                             </div>
                         </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <label for="compositionTolerance">Composition Tolerance (atomic fraction)</label>
+                        <input type="number" id="compositionTolerance" min="0" max="1" step="0.001" value="0.01" 
+                               title="Allow ±tolerance for composition matching (e.g., 0.01 = ±1 at. %)"
+                               style="width: 45px !important; height: 24px !important; margin-left: 10px; padding: 2px; border: 1px solid #ccc; border-radius: 4px; text-align: center; font-size: 12px; min-width: 45px; max-width: 45px; min-height: 24px; max-height: 24px;">
                     </div>
                     
                     <div class="control-group">
@@ -2394,6 +2416,19 @@
                 const groupingColumns = Array.from(selectedGroupingColumns);
                 console.log('Grouping by columns:', groupingColumns);
                 
+                // Get composition tolerance with validation
+                const toleranceInput = document.getElementById('compositionTolerance');
+                const tolerance = parseFloat(toleranceInput.value);
+                
+                // Validate tolerance
+                if (isNaN(tolerance) || tolerance < 0 || tolerance > 1) {
+                    alert('Composition tolerance must be a number between 0 and 1');
+                    toleranceInput.focus();
+                    return;
+                }
+                
+                console.log('Composition tolerance:', tolerance);
+                
                 // Send request to average data with selected grouping columns
                 const response = await fetch('/average_data', {
                     method: 'POST',
@@ -2401,7 +2436,8 @@
                         'Content-Type': 'application/json',
                     },
                     body: JSON.stringify({
-                        groupingColumns: groupingColumns
+                        groupingColumns: groupingColumns,
+                        compositionTolerance: tolerance
                     })
                 });
                 

@@ -89,6 +89,88 @@ def parse_target_composition(formula):
         print(f"Error parsing target composition '{formula}': {e}")
         return {}
 
+def parse_xrf_composition(formula):
+    """
+    Parse XRF composition formula like 'Au-0.6-Ag-0.4' and return a dictionary
+    of element: fraction pairs.
+    """
+    if pd.isna(formula) or not formula:
+        return {}
+    
+    try:
+        # Split by '-' and process pairs
+        parts = str(formula).split('-')
+        composition = {}
+        
+        for i in range(0, len(parts), 2):
+            if i + 1 < len(parts):
+                element = parts[i].strip()
+                fraction = float(parts[i + 1].strip())
+                composition[element] = fraction
+        
+        return composition
+    except Exception as e:
+        print(f"Error parsing XRF composition '{formula}': {e}")
+        return {}
+
+def compositions_within_tolerance(comp1, comp2, tolerance):
+    """
+    Check if two compositions are within the specified tolerance.
+    Returns True if all elements in both compositions are within tolerance.
+    """
+    if not comp1 or not comp2:
+        return False
+    
+    # Get all unique elements from both compositions
+    all_elements = set(comp1.keys()) | set(comp2.keys())
+    
+    for element in all_elements:
+        val1 = comp1.get(element, 0.0)
+        val2 = comp2.get(element, 0.0)
+        
+        if abs(val1 - val2) > tolerance:
+            return False
+    
+    return True
+
+def group_compositions_with_tolerance(df, composition_column, tolerance):
+    """
+    Group compositions within tolerance and return a mapping from original composition to grouped composition.
+    """
+    if composition_column not in df.columns:
+        return {}
+    
+    # Get unique compositions
+    unique_compositions = df[composition_column].dropna().unique()
+    
+    # Create mapping from original composition to grouped composition
+    composition_groups = {}
+    grouped_compositions = []
+    
+    for comp in unique_compositions:
+        if pd.isna(comp) or not comp:
+            continue
+            
+        # Parse the composition
+        parsed_comp = parse_xrf_composition(comp) if composition_column == 'xrf composition' else parse_target_composition(comp)
+        
+        # Find if this composition matches any existing group
+        matched_group = None
+        for group_comp in grouped_compositions:
+            group_parsed = parse_xrf_composition(group_comp) if composition_column == 'xrf composition' else parse_target_composition(group_comp)
+            if compositions_within_tolerance(parsed_comp, group_parsed, tolerance):
+                matched_group = group_comp
+                break
+        
+        if matched_group:
+            composition_groups[comp] = matched_group
+        else:
+            # Create new group
+            grouped_compositions.append(comp)
+            composition_groups[comp] = comp
+    
+    return composition_groups
+
 def create_filter_dashboard():
     """
     Creates a Flask web application with interactive filters for DataFrame exploration.
@@ -488,6 +570,15 @@ def create_filter_dashboard():
             # Get grouping columns from request
             request_data = request.get_json() or {}
             user_group_columns = request_data.get('groupingColumns', [])
+            composition_tolerance = request_data.get('compositionTolerance', 0.01)
+            
+            # Validate composition tolerance
+            try:
+                composition_tolerance = float(composition_tolerance)
+                if composition_tolerance < 0 or composition_tolerance > 1:
+                    return jsonify({'success': False, 'error': 'Composition tolerance must be between 0 and 1'}), 400
+            except (ValueError, TypeError):
+                return jsonify({'success': False, 'error': 'Invalid composition tolerance value'}), 400
             
             # Default grouping columns (mandatory)
             default_group_columns = ['reaction', 'current density']
@@ -500,12 +591,31 @@ def create_filter_dashboard():
             
             print(f"User selected grouping columns: {user_group_columns}")
             print(f"Final grouping columns: {group_columns}")
+            print(f"Composition tolerance: {composition_tolerance}")
             
             # Check which grouping columns exist in the dataframe
             available_group_columns = [col for col in group_columns if col in main_df.columns]
             
             if not available_group_columns:
                 return jsonify({'success': False, 'error': 'No grouping columns found'}), 400
+            
+            # Handle composition tolerance for XRF and target composition columns
+            df_for_grouping = main_df.copy()
+            composition_mappings = {}
+            
+            if 'xrf composition' in available_group_columns and composition_tolerance > 0:
+                print("Applying XRF composition tolerance grouping...")
+                xrf_mapping = group_compositions_with_tolerance(df_for_grouping, 'xrf composition', composition_tolerance)
+                composition_mappings['xrf composition'] = xrf_mapping
+                df_for_grouping['xrf composition'] = df_for_grouping['xrf composition'].map(xrf_mapping).fillna(df_for_grouping['xrf composition'])
+                print(f"XRF composition groups: {len(set(xrf_mapping.values()))} groups from {len(xrf_mapping)} compositions")
+            
+            if 'target composition' in available_group_columns and composition_tolerance > 0:
+                print("Applying target composition tolerance grouping...")
+                target_mapping = group_compositions_with_tolerance(df_for_grouping, 'target composition', composition_tolerance)
+                composition_mappings['target composition'] = target_mapping
+                df_for_grouping['target composition'] = df_for_grouping['target composition'].map(target_mapping).fillna(df_for_grouping['target composition'])
+                print(f"Target composition groups: {len(set(target_mapping.values()))} groups from {len(target_mapping)} compositions")
             
             # Identify only voltage and fe_ columns for averaging
             voltage_fe_columns = [col for col in main_df.columns 
@@ -521,7 +631,7 @@ def create_filter_dashboard():
             # Group and aggregate
             if voltage_fe_columns:
                 # Create a copy of the dataframe and replace NaN with 0 for voltage and fe_ columns
-                df_for_averaging = main_df.copy()
+                df_for_averaging = df_for_grouping.copy()
                 for col in voltage_fe_columns:
                     df_for_averaging[col] = df_for_averaging[col].fillna(0)
                 
@@ -561,7 +671,7 @@ def create_filter_dashboard():
                 all_other_cols = [col for col in main_df.columns 
                                 if col not in available_group_columns and col != 'rep']
                 agg_dict = {col: 'first' for col in all_other_cols}
-                averaged_df = main_df.groupby(available_group_columns).agg(agg_dict).reset_index()
+                averaged_df = df_for_grouping.groupby(available_group_columns).agg(agg_dict).reset_index()
             
             # Rename voltage and fe_ columns to add "_mean" suffix BEFORE reordering
             # But exclude _std columns from this renaming
