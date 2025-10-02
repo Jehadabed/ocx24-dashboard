@@ -51,7 +51,7 @@
         .dataset-description {
             background: #ffffff;
             padding: 12px 48px 24px 48px;
-            margin: 0 300px 0 16px;
+            margin: 0 48px 0 16px;
             border-bottom: 1px solid #e8eaed;
             font-size: 0.85em;
             line-height: 1.4;
@@ -101,14 +101,42 @@
         }
         
         .file-input {
+            display: none;
+        }
+        
+        .file-input-wrapper {
             flex: 1;
             min-width: 200px;
+            position: relative;
+        }
+        
+        .file-input-btn {
+            background: #ffffff;
+            color: #5f6368;
+            border: 1px solid #dadce0;
             padding: 8px 12px;
             height: 36px;
-            border: 1px solid #dadce0;
             border-radius: 6px;
             font-size: 0.875em;
-            background: white;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            text-align: left;
+            display: flex;
+            align-items: center;
+            justify-content: flex-start;
+        }
+        
+        .file-input-btn:hover {
+            border-color: #4285f4;
+            box-shadow: 0 2px 8px rgba(66, 133, 244, 0.15);
+            transform: translateY(-1px);
+        }
+        
+        .file-input-btn.has-file {
+            color: #1a73e8;
+            border-color: #4285f4;
         }
         
         .upload-btn {
@@ -1151,7 +1179,7 @@
                 padding: 0 24px 24px 24px;
             }
             .main-panel {
-                padding: 20px;
+                padding: 0px;
                 gap: 20px;
             }
             .main-content {
@@ -1174,10 +1202,15 @@
             <p>Each synthesis method includes three duplicate samples for statistical reliability. All samples contain X-ray Fluorescence (XRF) composition data, and most samples include X-ray Diffraction (XRD) structural characterization data.</p>
             
             <div class="upload-section">
-                <h4>📊 Load Your Own Data</h4>
-                <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #666;">Upload your own CSV file to analyze with the dashboard. The file should contain columns like 'sample id', 'source', 'reaction', 'current density', elemental compositions (e.g., Cu, Ag, Au), and performance metrics (e.g., voltage, fe_h2, fe_co).</p>
+                <h4>⬆ Load Your Own Data</h4>
+                <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #666;">Upload your own CSV file to analyze with the dashboard. Export CSV to check for required format and columns.</p>
                 <div class="upload-controls">
-                    <input type="file" id="csvFileInput" class="file-input" accept=".csv" onchange="handleFileSelect(event)">
+                    <div class="file-input-wrapper">
+                        <input type="file" id="csvFileInput" class="file-input" accept=".csv" onchange="handleFileSelect(event)">
+                        <button type="button" class="file-input-btn" id="fileInputBtn" onclick="document.getElementById('csvFileInput').click()">
+                            Choose CSV File
+                        </button>
+                    </div>
                     <button id="uploadBtn" class="upload-btn" onclick="uploadData()" disabled>Upload Data</button>
                     <button id="resetDataBtn" class="reset-data-btn" onclick="resetToOriginalData()" style="display: none;">Reset to Original Data</button>
                 </div>
@@ -3180,12 +3213,17 @@
         function handleFileSelect(event) {
             selectedFile = event.target.files[0];
             const uploadBtn = document.getElementById('uploadBtn');
+            const fileBtn = document.getElementById('fileInputBtn');
             
             if (selectedFile && selectedFile.type === 'text/csv') {
                 uploadBtn.disabled = false;
+                fileBtn.textContent = selectedFile.name;
+                fileBtn.classList.add('has-file');
                 showUploadStatus('File selected: ' + selectedFile.name, 'success');
             } else {
                 uploadBtn.disabled = true;
+                fileBtn.textContent = 'Choose CSV File';
+                fileBtn.classList.remove('has-file');
                 if (selectedFile) {
                     showUploadStatus('Please select a CSV file', 'error');
                 } else {
@@ -3291,6 +3329,9 @@
                     
                     // Clear file input
                     document.getElementById('csvFileInput').value = '';
+                    const fileBtn = document.getElementById('fileInputBtn');
+                    fileBtn.textContent = 'Choose CSV File';
+                    fileBtn.classList.remove('has-file');
                     document.getElementById('uploadBtn').disabled = true;
                     document.getElementById('resetDataBtn').style.display = 'none';
                     
