@@ -78,6 +78,96 @@
             font-weight: 500;
         }
         
+        .upload-section {
+            margin-top: 16px;
+            padding: 16px;
+            background: #f8f9fa;
+            border: 1px solid #e8eaed;
+            border-radius: 8px;
+        }
+        
+        .upload-section h4 {
+            margin: 0 0 12px 0;
+            color: #1a73e8;
+            font-size: 0.9em;
+            font-weight: 500;
+        }
+        
+        .upload-controls {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        
+        .file-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 8px 12px;
+            height: 36px;
+            border: 1px solid #dadce0;
+            border-radius: 6px;
+            font-size: 0.875em;
+            background: white;
+        }
+        
+        .upload-btn {
+            background: #1a73e8;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            height: 36px;
+            border-radius: 6px;
+            font-size: 0.875em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .upload-btn:hover {
+            background: #1557b0;
+        }
+        
+        .upload-btn:disabled {
+            background: #dadce0;
+            cursor: not-allowed;
+        }
+        
+        .reset-data-btn {
+            background: #ea4335;
+            color: white;
+            border: none;
+            padding: 8px 16px;
+            height: 36px;
+            border-radius: 6px;
+            font-size: 0.875em;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+        
+        .reset-data-btn:hover {
+            background: #c5221f;
+        }
+        
+        .upload-status {
+            margin-top: 8px;
+            padding: 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            display: none;
+        }
+        
+        .upload-status.success {
+            background: #e8f5e8;
+            color: #2e7d32;
+            border: 1px solid #c8e6c9;
+        }
+        
+        .upload-status.error {
+            background: #fce8e6;
+            color: #c62828;
+            border: 1px solid #ffcdd2;
+        }
+        
         .controls {
             display: flex;
             flex-direction: column;
@@ -1082,6 +1172,17 @@
             </ul>
             <p>All catalysts were applied to Gas Diffusion Electrodes (GDEs) and tested in Membrane Electrode Assemblies (MEAs) in neutral conditions using 0.1M KHCO₃ electrolyte. The electrochemical testing was performed in a two-electrode configuration with direct voltage measurement. Gas products were analyzed using Gas Chromatography (GC).</p>
             <p>Each synthesis method includes three duplicate samples for statistical reliability. All samples contain X-ray Fluorescence (XRF) composition data, and most samples include X-ray Diffraction (XRD) structural characterization data.</p>
+            
+            <div class="upload-section">
+                <h4>📊 Load Your Own Data</h4>
+                <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #666;">Upload your own CSV file to analyze with the dashboard. The file should contain columns like 'sample id', 'source', 'reaction', 'current density', elemental compositions (e.g., Cu, Ag, Au), and performance metrics (e.g., voltage, fe_h2, fe_co).</p>
+                <div class="upload-controls">
+                    <input type="file" id="csvFileInput" class="file-input" accept=".csv" onchange="handleFileSelect(event)">
+                    <button id="uploadBtn" class="upload-btn" onclick="uploadData()" disabled>Upload Data</button>
+                    <button id="resetDataBtn" class="reset-data-btn" onclick="resetToOriginalData()" style="display: none;">Reset to Original Data</button>
+                </div>
+                <div id="uploadStatus" class="upload-status"></div>
+            </div>
         </div>
         
         <!-- Main Panel with Two Halves -->
@@ -3070,6 +3171,144 @@
         
         function toggleCO2Plot() {
             openCO2Plot();
+        }
+        
+        // File upload functions
+        let selectedFile = null;
+        let usingUploadedData = false;
+        
+        function handleFileSelect(event) {
+            selectedFile = event.target.files[0];
+            const uploadBtn = document.getElementById('uploadBtn');
+            
+            if (selectedFile && selectedFile.type === 'text/csv') {
+                uploadBtn.disabled = false;
+                showUploadStatus('File selected: ' + selectedFile.name, 'success');
+            } else {
+                uploadBtn.disabled = true;
+                if (selectedFile) {
+                    showUploadStatus('Please select a CSV file', 'error');
+                } else {
+                    hideUploadStatus();
+                }
+                selectedFile = null;
+            }
+        }
+        
+        function showUploadStatus(message, type) {
+            const status = document.getElementById('uploadStatus');
+            status.textContent = message;
+            status.className = `upload-status ${type}`;
+            status.style.display = 'block';
+        }
+        
+        function hideUploadStatus() {
+            const status = document.getElementById('uploadStatus');
+            status.style.display = 'none';
+        }
+        
+        async function uploadData() {
+            if (!selectedFile) {
+                showUploadStatus('Please select a file first', 'error');
+                return;
+            }
+            
+            const uploadBtn = document.getElementById('uploadBtn');
+            uploadBtn.disabled = true;
+            uploadBtn.textContent = 'Uploading...';
+            
+            try {
+                const formData = new FormData();
+                formData.append('file', selectedFile);
+                
+                const response = await fetch('/upload_data', {
+                    method: 'POST',
+                    body: formData
+                });
+                
+                const result = await response.json();
+                
+                if (result.success) {
+                    showUploadStatus(`Successfully uploaded ${result.rows} rows with ${result.columns} columns`, 'success');
+                    
+                    // Update global data variables
+                    allData = result.data;
+                    currentData = result.data;
+                    averagedData = null;
+                    currentColumns = result.column_order;
+                    visibleColumns = [...currentColumns];
+                    usingUploadedData = true;
+                    
+                    // Update UI
+                    displayData(currentData);
+                    populateFilterOptions();
+                    populateColumnControls();
+                    populateGroupingOptions();
+                    updateElementButtonStates(currentData || []);
+                    
+                    // Show reset button
+                    document.getElementById('resetDataBtn').style.display = 'inline-block';
+                    
+                    // Update title to indicate custom data
+                    const title = document.querySelector('h1');
+                    if (!title.textContent.includes('(Custom Data)')) {
+                        title.innerHTML = '<strong>OCx24 Dataset (Custom Data)</strong>';
+                    }
+                    
+                } else {
+                    showUploadStatus('Upload failed: ' + result.error, 'error');
+                }
+            } catch (error) {
+                console.error('Upload error:', error);
+                showUploadStatus('Upload failed: Network error', 'error');
+            } finally {
+                uploadBtn.disabled = false;
+                uploadBtn.textContent = 'Upload Data';
+            }
+        }
+        
+        async function resetToOriginalData() {
+            try {
+                // Reload original data
+                const response = await fetch('/get_data');
+                const result = await response.json();
+                
+                if (result.success) {
+                    // Reset global variables
+                    allData = result.data;
+                    currentData = allData;
+                    averagedData = null;
+                    currentColumns = result.columns;
+                    visibleColumns = [...currentColumns];
+                    usingUploadedData = false;
+                    
+                    // Reset UI elements
+                    displayData(currentData);
+                    populateFilterOptions();
+                    populateColumnControls();
+                    populateGroupingOptions();
+                    updateElementButtonStates(currentData || []);
+                    
+                    // Clear file input
+                    document.getElementById('csvFileInput').value = '';
+                    document.getElementById('uploadBtn').disabled = true;
+                    document.getElementById('resetDataBtn').style.display = 'none';
+                    
+                    // Reset title
+                    const title = document.querySelector('h1');
+                    title.innerHTML = '<strong>OCx24 Dataset</strong>';
+                    
+                    hideUploadStatus();
+                    showUploadStatus('Reset to original OCx24 dataset', 'success');
+                    setTimeout(hideUploadStatus, 3000);
+                    
+                } else {
+                    showUploadStatus('Failed to reset data', 'error');
+                }
+            } catch (error) {
+                console.error('Reset error:', error);
+                showUploadStatus('Failed to reset data: Network error', 'error');
+            }
         }
         
         // Initialize the dashboard

@@ -1,4 +1,5 @@
 import pandas as pd
+import numpy as np
 import matplotlib.pyplot as plt
 from flask import Flask, render_template_string, request, jsonify
 import webbrowser
@@ -12,6 +13,9 @@ import psutil
 # Import our blueprints
 from her_plot_blueprint import her_plot_bp
 from co2_plot_blueprint import co2_plot_bp
+
+# Global cache for uploaded data
+uploaded_data_cache = None
 
 # Load the DataFrame
 try:
@@ -181,6 +185,68 @@ def create_filter_dashboard():
     # Register blueprints
     app.register_blueprint(her_plot_bp)
     app.register_blueprint(co2_plot_bp)
+    
+    @app.route('/upload_data', methods=['POST'])
+    def upload_data():
+        """Handle CSV file upload and validate data"""
+        try:
+            if 'file' not in request.files:
+                return jsonify({'success': False, 'error': 'No file provided'}), 400
+            
+            file = request.files['file']
+            if file.filename == '':
+                return jsonify({'success': False, 'error': 'No file selected'}), 400
+            
+            if not file.filename.lower().endswith('.csv'):
+                return jsonify({'success': False, 'error': 'File must be a CSV'}), 400
+            
+            # Read the CSV file
+            try:
+                df = pd.read_csv(file)
+            except Exception as e:
+                return jsonify({'success': False, 'error': f'Failed to read CSV: {str(e)}'}), 400
+            
+            if df.empty:
+                return jsonify({'success': False, 'error': 'CSV file is empty'}), 400
+            
+            # Basic validation - check for some expected columns
+            required_columns = ['sample id']
+            missing_required = [col for col in required_columns if col not in df.columns]
+            if missing_required:
+                return jsonify({
+                    'success': False, 
+                    'error': f'Missing required columns: {", ".join(missing_required)}. Please ensure your CSV contains at least: {", ".join(required_columns)}'
+                }), 400
+            
+            # Store the original column order
+            uploaded_columns = list(df.columns)
+            
+            # Clean the data
+            # Replace infinite values with NaN
+            df.replace([np.inf, -np.inf], np.nan, inplace=True)
+            
+            # Convert to records for JSON serialization
+            data_records = df.to_dict('records')
+            
+            # Store uploaded data globally (in a real application, you'd use a database or session storage)
+            global uploaded_data_cache
+            uploaded_data_cache = {
+                'data': data_records,
+                'columns': uploaded_columns,
+                'original_filename': file.filename
+            }
+            
+            return jsonify({
+                'success': True,
+                'data': data_records,
+                'column_order': uploaded_columns,
+                'rows': len(data_records),
+                'columns': len(uploaded_columns),
+                'filename': file.filename
+            })
+            
+        except Exception as e:
+            return jsonify({'success': False, 'error': f'Upload failed: {str(e)}'}), 500
     
     @app.route('/save_current_data', methods=['POST'])
     def save_current_data():
