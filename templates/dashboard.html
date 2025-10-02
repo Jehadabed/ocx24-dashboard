@@ -2583,6 +2583,10 @@
                 
                 // Use current data for aggregation (this will be uploaded data if available)
                 const baseDataToAverage = currentData || allData;
+                console.log(`Sending ${baseDataToAverage.length} rows to backend for aggregation`);
+                if (baseDataToAverage.length > 0 && baseDataToAverage[0]['sample id']) {
+                    console.log(`First sample ID being sent: ${baseDataToAverage[0]['sample id']}`);
+                }
                 
                 const response = await fetch('/average_data', {
                     method: 'POST',
