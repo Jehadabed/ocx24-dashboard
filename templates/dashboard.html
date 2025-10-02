@@ -2582,7 +2582,13 @@
                 }
                 
                 // Use current data for aggregation (this will be uploaded data if available)
+                console.log('DEBUG: Data state during aggregation:');
+                console.log('  currentData rows:', currentData ? currentData.length : 'null');
+                console.log('  allData rows:', allData ? allData.length : 'null');
+                console.log('  usingUploadedData flag:', usingUploadedData);
+                
                 const baseDataToAverage = currentData || allData;
+                console.log('  Will send to backend:', baseDataToAverage ? baseDataToAverage.length : 'null', 'rows');
                 
                 const response = await fetch('/average_data', {
                     method: 'POST',
