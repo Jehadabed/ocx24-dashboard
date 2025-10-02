@@ -1065,7 +1065,7 @@
                 <li><strong>Chemical Reduction:</strong> Produces powder catalysts</li>
                 <li><strong>Spark Ablation:</strong> Produces porous film catalysts</li>
             </ul>
-            <p>All catalysts were applied to Gas Diffusion Electrodes (GDEs) and tested in Membrane Electrode Assemblies (MEAs) at pH=7 using KHCO₃ electrolyte. The electrochemical testing was performed in a two-electrode configuration with direct voltage measurement. Gas products were analyzed using Gas Chromatography (GC).</p>
+            <p>All catalysts were applied to Gas Diffusion Electrodes (GDEs) and tested in Membrane Electrode Assemblies (MEAs) in neutral conditions using 0.1M KHCO₃ electrolyte. The electrochemical testing was performed in a two-electrode configuration with direct voltage measurement. Gas products were analyzed using Gas Chromatography (GC).</p>
             <p>Each synthesis method includes three duplicate samples for statistical reliability. All samples contain X-ray Fluorescence (XRF) composition data, and most samples include X-ray Diffraction (XRD) structural characterization data.</p>
         </div>
         
@@ -1075,6 +1075,40 @@
             <div class="left-half">
                 <!-- Stats Section -->
                 <div id="statsPanel" class="stats-panel"></div>
+                
+                <!-- Section Divider -->
+                <div class="section-divider"></div>
+                
+                <!-- Grouping Configuration Section -->
+                <div class="grouping-section">
+                    <div class="control-group">
+                        <label for="groupingOptions">Average and Aggregate Data by</label>
+                        <div class="column-dropdown">
+                            <button class="dropdown-toggle" onclick="toggleGroupingDropdown()">
+                                <span id="groupingSelectedCount">Mandatory: reaction, current density</span>
+                                <span class="dropdown-arrow">▼</span>
+                            </button>
+                            
+                            <div id="groupingDropdown" class="dropdown-content">
+                                <div class="dropdown-header">
+                                    <label class="select-all-label">
+                                        <input type="checkbox" id="selectAllGroupingCheckbox" onchange="toggleSelectAllGrouping()">
+                                        Select All
+                                    </label>
+                                </div>
+                                <div id="groupingList" class="column-list">
+                                    <!-- Grouping checkboxes will be populated by JavaScript -->
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="control-group">
+                        <button id="averageBtn" class="filter-btn" onclick="averageByGrouping()">
+                            Aggregate Data
+                        </button>
+                    </div>
+                </div>
                 
                 <!-- Section Divider -->
                 <div class="section-divider"></div>
@@ -1154,40 +1188,6 @@
                                 3
                             </label>
                         </div>
-                    </div>
-                </div>
-                
-                <!-- Section Divider -->
-                <div class="section-divider"></div>
-                
-                <!-- Grouping Configuration Section -->
-                <div class="grouping-section">
-                    <div class="control-group">
-                        <label for="groupingOptions">Average and Aggregate Data by</label>
-                        <div class="column-dropdown">
-                            <button class="dropdown-toggle" onclick="toggleGroupingDropdown()">
-                                <span id="groupingSelectedCount">Mandatory: reaction, current density</span>
-                                <span class="dropdown-arrow">▼</span>
-                            </button>
-                            
-                            <div id="groupingDropdown" class="dropdown-content">
-                                <div class="dropdown-header">
-                                    <label class="select-all-label">
-                                        <input type="checkbox" id="selectAllGroupingCheckbox" onchange="toggleSelectAllGrouping()">
-                                        Select All
-                                    </label>
-                                </div>
-                                <div id="groupingList" class="column-list">
-                                    <!-- Grouping checkboxes will be populated by JavaScript -->
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="control-group">
-                        <button id="averageBtn" class="filter-btn" onclick="averageByGrouping()">
-                            Aggregate Data
-                        </button>
                     </div>
                 </div>
                 
