@@ -722,15 +722,10 @@ def create_filter_dashboard():
             # Use provided current data or fall back to main_df
             if current_data_list:
                 work_df = pd.DataFrame(current_data_list)
-                print(f"Using provided current data: {len(work_df)} rows")
-                # Show first sample ID to verify it's the uploaded data
-                if 'sample id' in work_df.columns and len(work_df) > 0:
-                    print(f"First sample ID from current data: {work_df['sample id'].iloc[0]}")
+                print(f"AGGREGATION: Received {len(work_df)} rows of uploaded data")
             else:
                 work_df = main_df.copy()
-                print(f"Using main dataframe: {len(work_df)} rows")
-                if 'sample id' in work_df.columns and len(work_df) > 0:
-                    print(f"First sample ID from main data: {work_df['sample id'].iloc[0]}")
+                print(f"AGGREGATION: Using original {len(work_df)} rows")
             
             # Validate composition tolerance
             try:
