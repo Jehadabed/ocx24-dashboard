@@ -34,17 +34,33 @@ def est_x(x, X, Y):
     x = fit[0]*x+fit[1]
     return x
 
-def load_calibration_data_for_voltage_conversion():
+def load_calibration_data_for_voltage_conversion(custom_params=None):
     """Load calibration data for voltage conversion from full cell to half cell."""
-    # Experiment conditions: Neutral CO2RR in 4cm2 cell, Sputtered Copper Catalyst, 0.1M Bicarbonate - ref electrode (3M kcl) 230mV vs SHE
-    ref_pot = 0.23 #V Ag/AgCl electrode
-    cathode_pH = 12.5
-    anode_pH = 3
+    # Default experiment conditions: Neutral CO2RR in 4cm2 cell, Sputtered Copper Catalyst, 0.1M Bicarbonate - ref electrode (3M kcl) 230mV vs SHE
+    default_params = {
+        'ref_pot': 0.23,  # V Ag/AgCl electrode
+        'cathode_pH': 12.5,
+        'anode_pH': 3,
+        'geo_area': 4,  # cm2
+        'membrane_loss': 0.1,  # V
+        'cathode_thermo': 0.08,
+        'anode_thermo': 1.23
+    }
+    
+    # Use custom parameters if provided, otherwise use defaults
+    if custom_params:
+        params = {**default_params, **custom_params}
+    else:
+        params = default_params
+    
+    ref_pot = params['ref_pot']
+    cathode_pH = params['cathode_pH']
+    anode_pH = params['anode_pH']
     Nern_pH_loss = (cathode_pH-anode_pH)*0.059 
-    geo_area = 4 #cm2
-    membrane_loss = 0.1 #V
-    cathode_thermo = +0.08
-    anode_thermo = +1.23
+    geo_area = params['geo_area']
+    membrane_loss = params['membrane_loss']
+    cathode_thermo = params['cathode_thermo']
+    anode_thermo = params['anode_thermo']
     thermo_pot = anode_thermo-cathode_thermo
     
     # Measurements from calibration work
@@ -116,11 +132,11 @@ def get_overpotential(pot, pot_theory):
     overpot = abs(pot-pot_theory)
     return overpot
 
-def fullcell2halfcell(vcell):
+def fullcell2halfcell(vcell, custom_params=None):
     '''
     Main function to convert a voltage value from full cell to half cell vs she or rhe
     '''
-    cali_dict = load_calibration_data_for_voltage_conversion()
+    cali_dict = load_calibration_data_for_voltage_conversion(custom_params)
     urhe = cell2rhe(vcell, cali_dict['measurements']['fullcell pot'], cali_dict['extracted params']['cathode pot corr'])
     ushe = rhe2she(urhe, cali_dict['conditions']['cathode pH'],  cali_dict['conditions']['ref pot'])
     return ushe, urhe
@@ -704,6 +720,33 @@ def her_plot_main():
                 transform: translateY(0);
             }}
             
+            .voltage-config-btn {{
+                background: #ffffff;
+                color: #9c27b0;
+                border: 1px solid #9c27b0;
+                padding: 12px 16px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+                text-transform: none;
+                letter-spacing: 0.2px;
+                min-width: 200px;
+            }}
+            
+            .voltage-config-btn:hover {{
+                background: #9c27b0;
+                color: #ffffff;
+                box-shadow: 0 2px 8px rgba(156, 39, 176, 0.15);
+                transform: translateY(-1px);
+            }}
+            
+            .voltage-config-btn:active {{
+                transform: translateY(0);
+            }}
+            
             .plot-content {{
                 padding: 24px;
                 min-height: 400px;
@@ -759,6 +802,142 @@ def her_plot_main():
             
             ::-webkit-scrollbar-thumb:hover {{
                 background: #bdc1c6;
+            }}
+            
+            /* Modal styles */
+            .modal {{
+                display: none;
+                position: fixed;
+                z-index: 1000;
+                left: 0;
+                top: 0;
+                width: 100%;
+                height: 100%;
+                background-color: rgba(0,0,0,0.5);
+            }}
+            
+            .modal-content {{
+                background-color: #ffffff;
+                margin: 5% auto;
+                padding: 0;
+                border-radius: 12px;
+                width: 80%;
+                max-width: 600px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.3);
+                animation: modalSlideIn 0.3s ease;
+            }}
+            
+            @keyframes modalSlideIn {{
+                from {{ transform: translateY(-50px); opacity: 0; }}
+                to {{ transform: translateY(0); opacity: 1; }}
+            }}
+            
+            .modal-header {{
+                background: #f8f9fa;
+                padding: 20px 24px;
+                border-bottom: 1px solid #e8eaed;
+                border-radius: 12px 12px 0 0;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+            }}
+            
+            .modal-header h2 {{
+                margin: 0;
+                color: #202124;
+                font-size: 1.5em;
+                font-weight: 500;
+            }}
+            
+            .close {{
+                color: #5f6368;
+                font-size: 28px;
+                font-weight: bold;
+                cursor: pointer;
+                transition: color 0.2s ease;
+            }}
+            
+            .close:hover {{
+                color: #202124;
+            }}
+            
+            .modal-body {{
+                padding: 24px;
+            }}
+            
+            .form-group {{
+                margin-bottom: 20px;
+            }}
+            
+            .form-group label {{
+                display: block;
+                margin-bottom: 8px;
+                font-weight: 500;
+                color: #202124;
+                font-size: 14px;
+            }}
+            
+            .form-group input {{
+                width: 100%;
+                padding: 12px 16px;
+                border: 1px solid #dadce0;
+                border-radius: 8px;
+                font-size: 14px;
+                transition: border-color 0.2s ease;
+                box-sizing: border-box;
+            }}
+            
+            .form-group input:focus {{
+                outline: none;
+                border-color: #4285f4;
+                box-shadow: 0 0 0 2px rgba(66, 133, 244, 0.2);
+            }}
+            
+            .form-row {{
+                display: flex;
+                gap: 16px;
+            }}
+            
+            .form-row .form-group {{
+                flex: 1;
+            }}
+            
+            .modal-footer {{
+                padding: 20px 24px;
+                border-top: 1px solid #e8eaed;
+                display: flex;
+                justify-content: flex-end;
+                gap: 12px;
+            }}
+            
+            .btn {{
+                padding: 12px 24px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 500;
+                cursor: pointer;
+                transition: all 0.2s ease;
+                border: none;
+            }}
+            
+            .btn-primary {{
+                background: #4285f4;
+                color: white;
+            }}
+            
+            .btn-primary:hover {{
+                background: #3367d6;
+                transform: translateY(-1px);
+            }}
+            
+            .btn-secondary {{
+                background: #f8f9fa;
+                color: #5f6368;
+                border: 1px solid #dadce0;
+            }}
+            
+            .btn-secondary:hover {{
+                background: #e8eaed;
             }}
             
             @media (max-width: 1200px) {{
@@ -826,6 +1005,12 @@ def her_plot_main():
                 <div class="checkbox-container">
                     <input type="checkbox" id="disableXrdErrors">
                     <label for="disableXrdErrors">Disable pop-up error messages</label>
+                </div>
+                
+                <div class="control-group">
+                    <button id="voltageConfigBtn" class="voltage-config-btn" onclick="openVoltageConfig()">
+                        ⚙️ Configure Voltage Conversion
+                    </button>
                 </div>
                 
                 <div class="control-group">
@@ -921,12 +1106,71 @@ def her_plot_main():
             </div>
         </div>
         
+        <!-- Voltage Configuration Modal -->
+        <div id="voltageConfigModal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Configure Voltage Conversion Parameters</h2>
+                    <span class="close" onclick="closeVoltageConfig()">&times;</span>
+                </div>
+                <div class="modal-body">
+                    <p style="margin-bottom: 20px; color: #5f6368; font-size: 14px;">
+                        Adjust the parameters used for converting full cell voltages to half-cell potentials. 
+                        These values are based on experimental calibration data.
+                    </p>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="ref_pot">Reference Electrode Potential (V vs SHE)</label>
+                            <input type="number" id="ref_pot" step="0.001" value="0.23">
+                        </div>
+                        <div class="form-group">
+                            <label for="geo_area">Geometric Area (cm²)</label>
+                            <input type="number" id="geo_area" step="0.1" value="4">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="cathode_pH">Cathode pH</label>
+                            <input type="number" id="cathode_pH" step="0.1" value="12.5">
+                        </div>
+                        <div class="form-group">
+                            <label for="anode_pH">Anode pH</label>
+                            <input type="number" id="anode_pH" step="0.1" value="3">
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="membrane_loss">Membrane Loss (V)</label>
+                            <input type="number" id="membrane_loss" step="0.01" value="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label for="cathode_thermo">Cathode Thermodynamic Potential (V)</label>
+                            <input type="number" id="cathode_thermo" step="0.001" value="0.08">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label for="anode_thermo">Anode Thermodynamic Potential (V)</label>
+                        <input type="number" id="anode_thermo" step="0.001" value="1.23">
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" onclick="resetVoltageConfig()">Reset to Defaults</button>
+                    <button class="btn btn-primary" onclick="applyVoltageConfig()">Apply Changes</button>
+                </div>
+            </div>
+        </div>
+        
         <script>
             // Store data globally
             let currentData = null;
             let originalData = null;
             let currentUnitType = 'atomic';
             let currentYColumn = '{y_axis_column}'; // Dynamic voltage column
+            let voltageConversionParams = null; // Store custom voltage conversion parameters
             
             // Initialize with data
             const initialData = {json.dumps(df_with_pca.to_dict('records'))};
@@ -986,10 +1230,21 @@ def her_plot_main():
                 
                 try {{
                     // Update data with unit conversion if needed
+                    const requestBody = {{
+                        xAxis: xCol, 
+                        unitType: selectedUnit, 
+                        voltageType: voltageType
+                    }};
+                    
+                    // Include custom voltage conversion parameters if set
+                    if (voltageConversionParams) {{
+                        requestBody.voltageConversionParams = voltageConversionParams;
+                    }}
+                    
                     const response = await fetch('/her/update_data', {{
                         method: 'POST',
                         headers: {{'Content-Type': 'application/json'}},
-                        body: JSON.stringify({{xAxis: xCol, unitType: selectedUnit, voltageType: voltageType}})
+                        body: JSON.stringify(requestBody)
                     }});
                     
                     if (response.ok) {{
@@ -1439,6 +1694,57 @@ def her_plot_main():
                 window.open('/her/download_notebook', '_blank');
             }}
             
+            // Voltage configuration functions
+            function openVoltageConfig() {{
+                document.getElementById('voltageConfigModal').style.display = 'block';
+            }}
+            
+            function closeVoltageConfig() {{
+                document.getElementById('voltageConfigModal').style.display = 'none';
+            }}
+            
+            function resetVoltageConfig() {{
+                document.getElementById('ref_pot').value = '0.23';
+                document.getElementById('geo_area').value = '4';
+                document.getElementById('cathode_pH').value = '12.5';
+                document.getElementById('anode_pH').value = '3';
+                document.getElementById('membrane_loss').value = '0.1';
+                document.getElementById('cathode_thermo').value = '0.08';
+                document.getElementById('anode_thermo').value = '1.23';
+            }}
+            
+            function applyVoltageConfig() {{
+                // Get parameter values from form
+                const params = {{
+                    ref_pot: parseFloat(document.getElementById('ref_pot').value),
+                    geo_area: parseFloat(document.getElementById('geo_area').value),
+                    cathode_pH: parseFloat(document.getElementById('cathode_pH').value),
+                    anode_pH: parseFloat(document.getElementById('anode_pH').value),
+                    membrane_loss: parseFloat(document.getElementById('membrane_loss').value),
+                    cathode_thermo: parseFloat(document.getElementById('cathode_thermo').value),
+                    anode_thermo: parseFloat(document.getElementById('anode_thermo').value)
+                }};
+                
+                // Store parameters globally
+                voltageConversionParams = params;
+                
+                // Close modal
+                closeVoltageConfig();
+                
+                // Update plot with new parameters
+                updatePlot();
+                
+                console.log('Applied voltage conversion parameters:', params);
+            }}
+            
+            // Close modal when clicking outside of it
+            window.onclick = function(event) {{
+                const modal = document.getElementById('voltageConfigModal');
+                if (event.target == modal) {{
+                    closeVoltageConfig();
+                }}
+            }}
+            
             // Initialize plot
             updatePlot();
             
@@ -1758,6 +2064,9 @@ def update_data():
         
         # Apply voltage conversion if needed
         if voltage_type in ['she', 'rhe'] and ('voltage' in df.columns or 'voltage_mean' in df.columns):
+            # Get custom parameters if provided
+            custom_params = data.get('voltageConversionParams')
+            
             # Determine which voltage column to use
             voltage_col = 'voltage_mean' if 'voltage_mean' in df.columns else 'voltage'
             # Convert voltage values
@@ -1766,7 +2075,7 @@ def update_data():
             
             for v in voltage_values:
                 if pd.notna(v):
-                    ushe, urhe = fullcell2halfcell(v)
+                    ushe, urhe = fullcell2halfcell(v, custom_params)
                     if voltage_type == 'she':
                         converted_voltages.append(ushe)
                     else:  # rhe
