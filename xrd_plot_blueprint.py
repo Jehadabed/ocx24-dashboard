@@ -1059,7 +1059,16 @@ def xrd_plot_main():
 
                 // Clear any loading animation before rendering the plot
                 document.getElementById('plotly-chart').innerHTML = '';
-                Plotly.newPlot('plotly-chart', traces, layout, {responsive: true});
+                Plotly.newPlot('plotly-chart', traces, layout, {
+                    responsive: true,
+                    toImageButtonOptions: {
+                        format: 'png',
+                        filename: 'xrd_analysis_plot',
+                        height: 800,
+                        width: 1200,
+                        scale: 3
+                    }
+                });
             }
 
             // Update metadata display
