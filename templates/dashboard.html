@@ -871,22 +871,23 @@
         
         .stats-panel {
             display: flex;
-            gap: 8px;
+            gap: 6px;
             flex-wrap: nowrap;
         }
         
         .stat-item {
             background: #ffffff;
-            padding: 8px;
+            padding: 6px;
             border-radius: 6px;
             border: 1px solid #e8eaed;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             flex: 1;
             text-align: center;
+            min-width: 0;
         }
         
         .stat-value {
-            font-size: 1.3em;
+            font-size: 1.1em;
             font-weight: 500;
             color: #4285f4;
         }
@@ -900,7 +901,8 @@
         .composition-toggle {
             margin-top: 4px;
             display: flex;
-            gap: 4px;
+            flex-direction: column;
+            gap: 2px;
         }
 
         .toggle-btn {
@@ -2500,12 +2502,16 @@
             
             document.getElementById('statsPanel').innerHTML = `
                 <div class="stat-item">
+                    <div class="stat-value">766</div>
+                    <div class="stat-label">Materials Synthesized</div>
+                </div>
+                <div class="stat-item">
                     <div class="stat-value">${stats.totalRows}</div>
                     <div class="stat-label">Experiments</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.uniqueSamples}</div>
-                    <div class="stat-label">Unique Samples</div>
+                    <div class="stat-label">Samples Tested</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.uniqueSources}</div>
@@ -2513,7 +2519,7 @@
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.uniqueBatches}</div>
-                    <div class="stat-label">Unique Batches</div>
+                    <div class="stat-label">Batches</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.uniqueMaterials}</div>
