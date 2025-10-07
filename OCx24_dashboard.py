@@ -13,6 +13,7 @@ import psutil
 # Import our blueprints
 from her_plot_blueprint import her_plot_bp
 from co2_plot_blueprint import co2_plot_bp
+from xrd_plot_blueprint import xrd_plot_bp
 
 # Global cache for uploaded data
 uploaded_data_cache = None
@@ -185,6 +186,7 @@ def create_filter_dashboard():
     # Register blueprints
     app.register_blueprint(her_plot_bp)
     app.register_blueprint(co2_plot_bp)
+    app.register_blueprint(xrd_plot_bp)
     
     @app.route('/upload_data', methods=['POST'])
     def upload_data():
@@ -291,17 +293,6 @@ def create_filter_dashboard():
         except Exception as e:
             return jsonify({'success': False, 'error': str(e)}), 500
     
-    @app.route('/xrd_dashboard')
-    def xrd_dashboard():
-        """Serve the XRD dashboard HTML file"""
-        try:
-            with open('xrd_dashboard.html', 'r', encoding='utf-8') as f:
-                return f.read()
-        except FileNotFoundError:
-            return "XRD Dashboard not found", 404
-        except Exception as e:
-            return f"Error loading XRD Dashboard: {str(e)}", 500
-
     @app.route('/upload_xrd_data', methods=['POST'])
     def upload_xrd_data():
         """Handle XRD folder upload and store files"""
