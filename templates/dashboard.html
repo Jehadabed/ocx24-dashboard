@@ -563,6 +563,15 @@
             box-shadow: 0 8px 25px rgba(78, 205, 196, 0.4);
         }
         
+        .xrd-btn {
+            background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+            box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+        }
+        
+        .xrd-btn:hover {
+            box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4);
+        }
+        
         .close-btn {
             background: linear-gradient(135deg, #ff4757 0%, #c44569 100%) !important;
             box-shadow: 0 4px 15px rgba(255, 71, 87, 0.3) !important;
@@ -1375,6 +1384,9 @@
                     </button>
                     <button id="co2PlotBtn" class="interactive-plot-btn co2-btn" onclick="toggleCO2Plot()">
                         Build CO2RR Plot
+                    </button>
+                    <button id="xrdPlotBtn" class="interactive-plot-btn xrd-btn" onclick="openXRDPlot()">
+                        XRD Analysis Dashboard
                     </button>
                 </div>
                 
@@ -3219,6 +3231,12 @@
                 // Navigate directly if no data to save
                 window.location.href = '/co2/';
             }
+        }
+        
+        function openXRDPlot() {
+            console.log('Opening XRD Analysis Dashboard...');
+            // Navigate directly to XRD dashboard (no data saving needed as it uses Cloudflare Worker API)
+            window.location.href = '/xrd/';
         }
         
         // Legacy function names for compatibility

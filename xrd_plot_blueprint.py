@@ -28,6 +28,28 @@ def xrd_plot_main():
                 background-color: #f5f5f5;
             }
             
+            .back-link {
+                position: fixed;
+                top: 20px;
+                left: 20px;
+                z-index: 1000;
+                background: #9c27b0;
+                color: white;
+                padding: 12px 20px;
+                border-radius: 8px;
+                text-decoration: none;
+                font-weight: 500;
+                font-size: 14px;
+                transition: all 0.2s ease;
+                box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+            }
+            
+            .back-link:hover {
+                background: #7b1fa2;
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4);
+            }
+            
             .container {
                 max-width: 1400px;
                 margin: 0 auto;
@@ -577,6 +599,8 @@ def xrd_plot_main():
         </style>
     </head>
     <body>
+        <a href="/" class="back-link">← Back to Dashboard</a>
+        
         <div class="container">
             <div class="header">
                 <h1>OCX24 XRD Analysis Dashboard</h1>
