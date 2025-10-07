@@ -291,6 +291,17 @@ def create_filter_dashboard():
         except Exception as e:
             return jsonify({'success': False, 'error': str(e)}), 500
     
+    @app.route('/xrd_dashboard')
+    def xrd_dashboard():
+        """Serve the XRD dashboard HTML file"""
+        try:
+            with open('xrd_dashboard.html', 'r', encoding='utf-8') as f:
+                return f.read()
+        except FileNotFoundError:
+            return "XRD Dashboard not found", 404
+        except Exception as e:
+            return f"Error loading XRD Dashboard: {str(e)}", 500
+
     @app.route('/upload_xrd_data', methods=['POST'])
     def upload_xrd_data():
         """Handle XRD folder upload and store files"""
