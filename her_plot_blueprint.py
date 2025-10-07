@@ -743,6 +743,97 @@ def her_plot_main():
                 transform: translateY(-1px);
             }}
             
+            /* Context Menu Styles */
+            .context-menu {{
+                position: absolute;
+                background: white;
+                border: 1px solid #ddd;
+                border-radius: 8px;
+                box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+                z-index: 1000;
+                min-width: 150px;
+                padding: 4px 0;
+            }}
+            
+            .context-menu-item {{
+                padding: 8px 16px;
+                cursor: pointer;
+                font-size: 14px;
+                color: #333;
+                transition: background-color 0.2s ease;
+            }}
+            
+            .context-menu-item:hover {{
+                background-color: #f5f5f5;
+            }}
+            
+            /* XRD Analysis Button Overlay */
+            .xrd-analysis-btn {{
+                position: absolute;
+                top: 20px;
+                right: 20px;
+                z-index: 1000;
+            }}
+            
+            .analysis-btn {{
+                background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+                color: white;
+                border: none;
+                padding: 10px 16px;
+                border-radius: 8px;
+                font-size: 14px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: all 0.3s ease;
+                box-shadow: 0 4px 15px rgba(156, 39, 176, 0.3);
+                text-transform: none;
+                letter-spacing: 0.3px;
+            }}
+            
+            .analysis-btn:hover {{
+                transform: translateY(-2px);
+                box-shadow: 0 8px 25px rgba(156, 39, 176, 0.4);
+            }}
+            
+            .analysis-btn:active {{
+                transform: translateY(0);
+            }}
+            
+            /* XRD Analysis Tooltip */
+            .xrd-tooltip {{
+                position: absolute;
+                background: white;
+                border: 2px solid #9c27b0;
+                border-radius: 8px;
+                box-shadow: 0 4px 20px rgba(156, 39, 176, 0.3);
+                z-index: 1000;
+                padding: 0;
+                max-width: 150px;
+                pointer-events: auto;
+            }}
+            
+            .tooltip-content {{
+                padding: 8px;
+            }}
+            
+            .tooltip-link {{
+                background: linear-gradient(135deg, #9c27b0 0%, #673ab7 100%);
+                color: white;
+                padding: 6px 10px;
+                border-radius: 6px;
+                font-size: 11px;
+                font-weight: 600;
+                cursor: pointer;
+                text-align: center;
+                transition: all 0.2s ease;
+                white-space: nowrap;
+            }}
+            
+            .tooltip-link:hover {{
+                transform: translateY(-1px);
+                box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4);
+            }}
+            
             .voltage-config-btn:active {{
                 transform: translateY(0);
             }}
@@ -1061,6 +1152,17 @@ def her_plot_main():
                     </div>
                     <div class="plot-content">
                         <div id="xrdPlotContent"></div>
+                        
+                        <!-- XRD Analysis Tooltip -->
+                        <div id="xrdTooltip" class="xrd-tooltip" style="display: none;" 
+                             onmouseenter="cancelTooltipHide()" 
+                             onmouseleave="hideXrdTooltip()">
+                            <div class="tooltip-content">
+                                <div class="tooltip-link" onclick="openXrdAnalysisFromTooltip()">
+                                    View XRD Analysis
+                                </div>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
@@ -1930,6 +2032,25 @@ def her_plot_main():
                     }}
                 }});
                 
+                // Add hover event listener for XRD plots
+                document.getElementById('xrdPlotContent').on('plotly_hover', function(data) {{
+                    if (data && data.points && data.points.length > 0) {{
+                        const point = data.points[0];
+                        const traceIndex = point.curveNumber;
+                        
+                        // Get sample ID from the trace
+                        if (traceIndex < accumulatedXrdData.length) {{
+                            const sampleId = accumulatedXrdData[traceIndex].sampleId;
+                            showXrdTooltip(point.x, point.y, sampleId);
+                        }}
+                    }}
+                }});
+                
+                // Hide tooltip when mouse leaves
+                document.getElementById('xrdPlotContent').on('plotly_unhover', function(data) {{
+                    hideXrdTooltip();
+                }});
+                
                 console.log('Accumulated XRD plots created successfully. Total traces:', traces.length);
             }}
             
@@ -2035,6 +2156,68 @@ def her_plot_main():
                 
                 // Show accumulated XRD plots
                 showAccumulatedXrdPlots();
+            }}
+            
+            // Global variable to store the selected sample ID
+            let selectedXrdSampleId = null;
+            let tooltipHideTimeout = null;
+            
+            // Function to show XRD tooltip
+            function showXrdTooltip(x, y, sampleId) {{
+                selectedXrdSampleId = sampleId;
+                
+                // Clear any existing hide timeout
+                if (tooltipHideTimeout) {{
+                    clearTimeout(tooltipHideTimeout);
+                    tooltipHideTimeout = null;
+                }}
+                
+                const tooltip = document.getElementById('xrdTooltip');
+                
+                if (tooltip) {{
+                    // Position tooltip below Plotly's original hover tooltip
+                    tooltip.style.display = 'block';
+                    tooltip.style.left = (event.pageX + 20) + 'px';
+                    tooltip.style.top = (event.pageY + 40) + 'px'; // Position below Plotly's tooltip
+                }}
+            }}
+            
+            // Function to hide XRD tooltip with delay
+            function hideXrdTooltip() {{
+                // Add a small delay before hiding to allow mouse to move to tooltip
+                tooltipHideTimeout = setTimeout(() => {{
+                    const tooltip = document.getElementById('xrdTooltip');
+                    if (tooltip) {{
+                        tooltip.style.display = 'none';
+                    }}
+                }}, 200); // 200ms delay
+            }}
+            
+            // Function to cancel hide when hovering over tooltip
+            function cancelTooltipHide() {{
+                if (tooltipHideTimeout) {{
+                    clearTimeout(tooltipHideTimeout);
+                    tooltipHideTimeout = null;
+                }}
+            }}
+            
+            // Function to open XRD analysis from tooltip
+            function openXrdAnalysisFromTooltip() {{
+                if (selectedXrdSampleId) {{
+                    // Parse sample ID to extract dataset and sample
+                    // For sample like "uoft8_241025_Cd-0.875-Ni-0.125_pp0_rep1"
+                    // Dataset should be "uoft8_241025" (first two parts)
+                    const parts = selectedXrdSampleId.split('_');
+                    const dataset = parts.slice(0, 2).join('_'); // First two parts
+                    const sample = selectedXrdSampleId;
+                    
+                    // Navigate to XRD dashboard with parameters
+                    const url = `/xrd/?dataset=${{encodeURIComponent(dataset)}}&sample=${{encodeURIComponent(sample)}}`;
+                    window.open(url, '_blank');
+                    
+                    // Hide tooltip after clicking
+                    hideXrdTooltip();
+                }}
             }}
             
         </script>

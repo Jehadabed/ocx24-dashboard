@@ -33,7 +33,7 @@ def xrd_plot_main():
                 top: 20px;
                 left: 20px;
                 z-index: 1000;
-                background: #9c27b0;
+                background: #1a73e8;
                 color: white;
                 padding: 12px 20px;
                 border-radius: 8px;
@@ -41,13 +41,13 @@ def xrd_plot_main():
                 font-weight: 500;
                 font-size: 14px;
                 transition: all 0.2s ease;
-                box-shadow: 0 2px 8px rgba(156, 39, 176, 0.3);
+                box-shadow: 0 2px 8px rgba(26, 115, 232, 0.3);
             }
             
             .back-link:hover {
-                background: #7b1fa2;
+                background: #1557b0;
                 transform: translateY(-1px);
-                box-shadow: 0 4px 12px rgba(156, 39, 176, 0.4);
+                box-shadow: 0 4px 12px rgba(26, 115, 232, 0.4);
             }
             
             .container {
@@ -603,7 +603,7 @@ def xrd_plot_main():
         
         <div class="container">
             <div class="header">
-                <h1>OCX24 XRD Analysis Dashboard</h1>
+                <h1>OCx24 XRD Analysis Dashboard</h1>
             </div>
             
             <div class="controls">
@@ -697,7 +697,7 @@ def xrd_plot_main():
             // Available datasets - these are the actual filenames in the extracted data folder
             const datasets = [
                 'uoft4_240405', 'uoft5_240507', 'uoft6_240624', 'uoft7_240716', 'uoft8_241025', 'uoft9_241025',
-                'vsp1_240503', 'vsp10_240726', 'vsp11_240802', 'vsp12_240816', 'vsp13_240823', 'vsp13_240823_2',
+                'vsp1_240503', 'vsp10_240726', 'vsp11_240802', 'vsp12_240816', 'vsp13_240823',
                 'vsp14_240906', 'vsp15_240809', 'vsp2_240718', 'vsp20_241011', 'vsp23_241025', 'vsp26_241004',
                 'vsp27_241030', 'vsp28_240927', 'vsp29_241004', 'vsp3_240718', 'vsp4_240726', 'vsp5_241011',
                 'vsp6_240718', 'vsp7_241025', 'vsp8_240802', 'vsp9_240726'
@@ -1341,8 +1341,34 @@ def xrd_plot_main():
             }
 
             // Initialize the dashboard
-            document.addEventListener('DOMContentLoaded', function() {
-                loadAllDatasets();
+            document.addEventListener('DOMContentLoaded', async function() {
+                try {
+                    await loadAllDatasets();
+                    
+                    // Check for URL parameters
+                    const urlParams = new URLSearchParams(window.location.search);
+                    const datasetParam = urlParams.get('dataset');
+                    const sampleParam = urlParams.get('sample');
+                    
+                    if (datasetParam && sampleParam) {
+                        // Set dataset selection
+                        const datasetSelect = document.getElementById('datasetSelect');
+                        datasetSelect.value = datasetParam;
+                        
+                        // Update dataset and load samples
+                        await updateDataset();
+                        
+                        // Set sample input
+                        const sampleInput = document.getElementById('sampleInput');
+                        sampleInput.value = sampleParam;
+                        
+                        // Load the specific sample
+                        await updateSample();
+                    }
+                } catch (error) {
+                    console.error('Error initializing dashboard:', error);
+                    alert('Error loading datasets: ' + error.message);
+                }
             });
         </script>
     </body>
