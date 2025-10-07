@@ -29,6 +29,7 @@ The XRD Analysis Dashboard accesses data stored in a **Cloudflare R2 bucket** vi
 
 #### Data Storage
 - **Location**: Cloudflare R2 bucket (cloud storage)
+- **Public Link**: https://pub-1234567890abcdef.r2.dev/xrd-data/
 - **Format**: JSON files containing XRD measurement data
 - **Access**: Via Cloudflare Worker API endpoint
 - **Organization**: Data organized by datasets and sample identifiers
@@ -41,28 +42,28 @@ Each XRD sample JSON file contains:
     "sample_id": "string",
     "dataset": "string", 
     "measurement_date": "string",
-    "instrument_parameters": {...}
+    "instrument_parameters": "object"
   },
   "original_data": {
-    "two_theta": [array of angles],
-    "intensity": [array of intensities]
+    "two_theta": "array of angles",
+    "intensity": "array of intensities"
   },
   "fitted_data": {
-    "two_theta": [array of angles],
-    "intensity": [array of fitted intensities]
+    "two_theta": "array of angles",
+    "intensity": "array of fitted intensities"
   },
   "iterations": [
     {
-      "iteration": number,
+      "iteration": "number",
       "phases": [
         {
           "name": "phase_name",
-          "composition": percentage,
+          "composition": "percentage",
           "color": "hex_color"
         }
       ],
-      "rwp": number,
-      "chi_squared": number
+      "rwp": "number",
+      "chi_squared": "number"
     }
   ]
 }
