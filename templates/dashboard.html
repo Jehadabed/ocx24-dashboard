@@ -1213,7 +1213,7 @@
             <p>All catalysts were applied to Gas Diffusion Electrodes (GDEs) and tested in Membrane Electrode Assemblies (MEAs) in neutral conditions using 0.1M KHCO₃ electrolyte. The electrochemical testing was performed in a two-electrode configuration with direct voltage measurement. Gas products were analyzed using Gas Chromatography (GC).</p>
             <p>Each synthesis method includes three duplicate samples for statistical reliability. All samples contain X-ray Fluorescence (XRF) composition data, and most samples include X-ray Diffraction (XRD) structural characterization data.</p>
             
-            <div class="upload-section">
+            <div class="upload-section" style="display: none;">
                 <h4>⬆ Load Your Own Data</h4>
                 <p style="margin: 0 0 12px 0; font-size: 0.8em; color: #666;">Upload your own CSV file to analyze with the dashboard. Export CSV to check for required format and columns.</p>
                 <div class="upload-controls">
@@ -1515,7 +1515,7 @@
                 console.log('Initial load - currentColumns:', currentColumns);
                 console.log('Initial load - visibleColumns:', visibleColumns);
                 
-                displayData(currentData);
+                await displayData(currentData);
                 populateFilterOptions();
                 populateColumnControls();
                 populateGroupingOptions();
@@ -2028,12 +2028,12 @@
             }
         }
         
-        function deselectAllColumns() {
+        async function deselectAllColumns() {
             visibleColumns = [];
             updateAllCheckboxes();
             updateSelectedCount();
             updateSelectAllCheckbox();
-            displayData(currentData);
+            await displayData(currentData);
         }
         
         function resetToDefaultColumns() {
@@ -2244,7 +2244,7 @@
             }
         });
         
-        function sortData(column) {
+        async function sortData(column) {
             if (sortColumn === column) {
                 sortDirection = sortDirection === 'asc' ? 'desc' : 'asc';
             } else {
@@ -2280,7 +2280,7 @@
             });
             
             currentData = sortedData;
-            displayData(currentData);
+            await displayData(currentData);
         }
         
         async function applyFilters() {
@@ -2344,9 +2344,9 @@
                 
                 // Re-apply element filters if any are selected
                 if (selectedElements.size > 0) {
-                    filterDataByElements();
+                    await filterDataByElements();
                 } else {
-                    displayData(currentData);
+                    await displayData(currentData);
                 }
                 populateColumnControls();
                 
@@ -2419,7 +2419,7 @@
                     updateElementButtonStates(currentData || []);
                     
                     // Display the original data
-                    displayData(currentData);
+                    await displayData(currentData);
                     populateColumnControls();
                     
                     // Re-enable the averaging button and reset grouping options
@@ -2442,7 +2442,7 @@
             }
         }
         
-        function displayData(data) {
+        async function displayData(data) {
             if (!data || data.length === 0) {
                 document.getElementById('dataTable').innerHTML = '<p>No data matches the current filters.</p>';
                 document.getElementById('statsPanel').innerHTML = '';
@@ -2456,7 +2456,7 @@
             displayedData = data;
             
             // Update stats panel
-            updateStatsPanel(data);
+            await updateStatsPanel(data);
             
             // Update element button states
             updateElementButtonStates(data);
@@ -2466,7 +2466,7 @@
             document.getElementById('dataTable').innerHTML = table;
         }
         
-        function updateStatsPanel(data) {
+        async function updateStatsPanel(data) {
             // Check which composition columns are available
             const hasXrf = data.length > 0 && 'xrf composition' in data[0];
             const hasTarget = data.length > 0 && 'target composition' in data[0];
@@ -2500,18 +2500,34 @@
                 uniqueMaterials: uniqueMaterials
             };
             
+            // Fetch XRD count dynamically
+            let xrdCount = '...';
+            try {
+                const response = await fetch('/get_xrd_count');
+                const result = await response.json();
+                if (result.success) {
+                    xrdCount = result.count;
+                } else {
+                    console.error('Failed to get XRD count (no XRD data uploaded):', result.error);
+                    xrdCount = 'N/A';
+                }
+            } catch (error) {
+                console.error('Error fetching XRD count:', error);
+                xrdCount = 'N/A';
+            }
+            
             document.getElementById('statsPanel').innerHTML = `
                 <div class="stat-item">
-                    <div class="stat-value">766</div>
+                    <div class="stat-value">${xrdCount}</div>
                     <div class="stat-label">Materials Synthesized</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.totalRows}</div>
-                    <div class="stat-label">Experiments</div>
+                    <div class="stat-label">Experiments Performed</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.uniqueSamples}</div>
-                    <div class="stat-label">Samples Tested</div>
+                    <div class="stat-label">Materials Tested</div>
                 </div>
                 <div class="stat-item">
                     <div class="stat-value">${stats.uniqueSources}</div>
@@ -2542,9 +2558,9 @@
             `;
         }
         
-        function toggleCompositionType() {
+        async function toggleCompositionType() {
             useXrfComposition = !useXrfComposition;
-            updateStatsPanel(currentData || []);
+            await updateStatsPanel(currentData || []);
         }
         
         function createDataTable(data) {
@@ -2632,9 +2648,9 @@
                 
                 // Re-apply element filters if any are selected
                 if (selectedElements.size > 0) {
-                    filterDataByElements();
+                    await filterDataByElements();
                 } else {
-                    displayData(currentData);
+                    await displayData(currentData);
                 }
                 populateColumnControls();
                 
@@ -2956,7 +2972,7 @@
             }
         }
 
-        function toggleElement(symbol) {
+        async function toggleElement(symbol) {
             // Check if the element is disabled
             const block = document.querySelector(`[data-symbol="${symbol}"]`);
             if (block && block.classList.contains('disabled')) {
@@ -2967,7 +2983,7 @@
             if (excludedElements.has(symbol)) {
                 excludedElements.delete(symbol);
                 updateElementButtonStates(currentData || []);
-                filterDataByElements();
+                await filterDataByElements();
                 return;
             }
             
@@ -2980,10 +2996,10 @@
             strictFilterMode = false; // Reset to normal filtering when toggling elements
             anyFilterMode = false;
             updateSelectedElementsDisplay();
-            filterDataByElements();
+            await filterDataByElements();
         }
         
-        function toggleElementExclusion(symbol) {
+        async function toggleElementExclusion(symbol) {
             // Check if the element is disabled
             const block = document.querySelector(`[data-symbol="${symbol}"]`);
             if (block && block.classList.contains('disabled')) {
@@ -2995,7 +3011,7 @@
                 selectedElements.delete(symbol);
                 updateSelectedElementsDisplay();
                 updateElementButtonStates(currentData || []);
-                filterDataByElements();
+                await filterDataByElements();
                 return;
             }
             
@@ -3008,7 +3024,7 @@
             
             // Update visual state immediately
             updateElementButtonStates(currentData || []);
-            filterDataByElements();
+            await filterDataByElements();
         }
 
         function updateSelectedElementsDisplay() {
@@ -3027,31 +3043,31 @@
             }
         }
 
-        function clearAllElements() {
+        async function clearAllElements() {
             selectedElements.clear();
             excludedElements.clear();
             strictFilterMode = false;
             anyFilterMode = false;
             updateSelectedElementsDisplay();
             updateElementButtonStates(currentData || []);
-            filterDataByElements();
+            await filterDataByElements();
         }
         
-        function filterOnlySelected() {
+        async function filterOnlySelected() {
             strictFilterMode = true;
             anyFilterMode = false;
-            filterDataByElements();
+            await filterDataByElements();
         }
         
-        function filterAnySelected() {
+        async function filterAnySelected() {
             strictFilterMode = false;
             anyFilterMode = true;
-            filterDataByElements();
+            await filterDataByElements();
         }
 
 
 
-        function filterDataByElements() {
+        async function filterDataByElements() {
             // Start with currentData (which already has source/batch filters applied)
             let filteredData = currentData;
             
@@ -3118,7 +3134,7 @@
                 }
             }
 
-            displayData(filteredData);
+            await displayData(filteredData);
         }
 
         function updateElementButtonStates(data) {
@@ -3334,7 +3350,7 @@
                     usingUploadedData = true;
                     
                     // Update UI
-                    displayData(currentData);
+                    await displayData(currentData);
                     populateFilterOptions();
                     populateColumnControls();
                     populateGroupingOptions();
@@ -3380,7 +3396,7 @@
                     usingUploadedData = false;
                     
                     // Reset UI elements
-                    displayData(currentData);
+                    await displayData(currentData);
                     populateFilterOptions();
                     populateColumnControls();
                     populateGroupingOptions();

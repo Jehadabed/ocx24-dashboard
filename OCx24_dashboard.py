@@ -1092,6 +1092,21 @@ def create_filter_dashboard():
         # Always return true since we're using a blueprint instead of a separate server
         return jsonify({'running': True})
     
+    @app.route('/get_xrd_count')
+    def get_xrd_count():
+        """Get the count of XRD normalized files"""
+        try:
+            xrd_normalized_path = "Data/XRD/normalized"
+            if os.path.exists(xrd_normalized_path):
+                # Count CSV files in the normalized directory
+                csv_files = [f for f in os.listdir(xrd_normalized_path) if f.endswith('.csv')]
+                count = len(csv_files)
+                return jsonify({'success': True, 'count': count})
+            else:
+                return jsonify({'success': False, 'error': 'XRD normalized directory not found'}), 404
+        except Exception as e:
+            return jsonify({'success': False, 'error': str(e)}), 500
+    
     # New embedded plotting routes
     @app.route('/plot/her')
     def embedded_her_plot():
