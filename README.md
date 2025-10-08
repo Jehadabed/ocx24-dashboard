@@ -34,48 +34,6 @@ The XRD Analysis Dashboard accesses data stored in a **Cloudflare R2 bucket** vi
 - **Access**: Via Cloudflare Worker API endpoint
 - **Organization**: Data organized by datasets and sample identifiers
 
-#### JSON Data Structure
-Each XRD sample JSON file contains:
-```json
-{
-  "metadata": {
-    "sample_id": "string",
-    "dataset": "string", 
-    "measurement_date": "string",
-    "instrument_parameters": "object"
-  },
-  "original_data": {
-    "two_theta": "array of angles",
-    "intensity": "array of intensities"
-  },
-  "fitted_data": {
-    "two_theta": "array of angles",
-    "intensity": "array of fitted intensities"
-  },
-  "iterations": [
-    {
-      "iteration": "number",
-      "phases": [
-        {
-          "name": "phase_name",
-          "composition": "percentage",
-          "color": "hex_color"
-        }
-      ],
-      "rwp": "number",
-      "chi_squared": "number"
-    }
-  ]
-}
-```
-
-#### Dashboard Features
-- **Interactive Plotting**: Original vs fitted XRD patterns using Plotly.js
-- **Phase Analysis**: Visual phase composition with color-coded pie charts
-- **Iteration Tracking**: Multiple fitting iterations with statistical metrics (Rwp, χ²)
-- **Data Filtering**: Filter iterations by Rwp values and phase compositions
-- **Metadata Display**: Sample information and measurement parameters
-
 ## Usage
 
 ### Local Development
