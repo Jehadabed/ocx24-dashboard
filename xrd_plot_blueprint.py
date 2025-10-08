@@ -12,7 +12,7 @@ def xrd_plot_main():
     """Main XRD plot page"""
     
     # Create the HTML template exactly matching the original XRD dashboard
-    html_template = '''
+    html_template = r'''
     <!DOCTYPE html>
     <html lang="en">
     <head>
