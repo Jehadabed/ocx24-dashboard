@@ -1045,6 +1045,10 @@
             z-index: 9999 !important;
         }
         
+        #reactionDropdown {
+            z-index: 9998 !important;
+        }
+        
         #groupingDropdown {
             z-index: 1000 !important;
         }
@@ -1606,7 +1610,12 @@
         }
         
         function populateBatchCheckboxes() {
-            if (!allData || allData.length === 0) {
+            // Use current data (filtered/aggregated) instead of allData
+            const dataSource = displayedData && displayedData.length > 0 ? displayedData : 
+                              currentData && currentData.length > 0 ? currentData : 
+                              allData;
+            
+            if (!dataSource || dataSource.length === 0) {
                 console.log('No data available for batch checkboxes');
                 return;
             }
@@ -1623,8 +1632,8 @@
             // Get available batches based on source filter
             let availableBatches;
             if (selectedSources.length === 0) {
-                // If no sources selected, show all batches
-                availableBatches = [...new Set(allData.map(row => row['batch number']))].sort((a, b) => {
+                // If no sources selected, show all batches from current data
+                availableBatches = [...new Set(dataSource.map(row => row['batch number']))].sort((a, b) => {
                     const aNum = parseInt(a) || 0;
                     const bNum = parseInt(b) || 0;
                     if (aNum !== bNum) return aNum - bNum;
@@ -1640,13 +1649,13 @@
                     const useTargetComposition = selectedSources.includes('both_target');
                     const compositionField = useTargetComposition ? 'target composition' : 'xrf composition';
                     
-                    // Get all unique compositions
-                    const compositions = [...new Set(allData.map(row => row[compositionField]))];
+                    // Get all unique compositions from current data
+                    const compositions = [...new Set(dataSource.map(row => row[compositionField]))];
                     
                     for (const composition of compositions) {
                         // Check if this composition exists in both UofT and VSP sources
-                        const uoftSamples = allData.filter(row => row[compositionField] === composition && row.source === 'uoft');
-                        const vspSamples = allData.filter(row => row[compositionField] === composition && row.source === 'vsp');
+                        const uoftSamples = dataSource.filter(row => row[compositionField] === composition && row.source === 'uoft');
+                        const vspSamples = dataSource.filter(row => row[compositionField] === composition && row.source === 'vsp');
                         
                         if (uoftSamples.length > 0 && vspSamples.length > 0) {
                             // This composition exists in both sources, add ALL batch numbers from both sources
@@ -1665,7 +1674,7 @@
                     // Regular source filtering (exclude special 'both' options from the filter list)
                     const sourceFilters = selectedSources.filter(s => !['both', 'both_target'].includes(s));
                     if (sourceFilters.length > 0) {
-                        const filteredData = allData.filter(row => sourceFilters.includes(row.source));
+                        const filteredData = dataSource.filter(row => sourceFilters.includes(row.source));
                         availableBatches = [...new Set(filteredData.map(row => row['batch number']))].sort((a, b) => {
                             const aNum = parseInt(a) || 0;
                             const bNum = parseInt(b) || 0;
@@ -2350,6 +2359,9 @@
                 }
                 populateColumnControls();
                 
+                // Update batch checkboxes to reflect current filtered data
+                populateBatchCheckboxes();
+                
             } catch (error) {
                 console.error('Error applying filters:', error);
                 loadingDiv.textContent = 'Error applying filters. Please try again.';
@@ -2560,7 +2572,7 @@
         
         async function toggleCompositionType() {
             useXrfComposition = !useXrfComposition;
-            await updateStatsPanel(currentData || []);
+            await updateStatsPanel(displayedData || currentData || []);
         }
         
         function createDataTable(data) {
