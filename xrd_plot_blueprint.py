@@ -647,7 +647,7 @@ def xrd_plot_main():
             </div>
             
             <div class="iterations-table-panel">
-                <h3>Table overview of all fitted XRD fitting solutions</h3>
+                <h3>Table overview of all XRD fitting solutions</h3>
                 <div class="table-controls">
                     <div class="rwp-filter">
                         <label>RWP Max:</label>
@@ -972,7 +972,7 @@ def xrd_plot_main():
                             Object.keys(plotlyDataForSample.files.iterations).sort((a, b) => parseInt(a) - parseInt(b)).forEach(iterNum => {
                                 const option = document.createElement('option');
                                 option.value = iterNum;
-                                option.textContent = `Fitted XRD ${iterNum}`;
+                                option.textContent = `XRD Fit ${iterNum}`;
                                 fittingSelect.appendChild(option);
                             });
                         }
@@ -988,7 +988,7 @@ def xrd_plot_main():
                 const plotlyData = allDatasets[currentDataset].plotly[currentSample];
                 let traces = [];
                 let layout = {
-                    title: `${currentSample} - ${currentFitting === 'original' ? 'Original Data' : `Fitted XRD ${currentFitting}`}`,
+                    title: `${currentSample} - ${currentFitting === 'original' ? 'Original Data' : `XRD Fit ${currentFitting}`}`,
                     xaxis: { title: '2θ (degrees)' },
                     yaxis: { title: 'Intensity' },
                     showlegend: true,
