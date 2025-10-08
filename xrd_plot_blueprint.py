@@ -721,8 +721,22 @@ def xrd_plot_main():
                         throw new Error(`Failed to load metadata via Worker API: ${metadataResponse.status}`);
                     }
                     
-                    const metadataData = await metadataResponse.json();
-                    console.log('✅ Metadata loaded successfully via Worker API');
+                    // Use streaming JSON parsing for metadata as well
+                    const reader = metadataResponse.body.getReader();
+                    const decoder = new TextDecoder();
+                    let jsonString = '';
+                    
+                    console.log('🔄 Streaming metadata JSON...');
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        jsonString += decoder.decode(value, { stream: true });
+                    }
+                    
+                    const metadataData = JSON.parse(jsonString);
+                    console.log('✅ Metadata loaded successfully via Worker API using streaming');
                     
                     // Initialize datasets with metadata
                     allDatasets = {};
@@ -754,13 +768,13 @@ def xrd_plot_main():
                 }
             }
             
-            // Load plotly data for specific dataset on demand
+            // Load plotly data for specific dataset on demand using JSON streaming
             async function loadDatasetData(dataset) {
                 if (allDatasets[dataset] && allDatasets[dataset].plotly) {
                     return allDatasets[dataset].plotly; // Already loaded
                 }
                 
-                console.log(`📊 Loading plotly data for ${dataset}...`);
+                console.log(`📊 Loading plotly data for ${dataset} using JSON streaming...`);
                 try {
                     const dataResponse = await fetch(`https://xrd-dashboard-api.ocx24-xrd.workers.dev/api/data/${dataset}`, {
                         mode: 'cors',
@@ -773,18 +787,34 @@ def xrd_plot_main():
                         throw new Error(`Failed to load data for ${dataset}: ${dataResponse.status}`);
                     }
                     
-                    const plotlyData = await dataResponse.json();
+                    // Use streaming JSON parsing for all datasets regardless of size
+                    const reader = dataResponse.body.getReader();
+                    const decoder = new TextDecoder();
+                    let jsonString = '';
+                    
+                    console.log(`🔄 Streaming JSON data for ${dataset}...`);
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        jsonString += decoder.decode(value, { stream: true });
+                    }
+                    
+                    // Parse the complete JSON string
+                    const plotlyData = JSON.parse(jsonString);
+                    
+                    console.log(`✅ Streamed JSON data loaded for ${dataset}`);
                     
                     // Cache the data
                     if (allDatasets[dataset]) {
                         allDatasets[dataset].plotly = plotlyData;
                     }
                     
-                    console.log(`✅ Plotly data loaded for ${dataset}`);
                     return plotlyData;
                     
                 } catch (error) {
-                    console.error(`❌ Error loading data for ${dataset}:`, error);
+                    console.error(`❌ Error loading streamed data for ${dataset}:`, error);
                     throw error;
                 }
             }
@@ -1313,10 +1343,13 @@ def xrd_plot_main():
                 // Remove any existing tooltip
                 hideTooltip();
                 
+                // Extract short form of phase name (first part before underscore)
+                const shortPhase = phase.split('_')[0];
+                
                 // Create tooltip element
                 const tooltip = document.createElement('div');
                 tooltip.className = 'phase-tooltip';
-                tooltip.innerHTML = `${phase}<br>${percentage}`;
+                tooltip.innerHTML = `${shortPhase}<br>${percentage}`;
                 document.body.appendChild(tooltip);
                 
                 // Position tooltip relative to mouse position
