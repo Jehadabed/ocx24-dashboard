@@ -795,6 +795,35 @@
             border-bottom: 1px solid #e8eaed;
         }
         
+        .data-section-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 20px 20px 16px 20px;
+            background: #f8f9fa;
+            border-bottom: 1px solid #e8eaed;
+            position: relative;
+        }
+        
+        .data-section-header h3 {
+            margin: 0;
+            padding: 0;
+            background: none;
+            color: #202124;
+            font-size: 1.1em;
+            font-weight: 500;
+            letter-spacing: 0.2px;
+            border-bottom: none;
+            position: absolute;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+        
+        .data-section-header .export-btn {
+            margin-left: auto;
+            flex-shrink: 0;
+        }
+        
         .data-content {
             padding: 24px;
             max-height: 600px;
@@ -1918,13 +1947,6 @@
                     </button>
                 </div>
                 
-                <!-- Action Buttons Section -->
-                <div class="action-buttons-section">
-                    <button id="exportBtn" class="export-btn" onclick="exportData()">
-                        ⊞ Export Data (CSV)
-                    </button>
-                </div>
-                
 
             </div>
             
@@ -1951,7 +1973,12 @@
         
         <div class="main-content">
             <div class="data-section">
-                <h3>Filtered Data</h3>
+                <div class="data-section-header">
+                    <h3>Filtered Data</h3>
+                    <button id="exportBtn" class="export-btn" onclick="exportData()">
+                        ⊞ Export Data (CSV)
+                    </button>
+                </div>
                 <div class="data-content">
                     <div id="loading" class="loading" style="display: none;">Loading data...</div>
                     
