@@ -1668,7 +1668,37 @@
             max-width: none !important;
         }
         
-        /* Responsive adjustments for side-by-side controls */
+        /* Enhanced responsive behavior for filters section */
+        @media (max-width: 1200px) {
+            .filters-row {
+                flex-direction: column;
+                gap: 15px;
+            }
+            
+            .filters-row .control-group,
+            .filters-row .dropdown-filters {
+                min-width: 100%;
+                flex: none;
+            }
+            
+            .dropdown-filters .side-by-side-controls {
+                flex-direction: row !important;
+                gap: 20px !important;
+            }
+        }
+        
+        @media (max-width: 900px) {
+            .dropdown-filters .side-by-side-controls {
+                flex-direction: column !important;
+                gap: 15px !important;
+            }
+            
+            .dropdown-filters .side-by-side-controls .control-group {
+                min-width: 100% !important;
+                flex: none !important;
+            }
+        }
+        
         @media (max-width: 768px) {
             .side-by-side-controls {
                 flex-direction: column;
@@ -2842,28 +2872,36 @@
             const controls = filtersRow.querySelectorAll('.control-group, .dropdown-filters');
             if (controls.length < 2) return;
             
+            // Get window width for responsive decisions
+            const windowWidth = window.innerWidth;
+            
             // Reset to default state
             filtersRow.classList.remove('stacked');
             
-            // Check if controls would overlap
-            let shouldStack = false;
-            for (let i = 0; i < controls.length - 1; i++) {
-                const currentRect = controls[i].getBoundingClientRect();
-                const nextRect = controls[i + 1].getBoundingClientRect();
+            // Use CSS media queries for responsive behavior instead of JavaScript stacking
+            // Only use JavaScript stacking for very specific cases where CSS isn't enough
+            
+            // Check if controls would overlap significantly (only for very narrow screens)
+            if (windowWidth > 900) {
+                let shouldStack = false;
+                for (let i = 0; i < controls.length - 1; i++) {
+                    const currentRect = controls[i].getBoundingClientRect();
+                    const nextRect = controls[i + 1].getBoundingClientRect();
+                    
+                    if (currentRect.right > nextRect.left - 20) { // 20px buffer
+                        shouldStack = true;
+                        break;
+                    }
+                }
                 
-                if (currentRect.right > nextRect.left - 20) { // 20px buffer
-                    shouldStack = true;
-                    break;
+                if (shouldStack) {
+                    filtersRow.classList.add('stacked');
                 }
             }
             
-            if (shouldStack) {
-                filtersRow.classList.add('stacked');
-            }
-            
-            // Also check dropdown-filters specifically
+            // Handle dropdown-filters stacking more conservatively
             const dropdownFilters = document.querySelector('.dropdown-filters');
-            if (dropdownFilters) {
+            if (dropdownFilters && windowWidth > 900) {
                 const dropdownControls = dropdownFilters.querySelectorAll('.control-group');
                 if (dropdownControls.length >= 2) {
                     const firstRect = dropdownControls[0].getBoundingClientRect();
