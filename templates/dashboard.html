@@ -867,10 +867,10 @@
         .periodic-table {
             display: grid;
             grid-template-columns: repeat(18, 1fr);
-            gap: 1px;
+            grid-template-rows: repeat(10, min-content);
+            gap: 0px;
             flex: 1;
             overflow: hidden;
-            height: calc(100% - 60px);
         }
         
         .element-block {
@@ -881,18 +881,21 @@
             flex-direction: column;
             align-items: center;
             justify-content: center;
-            font-size: 10px;
+            font-size: 12px;
             cursor: pointer;
             transition: all 0.2s ease;
             background: #f8f9fa;
             color: #666;
             min-height: 0;
             min-width: 0;
+            padding: 1px;
+            box-sizing: border-box;
+            margin: 0px;
         }
         
         .element-block:hover {
-            transform: scale(1.05);
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transform: scale(1.02);
+            box-shadow: 0 1px 2px rgba(0,0,0,0.1);
         }
         
         .element-block.enabled {
@@ -938,16 +941,20 @@
         .element-symbol {
             font-weight: bold;
             font-size: 12px;
+            line-height: 0.9;
+            margin: 0px;
         }
         
         .element-number {
             font-size: 8px;
-            margin-top: 1px;
+            margin: 0px;
+            line-height: 0.9;
         }
         
         .element-weight {
             font-size: 7px;
-            margin-top: 1px;
+            margin: 0px;
+            line-height: 0.9;
         }
         
 
