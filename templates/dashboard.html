@@ -206,10 +206,18 @@
         
         .filters-section {
             display: flex;
-            flex-direction: row;
+            flex-direction: column;
             gap: 20px;
             align-items: flex-start;
             flex: 1;
+        }
+        
+        .filters-row {
+            display: flex;
+            flex-direction: row;
+            gap: 20px;
+            align-items: flex-start;
+            width: 100%;
         }
         
         .dropdown-filters {
@@ -804,9 +812,9 @@
             min-width: 400px;
             display: flex;
             flex-direction: column;
-            gap: 16px;
+            gap: 2px;
             overflow-y: auto;
-            overflow-x: hidden;
+            overflow-x: auto;
             max-width: calc(40vw - 40px);
         }
         
@@ -819,6 +827,12 @@
             flex-shrink: 0;
             overflow: hidden;
             box-sizing: border-box;
+            position: relative;
+        }
+        
+        .left-row:not(:last-child) {
+            border-bottom: 2px solid #e8eaed;
+            margin-bottom: 2px;
         }
         
         .left-row-1 {
@@ -1391,13 +1405,10 @@
             <!-- Left Half: Stats, Filters, and Buttons -->
             <div class="left-half">
                 <!-- Stats Section -->
-                <div id="statsPanel" class="stats-panel"></div>
-                
-                <!-- Section Divider -->
-                <div class="section-divider"></div>
+                <div id="statsPanel" class="stats-panel left-row left-row-1"></div>
                 
                 <!-- Grouping Configuration Section -->
-                <div class="grouping-section">
+                <div class="grouping-section left-row left-row-2">
                     <div class="aggregation-description">
                         <small>Aggregation combines multiple samples with the same composition into single data points, reducing noise and improving visualization clarity.</small>
                     </div>
@@ -1439,21 +1450,19 @@
                     </div>
                 </div>
                 
-                <!-- Section Divider -->
-                <div class="section-divider"></div>
-                
                 <!-- Controls Section -->
                 <div class="controls">
                     <!-- Filters Section -->
-                    <div class="filters-section">
-                        <div class="control-group">
-                            <label for="sourceFilter">Synthesis Method</label>
-                            <select id="sourceFilter" multiple>
-                                <option value="" selected>All</option>
-                            </select>
-                        </div>
-                        
-                        <div class="dropdown-filters">
+                    <div class="filters-section left-row left-row-3">
+                        <div class="filters-row">
+                            <div class="control-group">
+                                <label for="sourceFilter">Synthesis Method</label>
+                                <select id="sourceFilter" multiple>
+                                    <option value="" selected>All</option>
+                                </select>
+                            </div>
+                            
+                            <div class="dropdown-filters">
                             <div class="control-group">
                                 <label>Batch Number</label>
                                 <div class="column-dropdown">
@@ -1498,44 +1507,42 @@
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    
-                    <!-- Element Count Filter -->
-                    <div class="control-group element-count-control">
-                        <label>Number of elements:</label>
-                        <div class="element-count-filters">
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="elementCount1" checked>
-                                1
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="elementCount2" checked>
-                                2
-                            </label>
-                            <label class="checkbox-label">
-                                <input type="checkbox" id="elementCount3" checked>
-                                3
-                            </label>
                         </div>
-                    </div>
-                    
-                    <!-- Filter Action Buttons -->
-                    <div class="control-group filter-action-buttons">
-                        <button id="applySelectedFiltersBtn" class="apply-filters-btn" onclick="applySelectedFilters()">
-                            Apply Filters
-                        </button>
-                        <button id="resetBtn" class="reset-btn" onclick="resetFilters()">
-                            ⟳ Reset Filters
-                        </button>
+                        
+                        <!-- Element Count Filter -->
+                        <div class="control-group element-count-control">
+                            <label>Number of elements:</label>
+                            <div class="element-count-filters">
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="elementCount1" checked>
+                                    1
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="elementCount2" checked>
+                                    2
+                                </label>
+                                <label class="checkbox-label">
+                                    <input type="checkbox" id="elementCount3" checked>
+                                    3
+                                </label>
+                            </div>
+                        </div>
+                        
+                        <!-- Filter Action Buttons -->
+                        <div class="control-group filter-action-buttons">
+                            <button id="applySelectedFiltersBtn" class="apply-filters-btn" onclick="applySelectedFilters()">
+                                Apply Filters
+                            </button>
+                            <button id="resetBtn" class="reset-btn" onclick="resetFilters()">
+                                ⟳ Reset Filters
+                            </button>
+                        </div>
                     </div>
                     
                 </div>
                 
-                <!-- Section Divider -->
-                <div class="section-divider"></div>
-                
                 <!-- Interactive Plot Buttons Section -->
-                <div class="plot-buttons-section">
+                <div class="plot-buttons-section left-row left-row-4">
                     <button id="herPlotBtn" class="interactive-plot-btn her-btn" onclick="toggleHERPlot()">
                         Build HER Plot
                     </button>
