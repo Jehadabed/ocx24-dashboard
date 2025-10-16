@@ -1685,7 +1685,7 @@
             flex-wrap: nowrap !important;
         }
         
-        /* Override stacked behavior for side-by-side controls */
+        /* Override stacked behavior for side-by-side controwdls */
         .filters-row.stacked .dropdown-filters .side-by-side-controls {
             flex-direction: row !important;
             gap: 20px !important;
@@ -2339,7 +2339,15 @@
             if (isResizing) return; // Don't open during resize
             closeAllDropdowns('batchDropdown');
             const dropdown = document.getElementById('batchDropdown');
+            if (!dropdown) {
+                console.error('Batch dropdown element not found');
+                return;
+            }
             const toggle = dropdown.parentElement.querySelector('.dropdown-toggle');
+            if (!toggle) {
+                console.error('Batch dropdown toggle not found');
+                return;
+            }
             
             dropdown.classList.toggle('show');
             toggle.classList.toggle('open');
@@ -2450,7 +2458,15 @@
             if (isResizing) return; // Don't open during resize
             closeAllDropdowns('reactionDropdown');
             const dropdown = document.getElementById('reactionDropdown');
+            if (!dropdown) {
+                console.error('Reaction dropdown element not found');
+                return;
+            }
             const toggle = dropdown.parentElement.querySelector('.dropdown-toggle');
+            if (!toggle) {
+                console.error('Reaction dropdown toggle not found');
+                return;
+            }
             
             dropdown.classList.toggle('show');
             toggle.classList.toggle('open');
@@ -2622,7 +2638,15 @@
             if (isResizing) return; // Don't open during resize
             closeAllDropdowns('columnDropdown');
             const dropdown = document.getElementById('columnDropdown');
-            const toggle = document.querySelector('.dropdown-toggle');
+            if (!dropdown) {
+                console.error('Column dropdown element not found');
+                return;
+            }
+            const toggle = dropdown.parentElement.querySelector('.dropdown-toggle');
+            if (!toggle) {
+                console.error('Column dropdown toggle not found');
+                return;
+            }
             
             console.log('Toggling dropdown, current state:', dropdown.classList.contains('show'));
             
@@ -2760,13 +2784,37 @@
         }
         
         function toggleGroupingDropdown() {
-            if (isResizing) return; // Don't open during resize
+            console.log('=== toggleGroupingDropdown called ===');
+            console.log('isResizing:', isResizing);
+            
+            if (isResizing) {
+                console.log('Blocked by resize');
+                return; // Don't open during resize
+            }
+            
+            console.log('Calling closeAllDropdowns...');
             closeAllDropdowns('groupingDropdown');
+            
             const dropdown = document.getElementById('groupingDropdown');
+            if (!dropdown) {
+                console.error('Grouping dropdown element not found');
+                return;
+            }
             const toggle = dropdown.parentElement.querySelector('.dropdown-toggle');
+            if (!toggle) {
+                console.error('Grouping dropdown toggle not found');
+                return;
+            }
+            
+            console.log('Dropdown found:', !!dropdown);
+            console.log('Toggle found:', !!toggle);
+            console.log('Before toggle - show:', dropdown.classList.contains('show'));
             
             dropdown.classList.toggle('show');
             toggle.classList.toggle('open');
+            
+            console.log('After toggle - show:', dropdown.classList.contains('show'));
+            console.log('After toggle - open:', toggle.classList.contains('open'));
         }
         
 
@@ -2775,15 +2823,26 @@
         document.addEventListener('click', function(event) {
             const dropdowns = ['groupingDropdown', 'batchDropdown', 'reactionDropdown', 'columnDropdown'];
             let clickedInsideDropdown = false;
+            let clickedOnToggle = false;
             
+            // Check if clicked inside any dropdown content
             dropdowns.forEach(id => {
                 const dropdown = document.getElementById(id);
                 if (dropdown && dropdown.contains(event.target)) {
                     clickedInsideDropdown = true;
                 }
+                
+                // Check if clicked on the toggle button for this dropdown
+                if (dropdown) {
+                    const toggle = dropdown.parentElement.querySelector('.dropdown-toggle');
+                    if (toggle && toggle.contains(event.target)) {
+                        clickedOnToggle = true;
+                    }
+                }
             });
             
-            if (!clickedInsideDropdown) {
+            // Don't close dropdowns if clicking on content or toggle buttons
+            if (!clickedInsideDropdown && !clickedOnToggle) {
                 closeAllDropdowns();
             }
         });
@@ -2821,8 +2880,8 @@
             // Add resizing class to hide dropdowns
             addResizingClass();
             
-            // Close all dropdowns immediately
-            closeAllDropdowns();
+            // Close all dropdowns immediately (force close during resize)
+            closeAllDropdowns(null, true);
             
             // Adjust grouping controls layout
             adjustGroupingControlsLayout();
@@ -2843,15 +2902,24 @@
         });
         
         // Enhanced closeAllDropdowns function
-        function closeAllDropdowns(exceptId = null) {
-            // Don't open dropdowns during resize
-            if (isResizing && exceptId) {
+        function closeAllDropdowns(exceptId = null, forceClose = false) {
+            console.log('=== closeAllDropdowns called ===');
+            console.log('exceptId:', exceptId);
+            console.log('isResizing:', isResizing);
+            console.log('forceClose:', forceClose);
+            
+            // Don't close dropdowns during resize unless forced
+            if (isResizing && !forceClose) {
+                console.log('Blocked by resize');
                 return;
             }
             
             const dropdowns = ['groupingDropdown', 'batchDropdown', 'reactionDropdown', 'columnDropdown'];
+            console.log('Processing dropdowns:', dropdowns);
+            
             dropdowns.forEach(id => {
                 if (id !== exceptId) {
+                    console.log('Closing dropdown:', id);
                     const dropdown = document.getElementById(id);
                     if (dropdown) {
                         dropdown.classList.remove('show');
@@ -2861,6 +2929,8 @@
                             toggle.classList.remove('open');
                         }
                     }
+                } else {
+                    console.log('Skipping dropdown:', id, '(exceptId)');
                 }
             });
         }
