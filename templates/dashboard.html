@@ -1181,19 +1181,28 @@
         
         .stats-panel {
             display: flex;
-            gap: 6px;
+            gap: 4px;
             flex-wrap: nowrap;
+            background: #f8f9fa;
+            padding: 8px;
+            border-radius: 8px;
+            border: 1px solid #e9ecef;
         }
         
         .stat-item {
             background: #ffffff;
-            padding: 6px;
-            border-radius: 6px;
+            padding: 4px;
+            border-radius: 4px;
             border: 1px solid #e8eaed;
             box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
             flex: 1;
             text-align: center;
             min-width: 0;
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
         }
         
         .stat-value {
@@ -1205,7 +1214,7 @@
         .stat-label {
             font-size: 0.75em;
             color: #5f6368;
-            margin-top: 4px;
+            margin-top: 2px;
         }
 
         .composition-toggle {
@@ -2154,10 +2163,10 @@
                 // Note: applyFilters() removed - will only apply when button is pressed
             });
             
-            // Keep element count filters working immediately (as requested)
-            document.getElementById('elementCount1').addEventListener('change', applyFilters);
-            document.getElementById('elementCount2').addEventListener('change', applyFilters);
-            document.getElementById('elementCount3').addEventListener('change', applyFilters);
+            // Remove automatic filtering from element count filters - will only apply when button is pressed
+            // document.getElementById('elementCount1').addEventListener('change', applyFilters);
+            // document.getElementById('elementCount2').addEventListener('change', applyFilters);
+            // document.getElementById('elementCount3').addEventListener('change', applyFilters);
             
             // Populate batch filter with checkboxes
             populateBatchCheckboxes();
@@ -2288,7 +2297,7 @@
             try {
                 updateBatchSelectedCount();
                 updateSelectAllBatchCheckbox();
-                applyFilters();
+                // Note: applyFilters() removed - will only apply when button is pressed
             } catch (error) {
                 console.error('Error in toggleBatch:', error);
             }
@@ -2349,7 +2358,7 @@
             
             updateBatchSelectedCount();
             updateSelectAllBatchCheckbox();
-            applyFilters();
+            // Note: applyFilters() removed - will only apply when button is pressed
         }
         
         function toggleBatchDropdown() {
@@ -2420,7 +2429,7 @@
             try {
                 updateReactionSelectedCount();
                 updateSelectAllReactionCheckbox();
-                applyFilters();
+                // Note: applyFilters() removed - will only apply when button is pressed
             } catch (error) {
                 console.error('Error in toggleReaction:', error);
             }
@@ -2468,7 +2477,7 @@
             
             updateReactionSelectedCount();
             updateSelectAllReactionCheckbox();
-            applyFilters();
+            // Note: applyFilters() removed - will only apply when button is pressed
         }
         
         function toggleReactionDropdown() {
@@ -3215,6 +3224,9 @@
                     
                     // Reset batch checkboxes to show all batches selected
                     populateBatchCheckboxes();
+                    
+                    // Reset reaction checkboxes to show all reactions selected
+                    populateReactionList();
                     
                     // Clear element filters
                     selectedElements.clear();
