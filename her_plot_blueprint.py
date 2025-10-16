@@ -559,20 +559,15 @@ def her_plot_main():
                 gap: 20px;
                 min-height: 600px;
             }}
+            
             .plot-section {{
                 flex: 1;
-                position: relative;
-                height: 600px;
                 background: #ffffff;
                 border-radius: 8px;
                 box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
-                overflow: visible;
+                overflow: hidden;
                 transition: all 0.2s ease;
                 border: 1px solid #e8eaed;
-            }}
-            
-            .plot-section .plot-content {{
-                position: relative;
             }}
             
             .plot-section:hover {{
@@ -845,17 +840,11 @@ def her_plot_main():
             
             .plot-content {{
                 padding: 24px;
-                height: calc(100% - 80px); /* Account for header */
                 min-height: 400px;
                 display: flex;
-                align-items: stretch;
-                justify-content: stretch;
+                align-items: center;
+                justify-content: center;
                 background: #ffffff;
-            }}
-            /* Ensure Plotly plots fill their containers */
-            #plot, #xrdPlotContent {{
-                width: 100% !important;
-                height: 100% !important;
             }}
             
             .info-panel {{
@@ -1572,7 +1561,8 @@ def her_plot_main():
                     }},
                     hovermode: 'closest',
                     template: 'plotly_white',
-                    autosize: true,
+                    height: 700,
+                    width: 1000,
                     margin: {{l: 80, r: 200, t: 80, b: 60}},
                     showlegend: true,
                     legend: {{
@@ -1860,22 +1850,6 @@ def her_plot_main():
             // Initialize plot
             updatePlot();
             
-            // Add window resize handler to ensure plots resize properly
-            let resizeTimeout;
-            window.addEventListener('resize', function() {{
-                clearTimeout(resizeTimeout);
-                resizeTimeout = setTimeout(function() {{
-                    // Resize main plot
-                    if (document.getElementById('plot')) {{
-                        Plotly.Plots.resize('plot');
-                    }}
-                    // Resize XRD plot if it exists
-                    if (document.getElementById('xrdPlotContent') && document.getElementById('xrdPlotContent').innerHTML !== '') {{
-                        Plotly.Plots.resize('xrdPlotContent');
-                    }}
-                }}, 250); // Debounce resize events
-            }});
-            
             // XRD functionality
             let accumulatedPoints = [];
             let accumulatedXrdData = [];
@@ -2044,11 +2018,11 @@ def her_plot_main():
                         yanchor: 'top'
                     }},
                     margin: {{ l: 60, r: 150, t: 20, b: 60 }},
-                    autosize: true
+                    width: 1500,
+                    height: 400
                 }};
                 
                 Plotly.newPlot('xrdPlotContent', traces, layout, {{
-                    responsive: true,
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'her_xrd_plot',
