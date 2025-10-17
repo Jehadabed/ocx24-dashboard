@@ -39,7 +39,7 @@ def load_calibration_data_for_voltage_conversion(custom_params=None):
     # Default experiment conditions: Neutral CO2RR in 4cm2 cell, Sputtered Copper Catalyst, 0.1M Bicarbonate - ref electrode (3M kcl) 230mV vs SHE
     default_params = {
         'ref_pot': 0.23,  # V Ag/AgCl electrode
-        'cathode_pH': 12.5,
+        'cathode_pH': 10,
         'anode_pH': 3,
         'geo_area': 4,  # cm2
         'membrane_loss': 0.1,  # V
@@ -1065,7 +1065,7 @@ def her_plot_main():
             
             @media (max-width: 768px) {{
                 .container {{
-                    margin: 16px;
+                    margin: 16px; 
                     border-radius: 8px;
                 }}
                 h1 {{
@@ -1254,7 +1254,7 @@ def her_plot_main():
                     <div class="form-row">
                         <div class="form-group">
                             <label for="cathode_pH">Cathode pH</label>
-                            <input type="number" id="cathode_pH" step="0.1" value="12.5">
+                            <input type="number" id="cathode_pH" step="0.1" value="10">
                         </div>
                         <div class="form-group">
                             <label for="anode_pH">Anode pH</label>
@@ -1828,7 +1828,7 @@ def her_plot_main():
             function resetVoltageConfig() {{
                 document.getElementById('ref_pot').value = '0.23';
                 document.getElementById('geo_area').value = '4';
-                document.getElementById('cathode_pH').value = '12.5';
+                document.getElementById('cathode_pH').value = '10';
                 document.getElementById('anode_pH').value = '3';
                 document.getElementById('membrane_loss').value = '0.1';
                 document.getElementById('cathode_thermo').value = '0.08';
@@ -2040,7 +2040,8 @@ def her_plot_main():
                     margin: {{ l: 60, r: 150, t: 20, b: 60 }},
                     width: null,
                     height: 500,
-                    autosize: true
+                    autosize: true,
+                    hovermode: 'closest'
                 }};
                 
                 Plotly.newPlot('xrdPlotContent', traces, layout, {{
