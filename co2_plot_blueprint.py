@@ -1007,6 +1007,34 @@ def co2_plot_main():
                 background: #ffffff;
             }}
             
+            /* Responsive plot containers */
+            #plot {{
+                width: 100% !important;
+                height: 600px !important;
+                min-width: 800px !important;
+                min-height: 400px !important;
+                max-width: 100% !important;
+                max-height: 800px !important;
+            }}
+            
+            #pointPlotContent {{
+                width: 100% !important;
+                height: 500px !important;
+                min-width: 600px !important;
+                min-height: 300px !important;
+                max-width: 100% !important;
+                max-height: 700px !important;
+            }}
+            
+            #xrdPlotContent {{
+                width: 100% !important;
+                height: 500px !important;
+                min-width: 800px !important;
+                min-height: 300px !important;
+                max-width: 100% !important;
+                max-height: 700px !important;
+            }}
+            
             .reset-btn {{
                 background: #ffffff;
                 color: #ea4335;
@@ -1973,8 +2001,9 @@ def co2_plot_main():
                     }},
                     hovermode: 'closest',
                     template: 'plotly_white',
-                    width: 800,
+                    width: null,
                     height: 600,
+                    autosize: true,
                     showlegend: zCol === 'default_colors',
                     margin: {{ l: 60, r: 30, t: 60, b: 60 }},
                     legend: {{
@@ -2090,6 +2119,7 @@ def co2_plot_main():
                 }}
                 
                 Plotly.newPlot('plot', traces, layout, {{
+                    responsive: true,
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'co2_plot',
@@ -2451,8 +2481,9 @@ def co2_plot_main():
                     }},
                     hovermode: 'closest',
                     template: 'plotly_white',
-                    width: 700,
+                    width: null,
                     height: 500,
+                    autosize: true,
                     showlegend: true,
                     margin: {{ l: 60, r: 30, t: 60, b: 60 }},
                     legend: {{
@@ -2465,6 +2496,7 @@ def co2_plot_main():
                 }};
                 
                 Plotly.newPlot('pointPlotContent', traces, layout, {{
+                    responsive: true,
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'co2_point_plot',
@@ -2680,8 +2712,8 @@ def co2_plot_main():
                         borderwidth: 1
                     }},
                     margin: {{ l: 60, r: 150, t: 20, b: 60 }},
-                    width: 1500,
-                    height: 400
+                    width: null,
+                    height: 500
                 }};
                 
                 // Clear existing plot first
@@ -2690,6 +2722,7 @@ def co2_plot_main():
                 
                 console.log('Creating new Plotly plot with', traces.length, 'traces...');
                 Plotly.newPlot('xrdPlotContent', traces, layout, {{
+                    responsive: true,
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'co2_xrd_plot',
