@@ -403,6 +403,7 @@ def her_plot_main():
         <title>OCx24 Dataset: HER</title>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <style>
+            /* CACHE BUSTER: 2025-01-16 16:52 */
             body {{
                 font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
                 margin: 0;
@@ -551,7 +552,7 @@ def her_plot_main():
                 gap: 20px;
                 padding: 32px;
                 background: #fafafa;
-                min-height: 1200px;
+                min-height: 800px;
             }}
             
             .plots-row {{
@@ -840,11 +841,29 @@ def her_plot_main():
             
             .plot-content {{
                 padding: 24px;
-                min-height: 400px;
+                min-height: 200px;
                 display: flex;
                 align-items: center;
                 justify-content: center;
                 background: #ffffff;
+            }}
+            
+            #plot {{
+                width: 100% !important;
+                height: 600px !important;
+                min-width: 800px !important;
+                min-height: 400px !important;
+                max-width: 100% !important;
+                max-height: 800px !important;
+            }}
+            
+            #xrdPlotContent {{
+                width: 100% !important;
+                height: 500px !important;
+                min-width: 800px !important;
+                min-height: 300px !important;
+                max-width: 100% !important;
+                max-height: 700px !important;
             }}
             
             .info-panel {{
@@ -1561,8 +1580,9 @@ def her_plot_main():
                     }},
                     hovermode: 'closest',
                     template: 'plotly_white',
-                    height: 700,
-                    width: 1000,
+                    height: 600,
+                    width: null,
+                    autosize: true,
                     margin: {{l: 80, r: 200, t: 80, b: 60}},
                     showlegend: true,
                     legend: {{
@@ -2018,11 +2038,13 @@ def her_plot_main():
                         yanchor: 'top'
                     }},
                     margin: {{ l: 60, r: 150, t: 20, b: 60 }},
-                    width: 1500,
-                    height: 400
+                    width: null,
+                    height: 500,
+                    autosize: true
                 }};
                 
                 Plotly.newPlot('xrdPlotContent', traces, layout, {{
+                    responsive: true,
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'her_xrd_plot',
