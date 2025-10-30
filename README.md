@@ -29,7 +29,7 @@ The XRD Analysis Dashboard accesses data stored in a **Cloudflare R2 bucket** vi
 
 #### Data Storage
 - **Location**: Cloudflare R2 bucket (cloud storage)
-- **Public Link**: https://pub-1234567890abcdef.r2.dev/xrd-data/
+- **Public Link**: https://pub-6ab47103d4af4add87fd1289ebeb7d64.r2.dev
 - **Format**: JSON files containing XRD measurement data
 - **Access**: Via Cloudflare Worker API endpoint
 - **Organization**: Data organized by datasets and sample identifiers

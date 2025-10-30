@@ -1680,8 +1680,31 @@ def her_plot_main():
                     layout.annotations = annotations;
                 }}
                 
+                const exportCsvButton = {{
+                    name: 'exportCsv',
+                    title: 'Export CSV',
+                    icon: {{width: 500, height: 500, path: 'M50 400 L450 400 L450 450 L50 450 Z M100 50 L400 50 L400 350 L100 350 Z'}},
+                    click: function(gd) {{ try {{
+                        const gdDiv = 'plot';
+                        const gdEl = document.getElementById(gdDiv);
+                        if (!gdEl || !gdEl.data) return;
+                        const rows = [];
+                        rows.push(['x','y'].join(','));
+                        (gdEl.data || []).forEach(tr => {{
+                            const xs = tr.x || [];
+                            const ys = tr.y || [];
+                            const n = Math.min(xs.length, ys.length);
+                            for (let i = 0; i < n; i++) rows.push([xs[i], ys[i]].join(','));
+                        }});
+                        const blob = new Blob([rows.join('\\n')], {{ type: 'text/csv' }});
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a'); a.href = url; a.download = 'her_plot.csv';
+                        document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); document.body.removeChild(a);
+                    }} catch(e) {{ console.error('Export CSV failed:', e); }} }}
+                }};
                 Plotly.newPlot('plot', traces, layout, {{
                     responsive: true,
+                    modeBarButtonsToAdd: [exportCsvButton],
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'her_plot',
@@ -2049,8 +2072,31 @@ def her_plot_main():
                     hovermode: 'closest'
                 }};
                 
+                const exportXrdCsvButton = {{
+                    name: 'exportCsv',
+                    title: 'Export CSV',
+                    icon: {{width: 500, height: 500, path: 'M50 400 L450 400 L450 450 L50 450 Z M100 50 L400 50 L400 350 L100 350 Z'}},
+                    click: function(gd) {{ try {{
+                        const gdDiv = 'xrdPlotContent';
+                        const gdEl = document.getElementById(gdDiv);
+                        if (!gdEl || !gdEl.data) return;
+                        const rows = [];
+                        rows.push(['x','y'].join(','));
+                        (gdEl.data || []).forEach(tr => {{
+                            const xs = tr.x || [];
+                            const ys = tr.y || [];
+                            const n = Math.min(xs.length, ys.length);
+                            for (let i = 0; i < n; i++) rows.push([xs[i], ys[i]].join(','));
+                        }});
+                        const blob = new Blob([rows.join('\\n')], {{ type: 'text/csv' }});
+                        const url = URL.createObjectURL(blob);
+                        const a = document.createElement('a'); a.href = url; a.download = 'her_xrd_plot.csv';
+                        document.body.appendChild(a); a.click(); URL.revokeObjectURL(url); document.body.removeChild(a);
+                    }} catch(e) {{ console.error('Export CSV failed:', e); }} }}
+                }};
                 Plotly.newPlot('xrdPlotContent', traces, layout, {{
                     responsive: true,
+                    modeBarButtonsToAdd: [exportXrdCsvButton],
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'her_xrd_plot',

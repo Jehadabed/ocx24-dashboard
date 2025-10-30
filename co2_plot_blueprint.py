@@ -1589,6 +1589,30 @@ def co2_plot_main():
             document.getElementById('xAxis').value = 'PCA1';
             document.getElementById('yAxis').value = 'PCA2';
             document.getElementById('zAxis').value = 'default_colors';
+
+            // CSV export helper (generic: reads current div traces and downloads x,y pairs)
+            function exportDivCsv(divId, filename) {{
+                try {{
+                    const gd = document.getElementById(divId);
+                    if (!gd || !gd.data) return;
+                    const rows = [];
+                    rows.push(['x','y'].join(','));
+                    (gd.data || []).forEach(tr => {{
+                        const xs = tr.x || [];
+                        const ys = tr.y || [];
+                        const n = Math.min(xs.length, ys.length);
+                        for (let i = 0; i < n; i++) {{
+                            rows.push([xs[i], ys[i]].join(','));
+                        }}
+                    }});
+                    const blob = new Blob([rows.join('\\n')], {{ type: 'text/csv' }});
+                    const url = URL.createObjectURL(blob);
+                    const a = document.createElement('a');
+                    a.href = url; a.download = (filename || 'plot') + '.csv';
+                    document.body.appendChild(a); a.click();
+                    URL.revokeObjectURL(url); document.body.removeChild(a);
+                }} catch (e) {{ console.error('Export CSV failed:', e); }}
+            }}
             
             // Add change event listeners to clear second plot when axes change
             document.getElementById('xAxis').addEventListener('change', function() {{
@@ -2156,8 +2180,15 @@ def co2_plot_main():
                     layout.annotations = annotations;
                 }}
                 
+                const exportCsvButton = {{
+                    name: 'exportCsv',
+                    title: 'Export CSV',
+                    icon: {{width: 500, height: 500, path: 'M50 400 L450 400 L450 450 L50 450 Z M100 50 L400 50 L400 350 L100 350 Z'}},
+                    click: function(gd) {{ try {{ exportDivCsv('plot', 'co2_plot'); }} catch(e) {{ console.error('Export CSV failed:', e); }} }}
+                }};
                 Plotly.newPlot('plot', traces, layout, {{
                     responsive: true,
+                    modeBarButtonsToAdd: [exportCsvButton],
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'co2_plot',
@@ -2549,8 +2580,15 @@ def co2_plot_main():
                     }}
                 }};
                 
+                const exportPointCsvButton = {{
+                    name: 'exportCsv',
+                    title: 'Export CSV',
+                    icon: {{width: 500, height: 500, path: 'M50 400 L450 400 L450 450 L50 450 Z M100 50 L400 50 L400 350 L100 350 Z'}},
+                    click: function(gd) {{ try {{ exportDivCsv('pointPlotContent', 'co2_point_plot'); }} catch(e) {{ console.error('Export CSV failed:', e); }} }}
+                }};
                 Plotly.newPlot('pointPlotContent', traces, layout, {{
                     responsive: true,
+                    modeBarButtonsToAdd: [exportPointCsvButton],
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'co2_point_plot',
@@ -2775,8 +2813,15 @@ def co2_plot_main():
                 document.getElementById('xrdPlotContent').innerHTML = '';
                 
                 console.log('Creating new Plotly plot with', traces.length, 'traces...');
+                const exportXrdCsvButton = {{
+                    name: 'exportCsv',
+                    title: 'Export CSV',
+                    icon: {{width: 500, height: 500, path: 'M50 400 L450 400 L450 450 L50 450 Z M100 50 L400 50 L400 350 L100 350 Z'}},
+                    click: function(gd) {{ exportDivCsv('xrdPlotContent', 'co2_xrd_plot'); }}
+                }};
                 Plotly.newPlot('xrdPlotContent', traces, layout, {{
                     responsive: true,
+                    modeBarButtonsToAdd: [exportXrdCsvButton],
                     toImageButtonOptions: {{
                         format: 'png',
                         filename: 'co2_xrd_plot',
