@@ -58,6 +58,47 @@ def add_partial_current_columns(df: pd.DataFrame) -> pd.DataFrame:
     except Exception:
         return df
 
+def add_max_partial_current_all(df: pd.DataFrame, averaged: bool = False) -> pd.DataFrame:
+    """Add max partial current per species per sample id for CO2R rows; HER rows get 0.
+    If averaged=True, use partial_current_*_mean and output max_partial_current_*_mean; otherwise use raw partial_current_*.
+    """
+    try:
+        df_out = df.copy()
+        if 'reaction' not in df_out.columns or 'sample id' not in df_out.columns:
+            return df_out
+
+        # Collect partial current columns depending on mode
+        if averaged:
+            value_cols = [c for c in df_out.columns if c.startswith('partial_current_') and c.endswith('_mean')]
+        else:
+            value_cols = [c for c in df_out.columns if c.startswith('partial_current_') and not c.endswith('_mean') and not c.endswith('_std')]
+
+        if not value_cols:
+            return df_out
+
+        co2r_mask = df_out['reaction'] == 'CO2R'
+        co2r_df = df_out[co2r_mask]
+
+        for value_col in value_cols:
+            # Derive species name
+            species = value_col[len('partial_current_'):-len('_mean')] if averaged else value_col[len('partial_current_'):]
+            target_col = f"max_partial_current_{species}_mean" if averaged else f"max_partial_current_{species}"
+
+            try:
+                if not co2r_df.empty and value_col in co2r_df.columns:
+                    max_per_sample = co2r_df.groupby('sample id')[value_col].max()
+                    df_out[target_col] = 0.0
+                    df_out.loc[co2r_mask, target_col] = df_out.loc[co2r_mask, 'sample id'].map(max_per_sample).fillna(0.0)
+                else:
+                    df_out[target_col] = 0.0
+            except Exception:
+                # Ensure column exists even if computation failed
+                df_out[target_col] = 0.0
+
+        return df_out
+    except Exception:
+        return df
+
 # Load the DataFrame
 try:
     main_df = pd.read_csv("Data/DashboardData.csv")
@@ -66,6 +107,8 @@ try:
 
     # Add partial current density columns before capturing original column order
     main_df = add_partial_current_columns(main_df)
+    # Add max partial current per species per sample id (CO2R rows only)
+    main_df = add_max_partial_current_all(main_df, averaged=False)
 
     # Store the original column order (including newly added partial current columns)
     original_columns = list(main_df.columns)
@@ -265,6 +308,8 @@ def create_filter_dashboard():
             
             # Add partial current columns to uploaded data
             df = add_partial_current_columns(df)
+            # Add max partial current per species per sample id (CO2R rows only)
+            df = add_max_partial_current_all(df, averaged=False)
 
             # Store the original column order for the uploaded dataset
             uploaded_columns = list(df.columns)
@@ -923,6 +968,9 @@ def create_filter_dashboard():
                             pass
             except Exception:
                 pass
+
+            # Add max partial current for averaged data (per sample id within CO2R rows)
+            averaged_df = add_max_partial_current_all(averaged_df, averaged=True)
 
             # Remove raw partial_current_* columns from averaged output, keep only *_mean and *_std
             try:
