@@ -280,6 +280,8 @@ def format_column_name(column_name):
             return 'Faradaic Efficiency Liquid'
         else:
             return 'Faradaic Efficiency ' + base_name.upper()
+    elif column_name == 'cost_per_gram':
+        return 'Cost per gram ($/g)'
     elif column_name in ['PCA1', 'PCA2']:
         return column_name
     elif column_name in ['Ag', 'Au', 'Cd', 'Cu', 'Ga', 'Hg', 'In', 'Ni', 'Pd', 'Pt', 'Rh', 'Sn', 'Tl', 'Zn']:
@@ -1326,6 +1328,8 @@ def her_plot_main():
                     return '';
                 }} else if (['Ag', 'Au', 'Cd', 'Cu', 'Ga', 'Hg', 'In', 'Ni', 'Pd', 'Pt', 'Rh', 'Sn', 'Tl', 'Zn'].includes(columnName)) {{
                     return unitType === 'weight' ? ' (wt. fraction)' : ' (at. fraction)';
+                }} else if (columnName === 'cost_per_gram') {{
+                    return ' ($/g)';
                 }} else {{
                     return '';
                 }}
@@ -1338,7 +1342,8 @@ def her_plot_main():
                     'voltage_she': 'Est. Half-cell potential vs SHE (V)',
                     'voltage_rhe': 'Est. Half-cell potential vs RHE (V)',
                     'PCA1': 'PCA1',
-                    'PCA2': 'PCA2'
+                    'PCA2': 'PCA2',
+                    'cost_per_gram': 'Cost per gram ($/g)'
                 }};
                 return formatMap[columnName] || columnName;
             }}

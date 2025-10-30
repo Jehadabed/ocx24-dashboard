@@ -94,7 +94,26 @@ def add_cost_per_gram_column(df: pd.DataFrame) -> pd.DataFrame:
             return df
         df_out = df.copy()
         # Compute cost for each row
-        df_out['cost per gram'] = df_out.apply(compute_cost_per_gram_from_atomic_fractions, axis=1)
+        df_out['cost_per_gram'] = df_out.apply(compute_cost_per_gram_from_atomic_fractions, axis=1)
+        return df_out
+    except Exception:
+        return df
+
+def round_dashboard_numeric_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Round dashboard numeric columns to 2 decimals for display.
+    Applies to columns starting with: fe_, partial_, max_partial, cost
+    """
+    try:
+        if df.empty:
+            return df
+        df_out = df.copy()
+        target_prefixes = ("fe_", "partial_", "max_partial", "cost")
+        for col in df_out.columns:
+            try:
+                if any(col.startswith(pfx) for pfx in target_prefixes):
+                    df_out[col] = pd.to_numeric(df_out[col], errors='coerce').round(2)
+            except Exception:
+                continue
         return df_out
     except Exception:
         return df
@@ -655,6 +674,8 @@ def create_filter_dashboard():
             
             # Apply default sorting
             df_sorted = apply_default_sorting(df_ordered)
+            # Round selected numeric columns for display
+            df_sorted = round_dashboard_numeric_columns(df_sorted)
             
             df_dict = df_sorted.to_dict('records')
             return jsonify({
@@ -890,6 +911,8 @@ def create_filter_dashboard():
             
             # Apply default sorting
             df_sorted = apply_default_sorting(df_ordered)
+            # Round selected numeric columns for display
+            df_sorted = round_dashboard_numeric_columns(df_sorted)
             
             df_dict = df_sorted.to_dict('records')
             return jsonify({
@@ -1114,6 +1137,8 @@ def create_filter_dashboard():
             
             # Apply default sorting
             df_sorted = apply_default_sorting(df_ordered)
+            # Round selected numeric columns for display
+            df_sorted = round_dashboard_numeric_columns(df_sorted)
             
             # Convert to dictionary for JSON response
             df_dict = df_sorted.to_dict('records')
