@@ -1817,8 +1817,8 @@ def co2_plot_main():
                                 customdata: d.customdata
                             }};
                             
-                            // Add error bars for fe_ columns or voltage columns (only if checkbox is checked)
-                            if ((yCol.startsWith('fe_') || yCol === 'voltage_mean' || yCol === 'voltage') && document.getElementById('errorBars').checked) {{
+                            // Add error bars for any *_mean column using corresponding *_std (only if checkbox is checked)
+                            if (yCol.includes('_mean') && document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {{
                                 trace.error_y = {{
                                     type: 'data',
                                     array: d.errors,
@@ -1857,8 +1857,8 @@ def co2_plot_main():
                             customdata: d.customdata
                         }};
                         
-                        // Add error bars for fe_ columns or voltage columns (only if checkbox is checked)
-                        if ((yCol.startsWith('fe_') || yCol === 'voltage_mean' || yCol === 'voltage') && document.getElementById('errorBars').checked) {{
+                        // Add error bars for any *_mean column using corresponding *_std (only if checkbox is checked)
+                        if (yCol.includes('_mean') && document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {{
                             trace.error_y = {{
                                 type: 'data',
                                 array: d.errors,
@@ -1932,8 +1932,8 @@ def co2_plot_main():
                                 customdata: d.customdata
                             }};
                             
-                            // Add error bars for fe_ columns or voltage columns (only if checkbox is checked)
-                            if ((yCol.startsWith('fe_') || yCol === 'voltage_mean' || yCol === 'voltage') && document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {{
+                            // Add error bars for any *_mean column using corresponding *_std (only if checkbox is checked)
+                            if (yCol.includes('_mean') && document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {{
                                 trace.error_y = {{
                                     type: 'data',
                                     array: d.errors,
@@ -1972,8 +1972,8 @@ def co2_plot_main():
                             customdata: d.customdata
                         }};
                         
-                        // Add error bars for fe_ columns or voltage columns (only if checkbox is checked)
-                        if ((yCol.startsWith('fe_') || yCol === 'voltage_mean' || yCol === 'voltage') && document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {{
+                        // Add error bars for any *_mean column using corresponding *_std (only if checkbox is checked)
+                        if (yCol.includes('_mean') && document.getElementById('errorBars').checked && d.errors.some(e => e > 0)) {{
                             trace.error_y = {{
                                 type: 'data',
                                 array: d.errors,
