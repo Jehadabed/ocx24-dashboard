@@ -213,7 +213,7 @@ def calculate_pca_components(df):
     # Get only elemental composition columns
     voltage_cols_to_exclude = ['voltage_mean', 'voltage_std', 'voltage']
     composition_col = 'xrf composition' if 'xrf composition' in df.columns else 'target composition'
-    element_cols = [col for col in df.columns if col not in ['sample id', 'source', 'batch number', 'batch date', 'current density', composition_col, 'target composition', 'xrf composition', 'rep'] + voltage_cols_to_exclude and not col.startswith('fe_') and not col.startswith('partial_current_') and not col.endswith('std')]
+    element_cols = [col for col in df.columns if col not in ['sample id', 'source', 'batch number', 'batch date', 'current density', composition_col, 'target composition', 'xrf composition', 'rep'] + voltage_cols_to_exclude and not col.startswith('fe_') and not col.startswith('partial_current_') and not col.startswith('max_partial_current_') and not col.endswith('std')]
     
     # Filter out non-numeric columns
     numeric_element_cols = []
@@ -376,7 +376,7 @@ def her_plot_main():
     # Identify element columns
     voltage_cols_to_exclude = ['voltage_mean', 'voltage_std', 'voltage']
     composition_col = 'xrf composition' if 'xrf composition' in df_with_pca.columns else 'target composition'
-    element_cols = [col for col in df_with_pca.columns if col not in ['sample id', 'source', 'batch number', 'batch date', 'current density', composition_col, 'target composition', 'xrf composition', 'PCA1', 'PCA2', 'rep'] + voltage_cols_to_exclude and not col.startswith('fe_') and not col.startswith('partial_current_') and not col.endswith('std')]
+    element_cols = [col for col in df_with_pca.columns if col not in ['sample id', 'source', 'batch number', 'batch date', 'current density', composition_col, 'target composition', 'xrf composition', 'PCA1', 'PCA2', 'rep'] + voltage_cols_to_exclude and not col.startswith('fe_') and not col.startswith('partial_current_') and not col.startswith('max_partial_current_') and not col.endswith('std')]
     
     # Add PCA1 as first option if available
     if 'PCA1' in df_with_pca.columns:
