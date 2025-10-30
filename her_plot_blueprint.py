@@ -281,7 +281,7 @@ def format_column_name(column_name):
         else:
             return 'Faradaic Efficiency ' + base_name.upper()
     elif column_name == 'cost_per_gram':
-        return 'Cost per gram ($/g)'
+        return 'Cost per gram'
     elif column_name in ['PCA1', 'PCA2']:
         return column_name
     elif column_name in ['Ag', 'Au', 'Cd', 'Cu', 'Ga', 'Hg', 'In', 'Ni', 'Pd', 'Pt', 'Rh', 'Sn', 'Tl', 'Zn']:
@@ -1343,7 +1343,7 @@ def her_plot_main():
                     'voltage_rhe': 'Est. Half-cell potential vs RHE (V)',
                     'PCA1': 'PCA1',
                     'PCA2': 'PCA2',
-                    'cost_per_gram': 'Cost per gram ($/g)'
+                    'cost_per_gram': 'Cost per gram'
                 }};
                 return formatMap[columnName] || columnName;
             }}

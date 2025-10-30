@@ -423,7 +423,7 @@ def format_column_name(column_name):
     elif column_name == 'voltage_rhe':
         return 'Est. Half-cell potential vs RHE (V)'
     elif column_name == 'cost_per_gram':
-        return 'Cost per gram ($/g)'
+        return 'Cost per gram'
     elif column_name.startswith('fe_'):
         base_name = column_name.replace('fe_', '').replace('_mean', '')
         if base_name == 'h2':
@@ -2330,7 +2330,7 @@ def co2_plot_main():
                 }} else if (columnName === 'current density') {{
                     return 'Current Density';
                 }} else if (columnName === 'cost_per_gram') {{
-                    return 'Cost per gram ($/g)';
+                    return 'Cost per gram';
                 }} else if (columnName.startsWith('max_partial_current_')) {{
                     const baseName = columnName.replace('max_partial_current_', '').replace('_mean', '').replace('_std', '');
                     const map = {{ h2: 'H₂', co: 'CO', ch4: 'CH₄', c2h4: 'C₂H₄', gas_total: 'Gas Total', liquid: 'Liquid' }};
