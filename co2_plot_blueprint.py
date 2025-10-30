@@ -438,6 +438,30 @@ def format_column_name(column_name):
             return 'Faradaic Efficiency Liquid'
         else:
             return 'Faradaic Efficiency ' + base_name.upper()
+    elif column_name.startswith('max_partial_current_'):
+        base_name = column_name.replace('max_partial_current_', '').replace('_mean', '').replace('_std', '')
+        species_map = {
+            'h2': 'H₂',
+            'co': 'CO',
+            'ch4': 'CH₄',
+            'c2h4': 'C₂H₄',
+            'gas_total': 'Gas Total',
+            'liquid': 'Liquid'
+        }
+        species_label = species_map.get(base_name, base_name.upper())
+        return f'Max Partial Current {species_label}'
+    elif column_name.startswith('partial_current_'):
+        base_name = column_name.replace('partial_current_', '').replace('_mean', '').replace('_std', '')
+        species_map = {
+            'h2': 'H₂',
+            'co': 'CO',
+            'ch4': 'CH₄',
+            'c2h4': 'C₂H₄',
+            'gas_total': 'Gas Total',
+            'liquid': 'Liquid'
+        }
+        species_label = species_map.get(base_name, base_name.upper())
+        return f'Partial Current {species_label}'
     elif column_name in ['PCA1', 'PCA2']:
         return column_name
     elif column_name in ['Ag', 'Au', 'Cd', 'Cu', 'Ga', 'Hg', 'In', 'Ni', 'Pd', 'Pt', 'Rh', 'Sn', 'Tl', 'Zn']:
@@ -461,6 +485,10 @@ def co2_plot_main():
     voltage_cols_to_exclude = ['voltage_mean', 'voltage_std', 'voltage']
     composition_col = 'xrf composition' if 'xrf composition' in df_with_pca.columns else 'target composition'
     element_cols = [col for col in df_with_pca.columns if col not in ['sample id', 'source', 'batch number', 'batch date', 'current density', composition_col, 'target composition', 'xrf composition', 'PCA1', 'PCA2', 'rep'] + voltage_cols_to_exclude and not col.startswith('fe_') and not col.endswith('std')]
+    # Move partial current columns to the end for dropdown ordering
+    element_pc_cols = [c for c in element_cols if c.startswith('partial_current_') or c.startswith('max_partial_current_')]
+    element_non_pc_cols = [c for c in element_cols if c not in element_pc_cols]
+    element_cols = element_non_pc_cols + element_pc_cols
     
     # Add PCA1 as first option if available
     if 'PCA1' in df_with_pca.columns:
@@ -495,13 +523,21 @@ def co2_plot_main():
     elif 'voltage' in df_with_pca.columns:
         comprehensive_x_axis_options.append('voltage')
     comprehensive_x_axis_options.extend(fe_cols)
+    # Reorder to move partial current options to the bottom
+    comp_pc_cols = [c for c in comprehensive_x_axis_options if c.startswith('partial_current_') or c.startswith('max_partial_current_')]
+    comp_non_pc_cols = [c for c in comprehensive_x_axis_options if c not in comp_pc_cols]
+    comprehensive_x_axis_options = comp_non_pc_cols + comp_pc_cols
     
     # Y-axis options: same as x-axis options
     y_axis_options = comprehensive_x_axis_options.copy()
+    # Ensure partial current options remain at the bottom for y-axis as well
+    y_pc_cols = [c for c in y_axis_options if c.startswith('partial_current_') or c.startswith('max_partial_current_')]
+    y_non_pc_cols = [c for c in y_axis_options if c not in y_pc_cols]
+    y_axis_options = y_non_pc_cols + y_pc_cols
     
     # Create z-axis options (for color control) - same as y-axis options with "Default" as first option
     z_axis_options = ['default_colors']  # Default option for current blue/red/black coloring
-    z_axis_options.extend(y_axis_options)  # Add all y-axis options
+    z_axis_options.extend(y_axis_options)  # Add all y-axis options (already ordered)
     
     # Generate all dropdown options
     x_axis_options_html = ''.join([f'<option value="{col}">{format_column_name(col)}</option>' for col in comprehensive_x_axis_options])
@@ -2264,6 +2300,8 @@ def co2_plot_main():
                     return ' (V)';
                 }} else if (columnName === 'current density') {{
                     return ' (mA/cm²)';
+                }} else if (columnName.startsWith('partial_current_') || columnName.startsWith('max_partial_current_')) {{
+                    return ' (mA/cm²)';
                 }} else if (columnName.startsWith('fe_')) {{
                     return ' (%)';
                 }} else if (columnName === 'PCA1' || columnName === 'PCA2') {{
@@ -2287,6 +2325,16 @@ def co2_plot_main():
                     return 'Est. Half-cell potential vs RHE (V)';
                 }} else if (columnName === 'current density') {{
                     return 'Current Density';
+                }} else if (columnName.startsWith('max_partial_current_')) {{
+                    const baseName = columnName.replace('max_partial_current_', '').replace('_mean', '').replace('_std', '');
+                    const map = {{ h2: 'H₂', co: 'CO', ch4: 'CH₄', c2h4: 'C₂H₄', gas_total: 'Gas Total', liquid: 'Liquid' }};
+                    const species = map[baseName] || baseName.toUpperCase();
+                    return `Max Partial Current ${{species}}`;
+                }} else if (columnName.startsWith('partial_current_')) {{
+                    const baseName = columnName.replace('partial_current_', '').replace('_mean', '').replace('_std', '');
+                    const map = {{ h2: 'H₂', co: 'CO', ch4: 'CH₄', c2h4: 'C₂H₄', gas_total: 'Gas Total', liquid: 'Liquid' }};
+                    const species = map[baseName] || baseName.toUpperCase();
+                    return `Partial Current ${{species}}`;
                 }} else if (columnName.startsWith('fe_')) {{
                     // Convert fe_h2_mean to "Faradaic Efficiency H2"
                     const baseName = columnName.replace('fe_', '').replace('_mean', '');
