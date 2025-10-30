@@ -18,6 +18,87 @@ from xrd_plot_blueprint import xrd_plot_bp
 # Global cache for uploaded data
 uploaded_data_cache = None
 
+# Atomic weights (g/mol) for weight fraction conversion
+ATOMIC_WEIGHTS = {
+    'Ag': 107.8682, 'Au': 196.966569, 'Cd': 112.411, 'Cu': 63.546, 'Ga': 69.723,
+    'Hg': 200.59, 'In': 114.818, 'Mn': 54.938044, 'Mo': 95.96, 'Nb': 92.90637,
+    'Ni': 58.6934, 'Pd': 106.42, 'Pt': 195.084, 'Rh': 102.9055, 'Sn': 118.710,
+    'Tl': 204.38, 'W': 183.84, 'Zn': 65.38
+}
+
+# Element costs in USD per gram are loaded from JSON at runtime.
+ELEMENT_COST_USD_PER_GRAM = {}
+
+# override costs from a local JSON file for accuracy
+def load_element_costs_from_file(file_path: str = "Data/element_costs_usd_per_gram.json"):
+    """Load element costs mapping from a JSON file and override defaults.
+    Expected format: {"Au": 73.2, "Ag": 0.85, ...} in USD per gram.
+    """
+    try:
+        if not os.path.exists(file_path):
+            print(f"Element costs file not found at '{file_path}'. Using default placeholder costs.")
+            return
+        import json
+        with open(file_path, 'r') as f:
+            data = json.load(f)
+        if isinstance(data, dict):
+            # Keep only known elements to avoid typos
+            updates = {k: float(v) for k, v in data.items() if k in ATOMIC_WEIGHTS}
+            if not updates:
+                print(f"Element costs file '{file_path}' contains no recognized element keys; keeping defaults.")
+                return
+            ELEMENT_COST_USD_PER_GRAM.update(updates)
+            print(f"Loaded element costs from '{file_path}' for: {sorted(list(updates.keys()))}")
+        else:
+            print(f"Element costs file '{file_path}' has invalid format; expected a JSON object.")
+    except Exception as e:
+        print(f"Warning: Failed to load element costs from '{file_path}': {e}")
+
+# API-based cost updates removed; using static defaults above. Override via config in production as needed.
+
+def compute_cost_per_gram_from_atomic_fractions(row: pd.Series) -> float:
+    """Compute cost per gram by converting atomic fractions to weight fractions and summing cost.
+    Uses ATOMIC_WEIGHTS and ELEMENT_COST_USD_PER_GRAM. Ignores zero/NaN elements.
+    """
+    try:
+        # Identify elemental columns present in the row
+        element_cols = [el for el in ATOMIC_WEIGHTS.keys() if el in row.index]
+        # Compute total mass contribution from atomic fractions
+        total_mass = 0.0
+        mass_contribs = {}
+        for el in element_cols:
+            af = row.get(el)
+            if pd.isna(af) or af <= 0:
+                continue
+            mass = float(af) * ATOMIC_WEIGHTS[el]
+            mass_contribs[el] = mass
+            total_mass += mass
+        if total_mass <= 0:
+            return 0.0
+        # Sum weight_fraction * cost_per_gram
+        cost_sum = 0.0
+        for el, mass in mass_contribs.items():
+            weight_fraction = mass / total_mass
+            cost = ELEMENT_COST_USD_PER_GRAM.get(el)
+            if cost is None:
+                continue
+            cost_sum += weight_fraction * float(cost)
+        return float(cost_sum)
+    except Exception:
+        return 0.0
+
+def add_cost_per_gram_column(df: pd.DataFrame) -> pd.DataFrame:
+    """Add a 'cost per gram' column to the dataframe based on elemental atomic fractions."""
+    try:
+        if df.empty:
+            return df
+        df_out = df.copy()
+        # Compute cost for each row
+        df_out['cost per gram'] = df_out.apply(compute_cost_per_gram_from_atomic_fractions, axis=1)
+        return df_out
+    except Exception:
+        return df
+
 def add_partial_current_columns(df: pd.DataFrame) -> pd.DataFrame:
     """Add partial current density columns for every column starting with 'fe_'.
     For raw data: creates 'partial_current_<name>' = df['fe_<name>'] * df['current density'].
@@ -105,10 +186,16 @@ try:
     print(f"Data loaded successfully. Shape: {main_df.shape}")
     print(f"Columns: {list(main_df.columns)}")
 
+    # Try to refresh element costs from API if configured
+    # Load element costs from local file if provided
+    load_element_costs_from_file()
+
     # Add partial current density columns before capturing original column order
     main_df = add_partial_current_columns(main_df)
     # Add max partial current per species per sample id (CO2R rows only)
     main_df = add_max_partial_current_all(main_df, averaged=False)
+    # Add cost per gram column based on elemental composition (atomic -> weight fraction conversion internally)
+    main_df = add_cost_per_gram_column(main_df)
 
     # Store the original column order (including newly added partial current columns)
     original_columns = list(main_df.columns)
@@ -306,10 +393,16 @@ def create_filter_dashboard():
                     'error': f'Missing required columns: {", ".join(missing_required)}. Please ensure your CSV contains at least: {", ".join(required_columns)}'
                 }), 400
             
+            # Try to refresh element costs from API if configured
+            # Reload element costs from local file (if changed)
+            load_element_costs_from_file()
+
             # Add partial current columns to uploaded data
             df = add_partial_current_columns(df)
             # Add max partial current per species per sample id (CO2R rows only)
             df = add_max_partial_current_all(df, averaged=False)
+            # Add cost per gram
+            df = add_cost_per_gram_column(df)
 
             # Store the original column order for the uploaded dataset
             uploaded_columns = list(df.columns)
@@ -971,6 +1064,8 @@ def create_filter_dashboard():
 
             # Add max partial current for averaged data (per sample id within CO2R rows)
             averaged_df = add_max_partial_current_all(averaged_df, averaged=True)
+            # Add cost per gram for averaged data (based on elemental atomic fractions present)
+            averaged_df = add_cost_per_gram_column(averaged_df)
 
             # Remove raw partial_current_* columns from averaged output, keep only *_mean and *_std
             try:

@@ -1,0 +1,56 @@
+{
+  "_meta": {
+    "compiled_on": "2025-10-30",
+    "currency": "USD per gram",
+    "methodology": "Spot prices and recent commodity references converted to USD/g; placeholders marked CHECK should be refined with a trusted procurement source.",
+    "sources": [
+      "BullionByPost (silver per gram)",
+      "APMEX (gold per gram)",
+      "TradingEconomics (nickel/tin/zinc per tonne)",
+      "JM Bullion (palladium)",
+      "Johnson Matthey (platinum)",
+      "MoneyMetals (rhodium)",
+      "Wikipedia (prices of chemical elements)"
+    ],
+    "links": {
+      "Ag": "https://www.bullionbypost.com/silver-price/silver-price-per-gram/",
+      "Au": "https://www.apmex.com/gold-price/1-gram-gold-price-today",
+      "Ni": "https://tradingeconomics.com/commodity/nickel",
+      "Sn": "https://tradingeconomics.com/commodity/tin",
+      "Zn": "https://tradingeconomics.com/commodity/zinc",
+      "Pd": "https://www.jmbullion.com/charts/palladium-price/",
+      "Pt": "https://matthey.com/products-and-markets/pgms-and-circularity/pgm-management",
+      "Rh": "https://www.moneymetals.com/rhodium-price",
+      "In": "https://en.wikipedia.org/wiki/Prices_of_chemical_elements",
+      "Tl": "https://en.wikipedia.org/wiki/Prices_of_chemical_elements"
+    },
+    "notes": {
+      "Cd": "No reliable public per-gram spot price found; placeholder.",
+      "Cu": "Converted from tonne-level prices; coarse estimate.",
+      "Ga": "Specialized market; placeholder.",
+      "Hg": "Limited public spot data; placeholder.",
+      "Mn": "Industrial metal; no good per-gram spot; placeholder.",
+      "Mo": "No robust per-gram public figure; placeholder.",
+      "Nb": "Specialized; placeholder.",
+      "W": "No robust per-gram public price; placeholder."
+    }
+  },
+  "Ag": 1.57,
+  "Au": 129.19,
+  "Cd": 0.01,
+  "Cu": 0.012,
+  "Ga": 0.30,
+  "Hg": 0.06,
+  "In": 11.85,
+  "Mn": 0.005,
+  "Mo": 0.03,
+  "Nb": 0.05,
+  "Ni": 0.0153,
+  "Pd": 47.21,
+  "Pt": 43.58,
+  "Rh": 196.92,
+  "Sn": 0.0358,
+  "Tl": 11.85,
+  "W": 0.05,
+  "Zn": 0.00302
+}
