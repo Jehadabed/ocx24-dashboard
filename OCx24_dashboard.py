@@ -18,13 +18,56 @@ from xrd_plot_blueprint import xrd_plot_bp
 # Global cache for uploaded data
 uploaded_data_cache = None
 
+def add_partial_current_columns(df: pd.DataFrame) -> pd.DataFrame:
+    """Add partial current density columns for every column starting with 'fe_'.
+    For raw data: creates 'partial_current_<name>' = df['fe_<name>'] * df['current density'].
+    For averaged data where FE columns are suffixed with '_mean': creates
+    'partial_current_<name>_mean' = df['fe_<name>_mean'] * df['current density'].
+    """
+    try:
+        df_out = df.copy()
+        # Determine whether FE columns are averaged (have _mean suffix)
+        fe_mean_cols = [c for c in df_out.columns if c.startswith('fe_') and c.endswith('_mean')]
+        fe_raw_cols = [c for c in df_out.columns if c.startswith('fe_') and not c.endswith('_mean') and not c.endswith('_std')]
+
+        # Use current density column present in the dataframe
+        current_density_col = 'current density' if 'current density' in df_out.columns else None
+        if current_density_col is None:
+            return df_out
+
+        # Averaged FE columns -> create partial_current_<x>_mean
+        for col in fe_mean_cols:
+            species = col[len('fe_'):-len('_mean')]  # between fe_ and _mean
+            new_col = f"partial_current_{species}_mean"
+            try:
+                df_out[new_col] = (df_out[col] * df_out[current_density_col]) / 100.0
+            except Exception:
+                pass
+
+        # Raw FE columns -> create partial_current_<x>
+        for col in fe_raw_cols:
+            # Skip std columns (already excluded) and keep all fe_ including totals per spec
+            species = col[len('fe_'):]
+            new_col = f"partial_current_{species}"
+            try:
+                df_out[new_col] = (df_out[col] * df_out[current_density_col]) / 100.0
+            except Exception:
+                pass
+
+        return df_out
+    except Exception:
+        return df
+
 # Load the DataFrame
 try:
     main_df = pd.read_csv("Data/DashboardData.csv")
     print(f"Data loaded successfully. Shape: {main_df.shape}")
     print(f"Columns: {list(main_df.columns)}")
-    
-    # Store the original column orderc
+
+    # Add partial current density columns before capturing original column order
+    main_df = add_partial_current_columns(main_df)
+
+    # Store the original column order (including newly added partial current columns)
     original_columns = list(main_df.columns)
     print(f"Original column order preserved: {len(original_columns)} columns")
     
@@ -220,7 +263,10 @@ def create_filter_dashboard():
                     'error': f'Missing required columns: {", ".join(missing_required)}. Please ensure your CSV contains at least: {", ".join(required_columns)}'
                 }), 400
             
-            # Store the original column order
+            # Add partial current columns to uploaded data
+            df = add_partial_current_columns(df)
+
+            # Store the original column order for the uploaded dataset
             uploaded_columns = list(df.columns)
             
             # Clean the data
@@ -861,6 +907,31 @@ def create_filter_dashboard():
                 averaged_df = averaged_df.rename(columns=column_mapping)
                 print(f"Renamed columns after averaging: {column_mapping}")
             
+            # Add partial current columns for averaged data (creates partial_current_*_mean)
+            averaged_df = add_partial_current_columns(averaged_df)
+
+            # Create partial current std columns using FE stds
+            try:
+                fe_std_cols = [c for c in averaged_df.columns if c.startswith('fe_') and c.endswith('_std')]
+                if 'current density' in averaged_df.columns:
+                    for col in fe_std_cols:
+                        species = col[len('fe_'):-len('_std')]
+                        pc_std_col = f"partial_current_{species}_std"
+                        try:
+                            averaged_df[pc_std_col] = (averaged_df[col] * averaged_df['current density']) / 100.0
+                        except Exception:
+                            pass
+            except Exception:
+                pass
+
+            # Remove raw partial_current_* columns from averaged output, keep only *_mean and *_std
+            try:
+                raw_pc_cols = [c for c in averaged_df.columns if c.startswith('partial_current_') and not (c.endswith('_mean') or c.endswith('_std'))]
+                if raw_pc_cols:
+                    averaged_df = averaged_df.drop(columns=raw_pc_cols)
+            except Exception:
+                pass
+
             # Now reorder columns to maintain original positions with _mean suffixes
             reordered_columns = []
             for col in original_columns:
