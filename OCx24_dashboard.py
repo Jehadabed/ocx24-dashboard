@@ -57,8 +57,8 @@ def load_element_costs_from_file(file_path: str = "Data/element_costs_usd_per_gr
 # API-based cost updates removed; using static defaults above. Override via config in production as needed.
 
 def compute_cost_per_gram_from_atomic_fractions(row: pd.Series) -> float:
-    """Compute cost per gram by converting atomic fractions to weight fractions and summing cost.
-    Uses ATOMIC_WEIGHTS and ELEMENT_COST_USD_PER_GRAM. Ignores zero/NaN elements.
+    """Compute cost per kg by converting atomic fractions to weight fractions and summing cost.
+    Uses ATOMIC_WEIGHTS and ELEMENT_COST_USD_PER_GRAM (values are in USD/kg). Ignores zero/NaN elements.
     """
     try:
         # Identify elemental columns present in the row
@@ -75,7 +75,7 @@ def compute_cost_per_gram_from_atomic_fractions(row: pd.Series) -> float:
             total_mass += mass
         if total_mass <= 0:
             return 0.0
-        # Sum weight_fraction * cost_per_gram
+        # Sum weight_fraction * cost_per_kg (costs are in USD/kg)
         cost_sum = 0.0
         for el, mass in mass_contribs.items():
             weight_fraction = mass / total_mass
@@ -88,7 +88,9 @@ def compute_cost_per_gram_from_atomic_fractions(row: pd.Series) -> float:
         return 0.0
 
 def add_cost_per_gram_column(df: pd.DataFrame) -> pd.DataFrame:
-    """Add a 'cost per gram' column to the dataframe based on elemental atomic fractions."""
+    """Add a 'cost_per_gram' column to the dataframe based on elemental atomic fractions.
+    Note: Column name remains 'cost_per_gram' for compatibility, but values are now in USD/kg.
+    """
     try:
         if df.empty:
             return df
