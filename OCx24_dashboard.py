@@ -1062,13 +1062,22 @@ def create_filter_dashboard():
             # Rename voltage and fe_ columns to add "_mean" suffix BEFORE reordering
             # But exclude _std columns from this renaming
             column_mapping = {}
+            columns_to_remove = []  # Track original columns that will be renamed
             for col in averaged_df.columns:
                 if (col.startswith('voltage') or col.startswith('fe_')) and not col.endswith('_std'):
                     column_mapping[col] = col + '_mean'
+                    columns_to_remove.append(col)  # Mark for removal after rename
             
             if column_mapping:
                 averaged_df = averaged_df.rename(columns=column_mapping)
                 print(f"Renamed columns after averaging: {column_mapping}")
+                
+                # Explicitly remove any original columns that might still exist (safety check)
+                # This ensures we only have _mean versions, not both original and _mean
+                for col in columns_to_remove:
+                    if col in averaged_df.columns:
+                        averaged_df = averaged_df.drop(columns=[col])
+                        print(f"Removed original column '{col}' after renaming to '{col}_mean'")
             
             # Add partial current columns for averaged data (creates partial_current_*_mean)
             averaged_df = add_partial_current_columns(averaged_df)
@@ -1097,6 +1106,16 @@ def create_filter_dashboard():
                 raw_pc_cols = [c for c in averaged_df.columns if c.startswith('partial_current_') and not (c.endswith('_mean') or c.endswith('_std'))]
                 if raw_pc_cols:
                     averaged_df = averaged_df.drop(columns=raw_pc_cols)
+                    print(f"Removed raw partial_current columns: {raw_pc_cols}")
+            except Exception:
+                pass
+            
+            # Remove raw max_partial_current_* columns from averaged output, keep only *_mean and *_std
+            try:
+                raw_mpc_cols = [c for c in averaged_df.columns if c.startswith('max_partial_current_') and not (c.endswith('_mean') or c.endswith('_std'))]
+                if raw_mpc_cols:
+                    averaged_df = averaged_df.drop(columns=raw_mpc_cols)
+                    print(f"Removed raw max_partial_current columns: {raw_mpc_cols}")
             except Exception:
                 pass
 
