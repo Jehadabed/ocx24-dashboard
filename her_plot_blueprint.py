@@ -186,33 +186,48 @@ def interpolate_anode_potential_vs_ref(current_density):
     return anode_pot_interpolated
 
 def cell2rhe(vcell, ref_pot, anode_pH, 
-              membrane_loss, Nern_pH_loss, current_density, geo_area):
+              membrane_loss, Nern_pH_loss, current_density, geo_area,
+              custom_anode_potential_vs_ref=None, custom_R_cathode=None):
     """
     Convert full cell voltage to cathode potential vs RHE.
     
-    Steps:
-    1. Interpolate anode measured potential vs reference from calibration data
+    Steps (matching notebook example):
+    1. Interpolate anode measured potential vs reference from calibration data (or use custom value)
     2. Convert anode measured potential (vs reference) to RHE:
        V_anode_RHE = anode_measured_potential_vs_ref + ref_pot + 0.059 * anode_pH
-    3. Calculate cathode RHE:
+    3. Calculate cathode RHE (before IR correction):
        V_cathode_RHE = (V_anode_RHE + membrane_loss + Nern_pH_loss) - full_cell_V
-    4. Apply IR correction:
+    4. Interpolate cathode resistance from calibration data (or use custom value)
+    5. Apply IR correction:
        V_cathode_RHE = V_cathode_RHE - (i/1000 * R * A)
        where i is current density in A/cm², R is interpolated resistance, A is geometric area
+    
+    Parameters:
+    -----------
+    custom_anode_potential_vs_ref : float, optional
+        Custom anode measured potential vs reference (V). If provided, overrides interpolation.
+    custom_R_cathode : float, optional
+        Custom cathode resistance (Ω). If provided, overrides interpolation.
     """
-    # Step 1: Interpolate anode measured potential vs reference
-    anode_measured_potential_vs_ref = interpolate_anode_potential_vs_ref(current_density)
+    # Step 1: Interpolate anode measured potential vs reference (or use custom value)
+    if custom_anode_potential_vs_ref is not None:
+        anode_measured_potential_vs_ref = custom_anode_potential_vs_ref
+    else:
+        anode_measured_potential_vs_ref = interpolate_anode_potential_vs_ref(current_density)
     
     # Step 2: Convert anode measured potential to RHE
     v_anode_rhe = anode_measured_potential_vs_ref + ref_pot + 0.059 * anode_pH
     
-    # Step 3: Calculate cathode RHE with membrane and Nernst pH losses
+    # Step 3: Calculate cathode RHE with membrane and Nernst pH losses (before IR correction)
     v_cathode_rhe = (v_anode_rhe + membrane_loss + Nern_pH_loss) - vcell
     
-    # Step 4: Apply IR correction
-    # Interpolate R from calibration data
-    R = interpolate_cathode_R(current_density)  # current_density in mA/cm², R in ohm
+    # Step 4: Interpolate cathode resistance from calibration data (or use custom value)
+    if custom_R_cathode is not None:
+        R = custom_R_cathode
+    else:
+        R = interpolate_cathode_R(current_density)  # current_density in mA/cm², R in ohm
     
+    # Step 5: Apply IR correction
     # Convert current density from mA/cm² to A/cm² and apply IR correction
     # i/1000 converts mA/cm² to A/cm²
     IR_drop = (current_density / 1000.0) * R * geo_area
@@ -238,13 +253,20 @@ def fullcell2halfcell(vcell, current_density, custom_params=None):
         Custom parameters for voltage conversion
     '''
     cali_dict = load_calibration_data_for_voltage_conversion(custom_params)
+    
+    # Extract custom values if provided
+    custom_anode_pot = custom_params.get('anode_measured_potential_vs_ref') if custom_params else None
+    custom_R = custom_params.get('R_cathode') if custom_params else None
+    
     urhe = cell2rhe(vcell, 
                     cali_dict['conditions']['ref pot'],
                     cali_dict['conditions']['anode pH'],
                     cali_dict['conditions']['membrane loss'],
                     cali_dict['conditions']['Nern pH loss'],
                     current_density,
-                    cali_dict['conditions']['geo area'])
+                    cali_dict['conditions']['geo area'],
+                    custom_anode_potential_vs_ref=custom_anode_pot,
+                    custom_R_cathode=custom_R)
     ushe = rhe2she(urhe, cali_dict['conditions']['cathode pH'],  cali_dict['conditions']['ref pot'])
     return ushe, urhe
 
@@ -1382,6 +1404,10 @@ def her_plot_main():
                         <label for="anode_measured_potential_vs_ref">Anode Measured Half-cell Potential vs Reference (V)</label>
                         <input type="number" id="anode_measured_potential_vs_ref" step="0.001" value="1.3">
                     </div>
+                    <div class="form-group">
+                        <label for="R_cathode">R Cathode (Ω)</label>
+                        <input type="number" id="R_cathode" step="0.001" value="0.4633">
+                    </div>
                 </div>
                 <div class="modal-footer">
                     <button class="btn btn-secondary" onclick="resetVoltageConfig()">Reset to Defaults</button>
@@ -1949,6 +1975,18 @@ def her_plot_main():
             
             // Voltage configuration functions
             function openVoltageConfig() {{
+                // Initialize with interpolated values if not already set
+                const defaultCurrentDensity = 50; // mA/cm² - default for interpolation (matching notebook example)
+                if (!document.getElementById('anode_measured_potential_vs_ref').value || 
+                    document.getElementById('anode_measured_potential_vs_ref').value === '1.35') {{
+                    const interpolatedAnodePot = interpolateAnodePotentialVsRef(defaultCurrentDensity);
+                    document.getElementById('anode_measured_potential_vs_ref').value = interpolatedAnodePot.toFixed(4);
+                }}
+                if (!document.getElementById('R_cathode').value || 
+                    document.getElementById('R_cathode').value === '0.34') {{
+                    const interpolatedR = interpolateCathodeR(defaultCurrentDensity);
+                    document.getElementById('R_cathode').value = interpolatedR.toFixed(4);
+                }}
                 document.getElementById('voltageConfigModal').style.display = 'block';
             }}
             
@@ -1956,13 +1994,79 @@ def her_plot_main():
                 document.getElementById('voltageConfigModal').style.display = 'none';
             }}
             
+            // Interpolation functions (matching Python implementation)
+            function interpolateAnodePotentialVsRef(currentDensity) {{
+                // Calibration data: j = [50, 100, 200] mA/cm², anode_pot = [1.3, 1.35, 1.4] V
+                const jArray = [50, 100, 200];
+                const anodePotArray = [1.3, 1.35, 1.4];
+                
+                if (currentDensity <= 0) {{
+                    return anodePotArray[0];
+                }}
+                
+                // Fit linear relationship: anode_pot = a * log10(j) + b
+                const logJ = jArray.map(j => Math.log10(j));
+                const n = logJ.length;
+                const sumX = logJ.reduce((a, b) => a + b, 0);
+                const sumY = anodePotArray.reduce((a, b) => a + b, 0);
+                const sumXY = logJ.reduce((sum, x, i) => sum + x * anodePotArray[i], 0);
+                const sumX2 = logJ.reduce((sum, x) => sum + x * x, 0);
+                
+                const a = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                const b = (sumY - a * sumX) / n;
+                
+                const logJInput = Math.log10(currentDensity);
+                let anodePotInterpolated = a * logJInput + b;
+                
+                // Clamp to reasonable bounds
+                anodePotInterpolated = Math.max(anodePotArray[0], Math.min(anodePotArray[anodePotArray.length - 1], anodePotInterpolated));
+                
+                return anodePotInterpolated;
+            }}
+            
+            function interpolateCathodeR(currentDensity) {{
+                // Calibration data: j = [50, 100, 200] mA/cm², R = [0.48, 0.34, 0.3] Ω
+                const jArray = [50, 100, 200];
+                const RArray = [0.48, 0.34, 0.3];
+                
+                if (currentDensity <= 0) {{
+                    return RArray[RArray.length - 1];
+                }}
+                
+                // Fit linear relationship: R = a * log10(j) + b
+                const logJ = jArray.map(j => Math.log10(j));
+                const n = logJ.length;
+                const sumX = logJ.reduce((a, b) => a + b, 0);
+                const sumY = RArray.reduce((a, b) => a + b, 0);
+                const sumXY = logJ.reduce((sum, x, i) => sum + x * RArray[i], 0);
+                const sumX2 = logJ.reduce((sum, x) => sum + x * x, 0);
+                
+                const a = (n * sumXY - sumX * sumY) / (n * sumX2 - sumX * sumX);
+                const b = (sumY - a * sumX) / n;
+                
+                const logJInput = Math.log10(currentDensity);
+                let RInterpolated = a * logJInput + b;
+                
+                // Clamp to reasonable bounds
+                RInterpolated = Math.max(RArray[RArray.length - 1], Math.min(RArray[0], RInterpolated));
+                
+                return RInterpolated;
+            }}
+            
             function resetVoltageConfig() {{
+                const defaultCurrentDensity = 50; // mA/cm² - default for interpolation (matching notebook example)
+                
                 document.getElementById('ref_pot').value = '0.23';
                 document.getElementById('geo_area').value = '4';
                 document.getElementById('cathode_pH').value = '10';
                 document.getElementById('anode_pH').value = '3';
                 document.getElementById('membrane_loss').value = '0.1';
-                document.getElementById('anode_measured_potential_vs_ref').value = '1.3';
+                
+                // Calculate and set interpolated values
+                const interpolatedAnodePot = interpolateAnodePotentialVsRef(defaultCurrentDensity);
+                const interpolatedR = interpolateCathodeR(defaultCurrentDensity);
+                document.getElementById('anode_measured_potential_vs_ref').value = interpolatedAnodePot.toFixed(4);
+                document.getElementById('R_cathode').value = interpolatedR.toFixed(4);
             }}
             
             function applyVoltageConfig() {{
@@ -1973,7 +2077,8 @@ def her_plot_main():
                     cathode_pH: parseFloat(document.getElementById('cathode_pH').value),
                     anode_pH: parseFloat(document.getElementById('anode_pH').value),
                     membrane_loss: parseFloat(document.getElementById('membrane_loss').value),
-                    anode_measured_potential_vs_ref: parseFloat(document.getElementById('anode_measured_potential_vs_ref').value)
+                    anode_measured_potential_vs_ref: parseFloat(document.getElementById('anode_measured_potential_vs_ref').value),
+                    R_cathode: parseFloat(document.getElementById('R_cathode').value)
                 }};
                 
                 // Store parameters globally
