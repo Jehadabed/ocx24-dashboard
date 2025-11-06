@@ -1775,6 +1775,18 @@ def co2_plot_main():
                 currentDensityIndex = parseInt(value);
                 const currentDensity = currentDensityOptions[currentDensityIndex];
                 document.getElementById('currentDensityValue').textContent = currentDensity + ' mA/cm²';
+                
+                // Always recalculate and refresh interpolated values based on current density
+                const interpolatedAnodePot = interpolateAnodePotentialVsRef(currentDensity);
+                const interpolatedR = interpolateCathodeR(currentDensity);
+                
+                // Update the fields - always refresh when recalculated
+                const anodeField = document.getElementById('anode_measured_potential_vs_ref');
+                const rField = document.getElementById('R_cathode');
+                
+                // Always update the values (user can still manually edit if needed)
+                anodeField.value = interpolatedAnodePot.toFixed(4);
+                rField.value = interpolatedR.toFixed(4);
             }}
             
             async function updatePlot() {{
@@ -3206,18 +3218,17 @@ def co2_plot_main():
             
             // Voltage configuration functions
             function openVoltageConfig() {{
-                // Initialize with interpolated values if not already set
-                const defaultCurrentDensity = 100; // mA/cm² - default for interpolation
-                if (!document.getElementById('anode_measured_potential_vs_ref').value || 
-                    document.getElementById('anode_measured_potential_vs_ref').value === '1.3') {{
-                    const interpolatedAnodePot = interpolateAnodePotentialVsRef(defaultCurrentDensity);
-                    document.getElementById('anode_measured_potential_vs_ref').value = interpolatedAnodePot.toFixed(4);
-                }}
-                if (!document.getElementById('R_cathode').value || 
-                    document.getElementById('R_cathode').value === '0.34') {{
-                    const interpolatedR = interpolateCathodeR(defaultCurrentDensity);
-                    document.getElementById('R_cathode').value = interpolatedR.toFixed(4);
-                }}
+                // Always refresh interpolated values based on current slider value
+                const currentDensity = currentDensityOptions[currentDensityIndex] || 100; // Use current slider value or default to 100
+                
+                // Recalculate and refresh interpolated values
+                const interpolatedAnodePot = interpolateAnodePotentialVsRef(currentDensity);
+                const interpolatedR = interpolateCathodeR(currentDensity);
+                
+                // Always update the values when modal opens
+                document.getElementById('anode_measured_potential_vs_ref').value = interpolatedAnodePot.toFixed(4);
+                document.getElementById('R_cathode').value = interpolatedR.toFixed(4);
+                
                 document.getElementById('voltageConfigModal').style.display = 'block';
             }}
             
@@ -3284,8 +3295,25 @@ def co2_plot_main():
                 return RInterpolated;
             }}
             
+            // Initialize interpolated values based on default current density (called after functions are defined)
+            function initializeInterpolatedValues() {{
+                const defaultDensity = currentDensityOptions[currentDensityIndex] || 100;
+                const interpolatedAnodePot = interpolateAnodePotentialVsRef(defaultDensity);
+                const interpolatedR = interpolateCathodeR(defaultDensity);
+                document.getElementById('anode_measured_potential_vs_ref').value = interpolatedAnodePot.toFixed(4);
+                document.getElementById('R_cathode').value = interpolatedR.toFixed(4);
+            }}
+            
+            // Call initialization after DOM is ready
+            if (document.readyState === 'loading') {{
+                document.addEventListener('DOMContentLoaded', initializeInterpolatedValues);
+            }} else {{
+                initializeInterpolatedValues();
+            }}
+            
             function resetVoltageConfig() {{
-                const defaultCurrentDensity = 100; // mA/cm² - default for interpolation
+                // Use current slider value for interpolation
+                const currentDensity = currentDensityOptions[currentDensityIndex] || 100; // Use current slider value or default to 100
                 
                 document.getElementById('ref_pot').value = '0.23';
                 document.getElementById('geo_area').value = '4';
@@ -3293,9 +3321,9 @@ def co2_plot_main():
                 document.getElementById('anode_pH').value = '3';
                 document.getElementById('membrane_loss').value = '0.1';
                 
-                // Calculate and set interpolated values
-                const interpolatedAnodePot = interpolateAnodePotentialVsRef(defaultCurrentDensity);
-                const interpolatedR = interpolateCathodeR(defaultCurrentDensity);
+                // Calculate and set interpolated values based on current slider value
+                const interpolatedAnodePot = interpolateAnodePotentialVsRef(currentDensity);
+                const interpolatedR = interpolateCathodeR(currentDensity);
                 document.getElementById('anode_measured_potential_vs_ref').value = interpolatedAnodePot.toFixed(4);
                 document.getElementById('R_cathode').value = interpolatedR.toFixed(4);
             }}
