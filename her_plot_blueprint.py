@@ -43,8 +43,7 @@ def load_calibration_data_for_voltage_conversion(custom_params=None):
         'anode_pH': 3,
         'geo_area': 4,  # cm2
         'membrane_loss': 0.1,  # V
-        'cathode_thermo': 0.08,
-        'anode_thermo': 1.23
+        # Note: anode_measured_potential_vs_ref is now interpolated from calibration data
     }
     
     # Use custom parameters if provided, otherwise use defaults
@@ -59,9 +58,6 @@ def load_calibration_data_for_voltage_conversion(custom_params=None):
     Nern_pH_loss = (cathode_pH-anode_pH)*0.059 
     geo_area = params['geo_area']
     membrane_loss = params['membrane_loss']
-    cathode_thermo = params['cathode_thermo']
-    anode_thermo = params['anode_thermo']
-    thermo_pot = anode_thermo-cathode_thermo
     
     # Measurements from calibration work
     j = np.array([50,100,200])
@@ -94,9 +90,6 @@ def load_calibration_data_for_voltage_conversion(custom_params=None):
         'Nern pH loss': Nern_pH_loss,
         'geo area': geo_area,
         'membrane loss': membrane_loss,
-        'cathod thermo': cathode_thermo,
-        'anode thermo': anode_thermo,
-        'thermo pot': thermo_pot,
     }
     measurements_dict = {
         'j': j, 'cathode pot': cathode_pot, 'cathode R': cathode_R, 'anode pot': anode_pot, 'anode R': anode_R, 
@@ -114,7 +107,7 @@ def she2rhe(ushe, pH, ref_pot):
     return ushe
 
 def rhe2she(urhe, pH, ref_pot):
-    urhe = urhe-ref_pot-(0.059*pH)
+    urhe = urhe - (0.059 * pH)
     return urhe
 
 def correct_potential(pot, R, pH, j, area, ref_pot):
@@ -124,20 +117,134 @@ def correct_potential(pot, R, pH, j, area, ref_pot):
         corrected_pot = she2rhe(pot-j/1000*area*R,pH, ref_pot)
     return corrected_pot
 
-def cell2rhe(vcell, X, Y):
-    vrhe = est_x(vcell, X, Y)
-    return vrhe
+def interpolate_cathode_R(current_density):
+    """
+    Interpolate cathode resistance R from log(j) vs R calibration data.
+    
+    Calibration data:
+    j = [50, 100, 200] mA/cm²
+    R = [0.48, 0.34, 0.3] ohm
+    
+    Fits log(j) vs R and interpolates R for given current density.
+    """
+    # Calibration data
+    j_array = np.array([50, 100, 200])  # mA/cm²
+    R_array = np.array([0.48, 0.34, 0.3])  # ohm
+    
+    # Convert to log scale for j
+    log_j = np.log10(j_array)
+    
+    # Fit linear relationship: R = a * log10(j) + b
+    fit_params = np.polyfit(log_j, R_array, 1)
+    a, b = fit_params
+    
+    # Interpolate R for given current density (convert mA/cm² to mA/cm², already in correct units)
+    if current_density <= 0:
+        # Use minimum R if current density is too small
+        return R_array[-1]  # Use the smallest R (at highest j)
+    
+    log_j_input = np.log10(current_density)
+    R_interpolated = a * log_j_input + b
+    
+    # Clamp to reasonable bounds (between min and max R values)
+    R_interpolated = np.clip(R_interpolated, R_array.min(), R_array.max())
+    
+    return R_interpolated
+
+def interpolate_anode_potential_vs_ref(current_density):
+    """
+    Interpolate anode measured potential vs reference from log(j) vs anode_pot calibration data.
+    
+    Calibration data:
+    j = [50, 100, 200] mA/cm²
+    anode_pot = [1.3, 1.35, 1.4] V
+    
+    Fits log(j) vs anode_pot and interpolates anode_pot for given current density.
+    """
+    # Calibration data
+    j_array = np.array([50, 100, 200])  # mA/cm²
+    anode_pot_array = np.array([1.3, 1.35, 1.4])  # V
+    
+    # Convert to log scale for j
+    log_j = np.log10(j_array)
+    
+    # Fit linear relationship: anode_pot = a * log10(j) + b
+    fit_params = np.polyfit(log_j, anode_pot_array, 1)
+    a, b = fit_params
+    
+    # Interpolate anode_pot for given current density
+    if current_density <= 0:
+        # Use minimum anode_pot if current density is too small
+        return anode_pot_array[0]  # Use the smallest anode_pot (at lowest j)
+    
+    log_j_input = np.log10(current_density)
+    anode_pot_interpolated = a * log_j_input + b
+    
+    # Clamp to reasonable bounds (between min and max anode_pot values)
+    anode_pot_interpolated = np.clip(anode_pot_interpolated, anode_pot_array.min(), anode_pot_array.max())
+    
+    return anode_pot_interpolated
+
+def cell2rhe(vcell, ref_pot, anode_pH, 
+              membrane_loss, Nern_pH_loss, current_density, geo_area):
+    """
+    Convert full cell voltage to cathode potential vs RHE.
+    
+    Steps:
+    1. Interpolate anode measured potential vs reference from calibration data
+    2. Convert anode measured potential (vs reference) to RHE:
+       V_anode_RHE = anode_measured_potential_vs_ref + ref_pot + 0.059 * anode_pH
+    3. Calculate cathode RHE:
+       V_cathode_RHE = (V_anode_RHE + membrane_loss + Nern_pH_loss) - full_cell_V
+    4. Apply IR correction:
+       V_cathode_RHE = V_cathode_RHE - (i/1000 * R * A)
+       where i is current density in A/cm², R is interpolated resistance, A is geometric area
+    """
+    # Step 1: Interpolate anode measured potential vs reference
+    anode_measured_potential_vs_ref = interpolate_anode_potential_vs_ref(current_density)
+    
+    # Step 2: Convert anode measured potential to RHE
+    v_anode_rhe = anode_measured_potential_vs_ref + ref_pot + 0.059 * anode_pH
+    
+    # Step 3: Calculate cathode RHE with membrane and Nernst pH losses
+    v_cathode_rhe = (v_anode_rhe + membrane_loss + Nern_pH_loss) - vcell
+    
+    # Step 4: Apply IR correction
+    # Interpolate R from calibration data
+    R = interpolate_cathode_R(current_density)  # current_density in mA/cm², R in ohm
+    
+    # Convert current density from mA/cm² to A/cm² and apply IR correction
+    # i/1000 converts mA/cm² to A/cm²
+    IR_drop = (current_density / 1000.0) * R * geo_area
+    v_cathode_rhe = v_cathode_rhe - IR_drop
+    
+    return v_cathode_rhe
 
 def get_overpotential(pot, pot_theory):
     overpot = abs(pot-pot_theory)
     return overpot
 
-def fullcell2halfcell(vcell, custom_params=None):
+def fullcell2halfcell(vcell, current_density, custom_params=None):
     '''
     Main function to convert a voltage value from full cell to half cell vs she or rhe
+    
+    Parameters:
+    -----------
+    vcell : float
+        Full cell voltage (V)
+    current_density : float
+        Current density (mA/cm²)
+    custom_params : dict, optional
+        Custom parameters for voltage conversion
     '''
     cali_dict = load_calibration_data_for_voltage_conversion(custom_params)
-    urhe = cell2rhe(vcell, cali_dict['measurements']['fullcell pot'], cali_dict['extracted params']['cathode pot corr'])
+    urhe = cell2rhe(vcell, 
+                    cali_dict['conditions']['ref pot'],
+                    cali_dict['conditions']['anode pH'],
+                    cali_dict['conditions']['membrane loss'],
+                    cali_dict['conditions']['Nern pH loss'],
+                    current_density,
+                    cali_dict['conditions']['geo area'])
     ushe = rhe2she(urhe, cali_dict['conditions']['cathode pH'],  cali_dict['conditions']['ref pot'])
     return ushe, urhe
 
@@ -1269,15 +1376,11 @@ def her_plot_main():
                             <label for="membrane_loss">Membrane Loss (V)</label>
                             <input type="number" id="membrane_loss" step="0.01" value="0.1">
                         </div>
-                        <div class="form-group">
-                            <label for="cathode_thermo">Cathode Thermodynamic Potential (V)</label>
-                            <input type="number" id="cathode_thermo" step="0.001" value="0.08">
-                        </div>
                     </div>
                     
                     <div class="form-group">
-                        <label for="anode_thermo">Anode Thermodynamic Potential (V)</label>
-                        <input type="number" id="anode_thermo" step="0.001" value="1.23">
+                        <label for="anode_measured_potential_vs_ref">Anode Measured Half-cell Potential vs Reference (V)</label>
+                        <input type="number" id="anode_measured_potential_vs_ref" step="0.001" value="1.3">
                     </div>
                 </div>
                 <div class="modal-footer">
@@ -1859,8 +1962,7 @@ def her_plot_main():
                 document.getElementById('cathode_pH').value = '10';
                 document.getElementById('anode_pH').value = '3';
                 document.getElementById('membrane_loss').value = '0.1';
-                document.getElementById('cathode_thermo').value = '0.08';
-                document.getElementById('anode_thermo').value = '1.23';
+                document.getElementById('anode_measured_potential_vs_ref').value = '1.3';
             }}
             
             function applyVoltageConfig() {{
@@ -1871,8 +1973,7 @@ def her_plot_main():
                     cathode_pH: parseFloat(document.getElementById('cathode_pH').value),
                     anode_pH: parseFloat(document.getElementById('anode_pH').value),
                     membrane_loss: parseFloat(document.getElementById('membrane_loss').value),
-                    cathode_thermo: parseFloat(document.getElementById('cathode_thermo').value),
-                    anode_thermo: parseFloat(document.getElementById('anode_thermo').value)
+                    anode_measured_potential_vs_ref: parseFloat(document.getElementById('anode_measured_potential_vs_ref').value)
                 }};
                 
                 // Store parameters globally
@@ -2326,13 +2427,18 @@ def update_data():
             
             # Determine which voltage column to use
             voltage_col = 'voltage_mean' if 'voltage_mean' in df.columns else 'voltage'
+            # Get current density column
+            current_density_col = 'current density' if 'current density' in df.columns else None
+            
             # Convert voltage values
             voltage_values = df[voltage_col].values
             converted_voltages = []
             
-            for v in voltage_values:
+            for idx, v in enumerate(voltage_values):
                 if pd.notna(v):
-                    ushe, urhe = fullcell2halfcell(v, custom_params)
+                    # Get current density for this row, default to 100 mA/cm² if not available
+                    current_density = df[current_density_col].iloc[idx] if current_density_col and pd.notna(df[current_density_col].iloc[idx]) else 100.0
+                    ushe, urhe = fullcell2halfcell(v, current_density, custom_params)
                     if voltage_type == 'she':
                         converted_voltages.append(ushe)
                     else:  # rhe
@@ -2378,14 +2484,19 @@ def export_csv():
         if 'voltage' in df_with_pca.columns or 'voltage_mean' in df_with_pca.columns:
             # Determine which voltage column to use
             voltage_col = 'voltage_mean' if 'voltage_mean' in df_with_pca.columns else 'voltage'
+            # Get current density column
+            current_density_col = 'current density' if 'current density' in df_with_pca.columns else None
+            
             # Convert voltage values to SHE and RHE
             voltage_values = df_with_pca[voltage_col].values
             she_values = []
             rhe_values = []
             
-            for v in voltage_values:
+            for idx, v in enumerate(voltage_values):
                 if pd.notna(v):
-                    ushe, urhe = fullcell2halfcell(v)
+                    # Get current density for this row, default to 100 mA/cm² if not available
+                    current_density = df_with_pca[current_density_col].iloc[idx] if current_density_col and pd.notna(df_with_pca[current_density_col].iloc[idx]) else 100.0
+                    ushe, urhe = fullcell2halfcell(v, current_density)
                     she_values.append(ushe)
                     rhe_values.append(urhe)
                 else:
