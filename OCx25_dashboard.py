@@ -1582,7 +1582,7 @@ def create_filter_dashboard():
             print(f"http://localhost:{port} or http://localhost:8086")
         
         print("The Flask server is running. Close this terminal or press Ctrl+C to stop the server when done.")
-        print("This interface allows you to filter and explore the OCx24 dataset.")
+        print("This interface allows you to filter and explore the OCx25 dataset.")
         
         # Keep the main thread alive
         try:

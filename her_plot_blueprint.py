@@ -267,7 +267,9 @@ def fullcell2halfcell(vcell, current_density, custom_params=None):
                     cali_dict['conditions']['geo area'],
                     custom_anode_potential_vs_ref=custom_anode_pot,
                     custom_R_cathode=custom_R)
-    ushe = rhe2she(urhe, cali_dict['conditions']['cathode pH'],  cali_dict['conditions']['ref pot'])
+    # Use cathode_pH from calibration dict (which includes custom params if provided)
+    ushe = rhe2she(urhe, cali_dict['conditions']['cathode pH'], cali_dict['conditions']['ref pot'])
+    
     return ushe, urhe
 
 def convert_atomic_to_weight_fraction(df, element_columns):
@@ -531,7 +533,7 @@ def her_plot_main():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>OCx24 Dataset: HER</title>
+        <title>OCx25 Dataset: HER</title>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <style>
             /* CACHE BUSTER: 2025-01-16 16:52 */
@@ -1219,7 +1221,7 @@ def her_plot_main():
         <a href="/" class="back-link">← Back to Dashboard</a>
         
         <div class="container">
-            <h1><strong>OCx24 Dataset:</strong> HER Performance Data Visualization</h1>
+            <h1><strong>OCx25 Dataset:</strong> HER Performance Data Visualization</h1>
             
             <div class="controls">
                 <div class="control-group">
@@ -2089,8 +2091,6 @@ def her_plot_main():
                 
                 // Update plot with new parameters
                 updatePlot();
-                
-                console.log('Applied voltage conversion parameters:', params);
             }}
             
             // Close modal when clicking outside of it

@@ -18,7 +18,7 @@ def xrd_plot_main():
     <head>
         <meta charset="UTF-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>OCx24 XRD Analysis Dashboard</title>
+        <title>OCx25 XRD Analysis Dashboard</title>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <style>
             body {
@@ -603,7 +603,7 @@ def xrd_plot_main():
         
         <div class="container">
             <div class="header">
-                <h1>OCx24 XRD Analysis Dashboard</h1>
+                <h1>OCx25 XRD Analysis Dashboard</h1>
             </div>
             
             <div class="controls">

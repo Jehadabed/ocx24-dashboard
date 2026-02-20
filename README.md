@@ -1,8 +1,8 @@
-# OCx24 Dashboard
+# OCx25 Dashboard
 
-An interactive web dashboard for exploring and analyzing  data from OCx24 experiments, featuring HER (Hydrogen Evolution Reaction) and CO2RR (CO2 Reduction Reaction) performance data, as well as XRD (X-ray Diffraction) data.
+An interactive web dashboard for exploring and analyzing  data from OCx25 experiments, featuring HER (Hydrogen Evolution Reaction) and CO2RR (CO2 Reduction Reaction) performance data, as well as XRD (X-ray Diffraction) data.
 
-This project is part of the OCx24 research: https://ai.meta.com/blog/open-catalyst-simulations-experiments/.
+This project is part of the OCx25 research: https://ai.meta.com/blog/open-catalyst-simulations-experiments/.
 
 ## Features
 
@@ -38,7 +38,7 @@ The XRD Analysis Dashboard accesses data stored in a **Cloudflare R2 bucket** vi
 
 ### Local Development
 ```bash
-python OCx24_dashboard.py
+python OCx25_dashboard.py
 ```
 
 ### Production Deployment
@@ -72,7 +72,7 @@ See `requirements.txt` for a complete list of Python dependencies including:
 
 ## File Structure
 
-- `OCx24_dashboard.py` - Main Flask application file
+- `OCx25_dashboard.py` - Main Flask application file
 - `her_plot_blueprint.py` - HER-specific plotting blueprint
 - `co2_plot_blueprint.py` - CO2RR-specific plotting blueprint  
 - `xrd_plot_blueprint.py` - XRD Analysis Dashboard blueprint

@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html>
 <head>
-    <title>OCx24 Dataset</title>
+    <title>OCx25 Dataset</title>
     <style>
         body {
             font-family: 'Roboto', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
@@ -1760,7 +1760,7 @@
 </head>
 <body>
     <div class="container">
-        <h1><strong>OCx24 Dataset</strong></h1>
+        <h1><strong>OCx25 Dataset</strong></h1>
         <h3>Dashboard to visualize the experimental dataset in this work: <a href="https://ai.meta.com/blog/open-catalyst-simulations-experiments/" target="_blank">https://ai.meta.com/blog/open-catalyst-simulations-experiments/</a></h3>
         <div class="dataset-description">
             <p>This dataset contains electrochemical performance data for metal alloy catalysts tested for CO₂ reduction and hydrogen evolution reactions. The samples were synthesized using two different methods:</p>
@@ -4178,7 +4178,7 @@
                     // Update title to indicate custom data
                     const title = document.querySelector('h1');
                     if (!title.textContent.includes('(Custom Data)')) {
-                        title.innerHTML = '<strong>OCx24 Dataset (Custom Data)</strong>';
+                        title.innerHTML = '<strong>OCx25 Dataset (Custom Data)</strong>';
                     }
                     
                 } else {
@@ -4228,10 +4228,10 @@
                     
                     // Reset title
                     const title = document.querySelector('h1');
-                    title.innerHTML = '<strong>OCx24 Dataset</strong>';
+                    title.innerHTML = '<strong>OCx25 Dataset</strong>';
                     
                     hideUploadStatus();
-                    showUploadStatus('Reset to original OCx24 dataset', 'success');
+                    showUploadStatus('Reset to original OCx25 dataset', 'success');
                     setTimeout(hideUploadStatus, 3000);
                     
                 } else {
@@ -4331,11 +4331,11 @@
                     // Update title to indicate custom XRD data
                     const title = document.querySelector('h1');
                     if (!title.textContent.includes('(Custom XRD)') && !title.textContent.includes('(Custom Data)')) {
-                        if (title.textContent.includes('OCx24 Dataset')) {
-                            title.innerHTML = '<strong>OCx24 Dataset (Custom XRD)</strong>';
+                        if (title.textContent.includes('OCx25 Dataset')) {
+                            title.innerHTML = '<strong>OCx25 Dataset (Custom XRD)</strong>';
                         }
                     } else if (title.textContent.includes('(Custom Data)')) {
-                        title.innerHTML = '<strong>OCx24 Dataset (Custom Data + XRD)</strong>';
+                        title.innerHTML = '<strong>OCx25 Dataset (Custom Data + XRD)</strong>';
                     }
                     
                 } else {
@@ -4375,9 +4375,9 @@
                     // Update title
                     const title = document.querySelector('h1');
                     if (title.textContent.includes('(Custom Data + XRD)')) {
-                        title.innerHTML = '<strong>OCx24 Dataset (Custom Data)</strong>';
+                        title.innerHTML = '<strong>OCx25 Dataset (Custom Data)</strong>';
                     } else if (title.textContent.includes('(Custom XRD)')) {
-                        title.innerHTML = '<strong>OCx24 Dataset</strong>';
+                        title.innerHTML = '<strong>OCx25 Dataset</strong>';
                     }
                     
                     hideXrdUploadStatus();

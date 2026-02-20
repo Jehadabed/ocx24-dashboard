@@ -684,7 +684,7 @@ def co2_plot_main():
     <!DOCTYPE html>
     <html>
     <head>
-        <title>OCx24 Dataset: CO₂RR Performance Interactive Plot</title>
+        <title>OCx25 Dataset: CO₂RR Performance Interactive Plot</title>
         <script src="https://cdn.plot.ly/plotly-latest.min.js"></script>
         <style>
             body {{
@@ -1454,7 +1454,7 @@ def co2_plot_main():
         <a href="/" class="back-link">← Back to Dashboard</a>
         
         <div class="container">
-            <h1><strong>OCx24 Dataset:</strong> CO₂RR Performance Data Visualization</h1>
+            <h1><strong>OCx25 Dataset:</strong> CO₂RR Performance Data Visualization</h1>
             
             <div class="controls">
                 <div class="control-group">
